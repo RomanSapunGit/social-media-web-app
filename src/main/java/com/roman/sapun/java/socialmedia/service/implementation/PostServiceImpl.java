@@ -13,7 +13,9 @@ import com.roman.sapun.java.socialmedia.util.PostConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -34,11 +36,29 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostDTO createPost(RequestPostDTO requestPostDTO, Authentication authentication) {
         Set<TagEntity> existingTags = tagService.getExistingTagsFromText(requestPostDTO.description());
-        Set<TagEntity> nonExistingTags =  tagService.saveNonExistingTagsFromText(requestPostDTO.description());
+        Set<TagEntity> nonExistingTags = tagService.saveNonExistingTagsFromText(requestPostDTO.description());
         existingTags.addAll(nonExistingTags);
         UserEntity postOwner = userService.findUserByAuth(authentication);
         PostEntity postEntity = postConverter.convertToPostEntity(requestPostDTO, existingTags, postOwner);
         postRepository.save(postEntity);
         return new PostDTO(requestPostDTO, postEntity.getCreationTime());
     }
+
+    @Override
+    public List<PostDTO> findPostsByTitleContaining(String title) {
+        return postRepository.findPostEntitiesByTitleContaining(title).stream()
+                .map(PostDTO::new)
+                .toList();
+    }
+
+    @Override
+    public List<PostDTO> findPostsByTags(String tag) {
+        Set<TagEntity> existingTags = tagService.getExistingTagsFromText(tag);
+        List<PostEntity> matchedPosts = postRepository.findPostEntitiesByTagsIn(existingTags);
+        return matchedPosts.stream()
+                .filter(post -> post.getTags().containsAll(existingTags))
+                .map(PostDTO::new)
+                .collect(Collectors.toList());
+    }
+
 }

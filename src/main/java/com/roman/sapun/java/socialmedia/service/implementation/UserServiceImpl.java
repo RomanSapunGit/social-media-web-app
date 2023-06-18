@@ -4,7 +4,6 @@ import com.roman.sapun.java.socialmedia.dto.UserDTO;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 
@@ -14,10 +13,12 @@ import java.util.regex.Pattern;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final JwtAuthServiceImpl jwtAuthService;
     private static final int PAGE_SIZE = 50;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, JwtAuthServiceImpl jwtAuthService) {
         this.userRepository = userRepository;
+        this.jwtAuthService = jwtAuthService;
     }
 
     @Override
@@ -46,10 +47,9 @@ public class UserServiceImpl implements UserService {
         UserEntity updatedUser = userRepository.save(currentUser);
         return new UserDTO(updatedUser);
     }
-
     @Override
     public UserEntity findUserByAuth(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return userRepository.findByUsername(userDetails.getUsername());
+        var principal = authentication.getPrincipal();
+        return userRepository.findByUsername(principal.toString());
     }
 }

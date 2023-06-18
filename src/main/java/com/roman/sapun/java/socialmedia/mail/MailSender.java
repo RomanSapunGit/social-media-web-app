@@ -1,4 +1,4 @@
-package com.roman.sapun.java.socialmedia.mail.service;
+package com.roman.sapun.java.socialmedia.mail;
 
 import jakarta.mail.MessagingException;
 import org.springframework.web.util.UriComponents;

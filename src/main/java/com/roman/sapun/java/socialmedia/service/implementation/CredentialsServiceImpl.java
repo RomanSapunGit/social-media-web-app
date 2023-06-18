@@ -7,7 +7,7 @@ import com.roman.sapun.java.socialmedia.entity.RoleEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.TokenExpiredException;
 import com.roman.sapun.java.socialmedia.exception.ValuesAreNotEqualException;
-import com.roman.sapun.java.socialmedia.mail.service.MailSender;
+import com.roman.sapun.java.socialmedia.mail.MailSender;
 import com.roman.sapun.java.socialmedia.repository.RoleRepository;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.CredentialsService;
@@ -23,9 +23,7 @@ import org.springframework.web.util.UriComponents;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.UUID;
-
+import java.util.*;
 @Service
 public class CredentialsServiceImpl implements CredentialsService {
 

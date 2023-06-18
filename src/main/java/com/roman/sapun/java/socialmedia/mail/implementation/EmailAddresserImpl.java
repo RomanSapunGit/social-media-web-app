@@ -1,6 +1,6 @@
-package com.roman.sapun.java.socialmedia.mail.config.implementation;
+package com.roman.sapun.java.socialmedia.mail.implementation;
 
-import com.roman.sapun.java.socialmedia.mail.config.EmailAddresser;
+import com.roman.sapun.java.socialmedia.mail.EmailAddresser;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

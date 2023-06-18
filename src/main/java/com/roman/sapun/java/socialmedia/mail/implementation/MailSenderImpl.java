@@ -1,7 +1,7 @@
-package com.roman.sapun.java.socialmedia.mail.service.implementation;
+package com.roman.sapun.java.socialmedia.mail.implementation;
 
-import com.roman.sapun.java.socialmedia.mail.config.EmailAddresser;
-import com.roman.sapun.java.socialmedia.mail.service.MailSender;
+import com.roman.sapun.java.socialmedia.mail.EmailAddresser;
+import com.roman.sapun.java.socialmedia.mail.MailSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.JavaMailSender;
