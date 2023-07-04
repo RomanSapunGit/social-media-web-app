@@ -1,0 +1,97 @@
+/* You can add global styles to this file, and also import other style files */
+@use "@angular/material" as mat;
+
+@import "tailwindcss/base";
+
+@import "tailwindcss/components";
+
+@import "tailwindcss/utilities";
+.custom-snackbar {
+  z-index: 9999;
+  position: revert;
+}
+
+
+$my-typography: mat.define-typography-config($font-family: 'Times New Roman, sans-serif' );
+
+@include mat.typography-hierarchy($my-typography);
+
+$my-app-primary: mat.define-palette(mat.$blue-palette);
+$my-app-accent: mat.define-palette(mat.$green-palette);
+$my-app-warn: mat.define-palette(mat.$red-palette);
+
+
+@include mat.typography-hierarchy($my-typography);
+
+$my-app-theme: mat.define-light-theme((
+  color: (
+    primary: $my-app-primary,
+    accent: $my-app-accent,
+    warn: $my-app-warn,
+  ),
+  typography: $my-typography
+));
+.error-message {
+  text-align: center;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f44336;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.error-message .close-button {
+  background-color: transparent;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.flex {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-login {
+  border-radius: 9999px;
+  background-color: #B91C1C;
+  color: #fff;
+  padding: 0.5rem 1rem;
+}
+
+.div-field {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: auto;
+  align-items: center;
+  width: 20rem;
+}
+.image-container {
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+}
+.label {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.input-field {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+}

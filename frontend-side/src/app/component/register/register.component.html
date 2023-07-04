@@ -1,0 +1,48 @@
+<div [ngStyle]="{backgroundImage: 'url(' + image + ')'}" class="image-container">
+  <h2 class="text-center">Register</h2>
+  <form [formGroup]="registerForm" (ngSubmit)="register()">
+    <div class="flex justify-center">
+      <asl-google-signin-button>
+      </asl-google-signin-button>
+    </div>
+    <div class="div-field">
+      <label class="label">Email:</label>
+      <input class="input-field" type="email" formControlName="email" autocomplete="new-email">
+      <div *ngIf="registerForm.get('email')?.errors?.['required'] && registerForm.get('email')?.touched">
+        Email is required.
+      </div>
+    </div>
+    <div class="div-field">
+      <label class="label">Password:</label>
+      <input class="input-field" type="password" formControlName="password" autocomplete="new-password">
+      <div *ngIf="registerForm.get('password')?.errors?.['required'] && registerForm.get('password')?.touched">
+        Password is required.
+      </div>
+    </div>
+    <div class="div-field">
+      <label class="label">Name:</label>
+      <input class="input-field" type="text" formControlName="name">
+      <div *ngIf="registerForm.get('name')?.errors?.['required'] && registerForm.get('name')?.touched">
+        Name is required.
+      </div>
+    </div>
+    <div class="div-field">
+      <label class="label">Username:</label>
+      <input class="input-field" type="text" formControlName="username">
+      <div *ngIf="registerForm.get('username')?.errors?.['required'] && registerForm.get('username')?.touched">
+        Username is required.
+      </div>
+    </div>
+
+    <div class="flex justify-center">
+      <button class="btn-login" [disabled]="registerForm.invalid" type="submit">Register</button>
+    </div>
+    <p class="text-center mt-4">
+      Already have an account? <a href="/login">Login</a> | <a href="/reset-password">Reset Password</a>
+    </p>
+    <div *ngIf="errorMessage" class="error-message text-center">
+      <span>{{ errorMessage }}</span>
+      <button class="close-button" (click)="closeError()">&times;</button>
+    </div>
+  </form>
+</div>

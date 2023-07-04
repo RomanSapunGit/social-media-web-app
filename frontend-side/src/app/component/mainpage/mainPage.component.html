@@ -1,0 +1,13 @@
+<div [ngStyle]="{backgroundImage: 'url(' + image + ')'}" class="main-container">
+  <h2>
+    <p>mainpage works!</p>
+    <form (ngSubmit)="logout()">
+      <button type="button" (click)="confirmLogout()">Logout</button>
+    </form>
+  </h2>
+  <div class="confirmation-dialog" *ngIf="showConfirmation">
+    <div class="message">Are you sure you want to logout?</div>
+    <button (click)="onConfirm()">Yes</button>
+    <button (click)="onCancel()">No</button>
+  </div>
+</div>
