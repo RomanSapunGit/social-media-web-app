@@ -1,9 +1,9 @@
-package com.roman.sapun.java.socialmedia.mail.implementation;
+package com.roman.sapun.java.socialmedia.mail;
 
-import com.roman.sapun.java.socialmedia.mail.EmailAddresser;
-import com.roman.sapun.java.socialmedia.mail.MailSender;
+import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -18,24 +18,24 @@ public class MailSenderImpl implements MailSender {
             Hello,
             You have requested to reset your password.
             Click the link below to change your password:""";
-    private static final String CONTENT_SECOND_PART = """
-            Ignore this email if you do remember your password,
-            or you have not made the request.""";
+
     private final JavaMailSender javaMailSender;
 
-    private final EmailAddresser emailAddresser;
+    private final ValueConfig valueConfig;
 
-    public MailSenderImpl( JavaMailSender javaMailSender, EmailAddresser emailAddresser) {
+    @Autowired
+    public MailSenderImpl(JavaMailSender javaMailSender, ValueConfig valueConfig) {
         this.javaMailSender = javaMailSender;
-        this.emailAddresser = emailAddresser;
+        this.valueConfig = valueConfig;
     }
+
     public void sendEmail(String email, UriComponents uri) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom(emailAddresser.getEmail(), "Support");
+        helper.setFrom(valueConfig.getEmail(), "Support");
         helper.setTo(email);
         helper.setSubject(SUBJECT_TO_MAIL);
-        helper.setText(CONTENT_FIRST_PART + uri + " " + CONTENT_SECOND_PART, true);
+        helper.setText(CONTENT_FIRST_PART + uri + " ", true);
         javaMailSender.send(message);
     }
 }

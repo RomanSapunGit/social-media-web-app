@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -22,7 +23,8 @@ public class PostEntity {
     private String description;
     @Column(name = "creation_time")
     private Timestamp creationTime;
-
+    @Column(unique = true, nullable = false)
+    private String identifier;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity author;
@@ -32,4 +34,8 @@ public class PostEntity {
             joinColumns = {@JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false, referencedColumnName = "id"))
     private Set<TagEntity> tags;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<CommentEntity> comments;
+
 }

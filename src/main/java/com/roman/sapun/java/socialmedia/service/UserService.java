@@ -8,7 +8,9 @@ import java.util.List;
 
 public interface UserService {
     List<UserDTO> getUsersByUsername(String regex, int page);
-     UserDTO updateUser(UserDTO userDTO, Authentication authentication);
+
+    UserDTO updateUser(UserDTO userDTO, Authentication authentication);
 
     UserEntity findUserByAuth(Authentication authentication);
+
 }

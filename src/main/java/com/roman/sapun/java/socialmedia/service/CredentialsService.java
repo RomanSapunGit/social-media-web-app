@@ -14,4 +14,6 @@ public interface CredentialsService {
      UserDTO addNewUser(SignUpDTO signUpDto);
      ResetPassDTO resetPassword(String token, ResetPassDTO resetPassDTO) throws TokenExpiredException, ValuesAreNotEqualException;
      void sendEmail(String email, HttpServletRequest request) throws MessagingException, UnsupportedEncodingException;
+
+    boolean checkUserByCredentials(String username, String password);
 }

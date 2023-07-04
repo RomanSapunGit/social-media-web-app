@@ -4,7 +4,6 @@ import com.roman.sapun.java.socialmedia.dto.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.PostDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
-import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.repository.PostRepository;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import com.roman.sapun.java.socialmedia.service.TagService;
@@ -38,10 +37,10 @@ public class PostServiceImpl implements PostService {
         Set<TagEntity> existingTags = tagService.getExistingTagsFromText(requestPostDTO.description());
         Set<TagEntity> nonExistingTags = tagService.saveNonExistingTagsFromText(requestPostDTO.description());
         existingTags.addAll(nonExistingTags);
-        UserEntity postOwner = userService.findUserByAuth(authentication);
-        PostEntity postEntity = postConverter.convertToPostEntity(requestPostDTO, existingTags, postOwner);
+        var postOwner = userService.findUserByAuth(authentication);
+        var postEntity = postConverter.convertToPostEntity(requestPostDTO, existingTags, postOwner, new PostEntity());
         postRepository.save(postEntity);
-        return new PostDTO(requestPostDTO, postEntity.getCreationTime());
+        return new PostDTO(postEntity);
     }
 
     @Override
@@ -60,5 +59,4 @@ public class PostServiceImpl implements PostService {
                 .map(PostDTO::new)
                 .collect(Collectors.toList());
     }
-
 }

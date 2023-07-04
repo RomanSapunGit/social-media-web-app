@@ -13,19 +13,17 @@ import java.util.regex.Pattern;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final JwtAuthServiceImpl jwtAuthService;
     private static final int PAGE_SIZE = 50;
 
-    public UserServiceImpl(UserRepository userRepository, JwtAuthServiceImpl jwtAuthService) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.jwtAuthService = jwtAuthService;
     }
 
     @Override
     public List<UserDTO> getUsersByUsername(String regex, int pageNumber) {
-        String sanitizedRegex = Pattern.quote(regex);
-        List<UserEntity> allUsers = userRepository.findAll(); //TODO make an attempt for adding pagination in there
-        int offset = pageNumber * PAGE_SIZE;
+        var sanitizedRegex = Pattern.quote(regex);
+        var allUsers = userRepository.findAll(); //TODO make an attempt for adding pagination in there
+        var offset = pageNumber * PAGE_SIZE;
         return allUsers.stream()
                 .filter(user -> user.getUsername().matches(sanitizedRegex + ".*"))
                 .skip(offset)
@@ -44,9 +42,10 @@ public class UserServiceImpl implements UserService {
 
         currentUser.setEmail(userDTO.email() != null ? userDTO.email() : currentUser.getEmail());
 
-        UserEntity updatedUser = userRepository.save(currentUser);
+        var updatedUser = userRepository.save(currentUser);
         return new UserDTO(updatedUser);
     }
+
     @Override
     public UserEntity findUserByAuth(Authentication authentication) {
         var principal = authentication.getPrincipal();

@@ -1,16 +1,12 @@
 package com.roman.sapun.java.socialmedia.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 
 import java.sql.Timestamp;
 
-public record PostDTO(String title, String description, @JsonProperty("Creation Date") Timestamp creationDate) {
-    public PostDTO(RequestPostDTO post, Timestamp creationDate) {
-        this(post.title(), post.description(), creationDate);
-    }
-
+public record PostDTO(String identifier, String title, String description, Timestamp creationDate, String username) {
     public PostDTO(PostEntity postEntity) {
-        this(postEntity.getTitle(), postEntity.getDescription(), postEntity.getCreationTime());
+        this(postEntity.getIdentifier(), postEntity.getTitle(), postEntity.getDescription(),
+                postEntity.getCreationTime(), postEntity.getAuthor().getUsername());
     }
 }

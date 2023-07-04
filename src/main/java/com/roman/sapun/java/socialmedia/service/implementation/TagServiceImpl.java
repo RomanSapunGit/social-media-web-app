@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Set<TagEntity> getExistingTagsFromText(String text) {
-        Set<String> tagSet = extractTagsFromText(text);
+        var tagSet = extractTagsFromText(text);
         return tagSet.stream()
                 .map(tagRepository::findByName)
                 .filter(Objects::nonNull)
@@ -37,7 +36,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Set<TagEntity> saveNonExistingTagsFromText(String text) {
-        Set<String> tagSet = extractTagsFromText(text);
+        var tagSet = extractTagsFromText(text);
         return tagSet.stream()
                 .filter(tagEntity -> !tagRepository.existsByName(tagEntity))
                 .map(tagConverter::convertToTagEntity)
@@ -46,9 +45,9 @@ public class TagServiceImpl implements TagService {
     }
 
     private Set<String> extractTagsFromText(String text) {
-        Set<String> hashtags = new HashSet<>();
-        Pattern pattern = Pattern.compile("#\\w+");
-        Matcher matcher = pattern.matcher(text);
+        var hashtags = new HashSet<String>();
+        var pattern = Pattern.compile("#\\w+");
+        var matcher = pattern.matcher(text);
         while (matcher.find()) {
             String hashtag = matcher.group();
             hashtags.add(hashtag);

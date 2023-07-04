@@ -1,15 +1,26 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.roman.sapun.java.socialmedia.config.ValueConfig;
+import com.roman.sapun.java.socialmedia.dto.TokenDTO;
+import com.roman.sapun.java.socialmedia.repository.UserRepository;
+import com.roman.sapun.java.socialmedia.service.CredentialsService;
 import com.roman.sapun.java.socialmedia.service.JwtAuthService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import com.google.api.client.json.gson.GsonFactory;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Key;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,12 +28,40 @@ import java.util.function.Function;
 
 @Service
 public class JwtAuthServiceImpl implements JwtAuthService {
-    public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+    private final CredentialsService credentialsService;
+
+    private final ValueConfig valueConfig;
+    private static final String INVALID_USER_REQUEST = "invalid user request";
+    private final GsonFactory gsonFactory;
+    private final UserRepository userRepository;
+
+
+    @Autowired
+    public JwtAuthServiceImpl(CredentialsService credentialsService, ValueConfig valueConfig, GsonFactory gsonFactory,
+                              UserRepository userRepository) {
+        this.gsonFactory = gsonFactory;
+        this.credentialsService = credentialsService;
+        this.valueConfig = valueConfig;
+        this.userRepository = userRepository;
+    }
 
     @Override
-    public String generateJwtToken(String username) {
+    public TokenDTO generateJwtToken(String username, String password) {
+        if (credentialsService.checkUserByCredentials(username, password)) {
+            Map<String, Object> claims = new HashMap<>();
+            return new TokenDTO(createToken(claims, username), username);
+        } else {
+            throw new UsernameNotFoundException(INVALID_USER_REQUEST);
+        }
+    }
+
+    @Override
+    public TokenDTO generateJwtToken(String username) {
+        if (username == null) {
+            throw new UsernameNotFoundException(INVALID_USER_REQUEST);
+        }
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return new TokenDTO(createToken(claims, username), username);
     }
 
     @Override
@@ -37,21 +76,61 @@ public class JwtAuthServiceImpl implements JwtAuthService {
 
     @Override
     public <T> T extractClaim(String token, Function<Claims, T> claimsFunction) {
-        Claims claims = extractAllClaims(token);
+        var claims = extractAllClaims(token);
         return claimsFunction.apply(claims);
     }
 
-    private Boolean isJwtTokenExpired(String token) {
+    @Override
+    public Boolean isJwtTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
     @Override
     public Boolean validateToken(String token, String usernameToMatch) {
-        String username = extractUsername(token);
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        var username = extractUsername(token);
         return (username.equalsIgnoreCase(usernameToMatch) && !isJwtTokenExpired(token));
     }
 
-    private Claims extractAllClaims(String token) {
+    @Override
+    public String validateAndGetUsername(String authToken) throws GeneralSecurityException, IOException {
+        if (authToken != null && authToken.startsWith("Bearer ")) {
+            authToken = authToken.substring(7);
+        }
+
+        var email = validateTokenViaGoogleAndGetEmail(authToken);
+        if (email == null) {
+            return null;
+        }
+        return userRepository.findByEmail(email).getUsername();
+    }
+
+    @Override
+    public TokenDTO generateJwtTokenByAnotherToken(String authToken) throws GeneralSecurityException, IOException {
+        if (authToken != null && authToken.startsWith("Bearer ")) {
+            authToken = authToken.substring(7);
+        }
+        var email = validateTokenViaGoogleAndGetEmail(authToken);
+        return generateJwtToken(userRepository.findByEmail(email).getUsername());
+    }
+
+    @Override
+    public String validateTokenViaGoogleAndGetEmail(String authToken) throws GeneralSecurityException, IOException {
+        var httpTransport = new com.google.api.client.http.javanet.NetHttpTransport();
+        var verifier = new GoogleIdTokenVerifier.Builder(httpTransport, gsonFactory)
+                .setAudience(Collections.singletonList(valueConfig.getClientId()))
+                .build();
+        var idToken = verifier.verify(authToken);
+        if (idToken != null) {
+            var payload = idToken.getPayload();
+            return (String) payload.get("email");
+        }
+        return null;
+    }
+
+    private Claims extractAllClaims(String token) throws ExpiredJwtException {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
@@ -64,12 +143,12 @@ public class JwtAuthServiceImpl implements JwtAuthService {
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 
     private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        var keyBytes = Decoders.BASE64.decode(valueConfig.getBase64Code());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

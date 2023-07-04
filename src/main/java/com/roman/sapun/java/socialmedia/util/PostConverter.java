@@ -8,5 +8,5 @@ import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import java.util.Set;
 
 public interface PostConverter {
-    PostEntity convertToPostEntity(RequestPostDTO postDTO, Set<TagEntity> tags, UserEntity user);
+    PostEntity convertToPostEntity(RequestPostDTO postDTO, Set<TagEntity> tags, UserEntity user, PostEntity postEntity);
 }

@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.security;
 
+import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username);
+        UserEntity userEntity = userRepository.findByUsername(username);
+        return new UserDetailsImpl(userEntity);
     }
 }
