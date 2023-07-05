@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -22,7 +22,7 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("{username}")
-    public List<UserDTO> getUsersByUsername(@PathVariable String username, @RequestParam int page) {
+    public Map<String, Object> getUsersByUsername(@PathVariable String username, @RequestParam int page) {
         return userService.getUsersByUsername(username, page);
     }
 

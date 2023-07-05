@@ -1,4 +1,4 @@
-package com.roman.sapun.java.socialmedia.mail;
+package com.roman.sapun.java.socialmedia.util.mail;
 
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import jakarta.mail.MessagingException;
@@ -32,7 +32,7 @@ public class MailSenderImpl implements MailSender {
     public void sendEmail(String email, UriComponents uri) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom(valueConfig.getEmail(), "Support");
+        helper.setFrom(valueConfig.getEmailSubject(), "Support");
         helper.setTo(email);
         helper.setSubject(SUBJECT_TO_MAIL);
         helper.setText(CONTENT_FIRST_PART + uri + " ", true);

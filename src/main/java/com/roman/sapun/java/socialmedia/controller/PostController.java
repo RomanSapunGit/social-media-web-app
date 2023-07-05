@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/post")
@@ -29,13 +29,13 @@ public class PostController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/search-by-title")
-    public List<PostDTO> findPostsByTitleContaining(@RequestParam String title) {
-        return postService.findPostsByTitleContaining(title);
+    public Map<String, Object> findPostsByTitleContaining(@RequestParam String title, @RequestParam int page) {
+        return postService.findPostsByTitleContaining(title, page);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/search-by-tags") //TODO write encoding stuff in a frontend(# -> %23)
-    public List<PostDTO> findPostsByTags(@RequestParam String tags) {
-        return postService.findPostsByTags(tags);
+    public Map<String, Object> findPostsByTags(@RequestParam String tags, @RequestParam int page) {
+        return postService.findPostsByTags(tags, page);
     }
 }

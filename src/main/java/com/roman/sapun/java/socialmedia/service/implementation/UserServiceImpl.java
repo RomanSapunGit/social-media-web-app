@@ -1,35 +1,36 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
+import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.UserDTO;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.UserService;
+import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private static final int PAGE_SIZE = 50;
+    private final PageConverter pageConverter;
+    private final ValueConfig valueConfig;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PageConverter pageConverter, ValueConfig valueConfig) {
         this.userRepository = userRepository;
+        this.pageConverter = pageConverter;
+        this.valueConfig = valueConfig;
     }
 
     @Override
-    public List<UserDTO> getUsersByUsername(String regex, int pageNumber) {
-        var sanitizedRegex = Pattern.quote(regex);
-        var allUsers = userRepository.findAll(); //TODO make an attempt for adding pagination in there
-        var offset = pageNumber * PAGE_SIZE;
-        return allUsers.stream()
-                .filter(user -> user.getUsername().matches(sanitizedRegex + ".*"))
-                .skip(offset)
-                .map(UserDTO::new)
-                .limit(PAGE_SIZE)
-                .toList();
+    public Map<String, Object> getUsersByUsername(String username, int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "username"));
+        var matchedUsers = userRepository.getAllByUsernameContaining(username, pageable);
+        return pageConverter.convertPageToResponse(matchedUsers);
     }
 
     @Override

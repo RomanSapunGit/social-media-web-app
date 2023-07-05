@@ -6,14 +6,14 @@ import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import org.springframework.security.core.Authentication;
 
-import java.util.List;
+import java.util.Map;
 
 
 public interface CommentService {
 
-      ResponseCommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication) throws PostNotFoundException;
+    ResponseCommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication) throws PostNotFoundException;
 
-      ResponseCommentDTO deleteComment(String identifier, Authentication authentication) throws CommentNotFoundException;
+    ResponseCommentDTO deleteComment(String identifier, Authentication authentication) throws CommentNotFoundException;
 
-    List<ResponseCommentDTO> getCommentsByPostIdentifier(String identifier);
+    Map<String, Object> getCommentsByPostIdentifier(String identifier, int pageNumber);
 }

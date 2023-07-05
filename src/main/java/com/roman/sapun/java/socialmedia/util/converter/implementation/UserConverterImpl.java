@@ -1,8 +1,8 @@
-package com.roman.sapun.java.socialmedia.util.implementation;
+package com.roman.sapun.java.socialmedia.util.converter.implementation;
 
+import com.roman.sapun.java.socialmedia.util.converter.UserConverter;
 import com.roman.sapun.java.socialmedia.dto.SignUpDTO;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
-import com.roman.sapun.java.socialmedia.util.UserConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

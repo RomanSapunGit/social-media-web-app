@@ -4,10 +4,10 @@ import com.roman.sapun.java.socialmedia.dto.UserDTO;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import org.springframework.security.core.Authentication;
 
-import java.util.List;
+import java.util.Map;
 
 public interface UserService {
-    List<UserDTO> getUsersByUsername(String regex, int page);
+    Map<String, Object> getUsersByUsername(String regex, int page);
 
     UserDTO updateUser(UserDTO userDTO, Authentication authentication);
 

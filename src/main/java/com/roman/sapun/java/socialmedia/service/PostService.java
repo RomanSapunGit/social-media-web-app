@@ -4,12 +4,12 @@ import com.roman.sapun.java.socialmedia.dto.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.PostDTO;
 import org.springframework.security.core.Authentication;
 
-import java.util.List;
+import java.util.Map;
 
 public interface PostService {
     PostDTO createPost(RequestPostDTO requestPostDTO, Authentication authentication);
 
-    List<PostDTO> findPostsByTitleContaining(String title);
+    Map<String, Object> findPostsByTitleContaining(String title, int pageNumber);
 
-    List<PostDTO> findPostsByTags(String text);
+    Map<String, Object> findPostsByTags(String text, int pageNumber);
 }

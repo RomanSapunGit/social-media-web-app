@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
+import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.PostDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
@@ -8,13 +9,15 @@ import com.roman.sapun.java.socialmedia.repository.PostRepository;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import com.roman.sapun.java.socialmedia.service.TagService;
 import com.roman.sapun.java.socialmedia.service.UserService;
-import com.roman.sapun.java.socialmedia.util.PostConverter;
+import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
+import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -23,13 +26,17 @@ public class PostServiceImpl implements PostService {
     private final UserService userService;
     private final PostConverter postConverter;
     private final PostRepository postRepository;
+    private final PageConverter pageConverter;
+    private final ValueConfig valueConfig;
 
     public PostServiceImpl(TagService tagService, PostConverter postConverter, UserService userService,
-                           PostRepository postRepository) {
+                           PostRepository postRepository, PageConverter pageConverter, ValueConfig valueConfig) {
         this.tagService = tagService;
         this.postConverter = postConverter;
         this.userService = userService;
         this.postRepository = postRepository;
+        this.pageConverter = pageConverter;
+        this.valueConfig = valueConfig;
     }
 
     @Override
@@ -44,19 +51,19 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDTO> findPostsByTitleContaining(String title) {
-        return postRepository.findPostEntitiesByTitleContaining(title).stream()
-                .map(PostDTO::new)
-                .toList();
+    public Map<String, Object> findPostsByTitleContaining(String title, int pageNumber) {
+        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "title"));
+        var matchedPosts = postRepository.findPostEntitiesByTitleContaining(title, pageable);
+        var postDtoPage = matchedPosts.map(PostDTO::new);
+        return pageConverter.convertPageToResponse(postDtoPage);
     }
 
     @Override
-    public List<PostDTO> findPostsByTags(String tag) {
-        Set<TagEntity> existingTags = tagService.getExistingTagsFromText(tag);
-        List<PostEntity> matchedPosts = postRepository.findPostEntitiesByTagsIn(existingTags);
-        return matchedPosts.stream()
-                .filter(post -> post.getTags().containsAll(existingTags))
-                .map(PostDTO::new)
-                .collect(Collectors.toList());
+    public Map<String, Object> findPostsByTags(String tag, int pageNumber) {
+        var existingTags = tagService.getExistingTagsFromText(tag);
+        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "title"));
+        var matchedPosts = postRepository.findPostEntitiesByTagsIn(existingTags, pageable);
+        var postDtoPage = matchedPosts.map(PostDTO::new);
+        return pageConverter.convertPageToResponse(postDtoPage);
     }
 }

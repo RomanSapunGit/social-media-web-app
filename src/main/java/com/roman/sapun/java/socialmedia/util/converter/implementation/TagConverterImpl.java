@@ -1,7 +1,7 @@
-package com.roman.sapun.java.socialmedia.util.implementation;
+package com.roman.sapun.java.socialmedia.util.converter.implementation;
 
+import com.roman.sapun.java.socialmedia.util.converter.TagConverter;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
-import com.roman.sapun.java.socialmedia.util.TagConverter;
 import org.springframework.stereotype.Component;
 
 @Component

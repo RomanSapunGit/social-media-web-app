@@ -3,7 +3,7 @@ package com.roman.sapun.java.socialmedia.service.implementation;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import com.roman.sapun.java.socialmedia.repository.TagRepository;
 import com.roman.sapun.java.socialmedia.service.TagService;
-import com.roman.sapun.java.socialmedia.util.TagConverter;
+import com.roman.sapun.java.socialmedia.util.converter.TagConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

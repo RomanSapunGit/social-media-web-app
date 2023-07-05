@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
+import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.entity.CommentEntity;
@@ -8,13 +9,14 @@ import com.roman.sapun.java.socialmedia.repository.CommentRepository;
 import com.roman.sapun.java.socialmedia.repository.PostRepository;
 import com.roman.sapun.java.socialmedia.service.CommentService;
 import com.roman.sapun.java.socialmedia.service.UserService;
-import com.roman.sapun.java.socialmedia.util.CommentConverter;
+import com.roman.sapun.java.socialmedia.util.converter.CommentConverter;
+import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -22,15 +24,19 @@ public class CommentServiceImpl implements CommentService {
     private final CommentConverter commentConverter;
     private final UserService userService;
     private final PostRepository postRepository;
-
+    private final PageConverter pageConverter;
+    private final ValueConfig valueConfig;
 
     @Autowired
     public CommentServiceImpl(CommentRepository commentRepository, CommentConverter commentConverter,
-                              UserService userService, PostRepository postRepository) {
+                              UserService userService, PostRepository postRepository, PageConverter pageConverter,
+                              ValueConfig valueConfig) {
         this.commentRepository = commentRepository;
         this.userService = userService;
         this.commentConverter = commentConverter;
         this.postRepository = postRepository;
+        this.pageConverter = pageConverter;
+        this.valueConfig = valueConfig;
     }
 
     @Override
@@ -43,12 +49,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<ResponseCommentDTO> getCommentsByPostIdentifier(String identifier) {
+    public Map<String, Object> getCommentsByPostIdentifier(String identifier, int pageNumber) {
         var postEntity = postRepository.findByIdentifier(identifier);
-        return postEntity.getComments().stream()
-                .map(ResponseCommentDTO::new)
-                .collect(Collectors.toList());
+        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize());
+        var commentPage = commentRepository.findCommentEntitiesByPost(postEntity, pageable);
+        return pageConverter.convertPageToResponse(commentPage.map(ResponseCommentDTO::new));
     }
+
     @Override
     public ResponseCommentDTO deleteComment(String identifier, Authentication authentication) throws CommentNotFoundException {
         var commentOwner = userService.findUserByAuth(authentication);

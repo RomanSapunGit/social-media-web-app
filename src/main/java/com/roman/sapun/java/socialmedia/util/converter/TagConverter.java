@@ -1,6 +1,5 @@
-package com.roman.sapun.java.socialmedia.util;
+package com.roman.sapun.java.socialmedia.util.converter;
 
-import com.roman.sapun.java.socialmedia.dto.TagDTO;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 
 public interface TagConverter {

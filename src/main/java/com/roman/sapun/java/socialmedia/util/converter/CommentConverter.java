@@ -1,10 +1,9 @@
-package com.roman.sapun.java.socialmedia.util;
+package com.roman.sapun.java.socialmedia.util.converter;
 
 import com.roman.sapun.java.socialmedia.dto.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.entity.CommentEntity;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public interface CommentConverter {
 

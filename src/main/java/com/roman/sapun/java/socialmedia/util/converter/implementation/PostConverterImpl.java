@@ -1,11 +1,11 @@
-package com.roman.sapun.java.socialmedia.util.implementation;
+package com.roman.sapun.java.socialmedia.util.converter.implementation;
 
+import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
 import com.roman.sapun.java.socialmedia.dto.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.util.IdentifierGenerator;
-import com.roman.sapun.java.socialmedia.util.PostConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

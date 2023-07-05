@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/comment")
@@ -37,7 +37,7 @@ public class CommentController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
-    public List<ResponseCommentDTO> getCommentsByPostIdentifier(@PathVariable String id) {
-        return commentService.getCommentsByPostIdentifier(id);
+    public Map<String, Object> getCommentsByPostIdentifier(@PathVariable String id, @RequestParam int page) {
+        return commentService.getCommentsByPostIdentifier(id, page);
     }
 }
