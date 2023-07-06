@@ -3,6 +3,7 @@ package com.roman.sapun.java.socialmedia.security;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +21,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity userEntity = userRepository.findByUsername(username);
+        if(userEntity.getNotBlocked() == null) {
+            throw new DisabledException("User account is blocked");
+        }
         return new UserDetailsImpl(userEntity);
     }
 }

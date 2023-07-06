@@ -30,7 +30,8 @@ public class UserServiceImpl implements UserService {
     public Map<String, Object> getUsersByUsername(String username, int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "username"));
         var matchedUsers = userRepository.getAllByUsernameContaining(username, pageable);
-        return pageConverter.convertPageToResponse(matchedUsers);
+        var postDtoPage = matchedUsers.map(UserDTO::new);
+        return pageConverter.convertPageToResponse(postDtoPage);
     }
 
     @Override
@@ -45,6 +46,20 @@ public class UserServiceImpl implements UserService {
 
         var updatedUser = userRepository.save(currentUser);
         return new UserDTO(updatedUser);
+    }
+
+    @Override
+    public UserDTO blockUser(String username) {
+        var user = userRepository.findByUsername(username);
+        user.setNotBlocked(null);
+        return new UserDTO(user);
+    }
+
+    @Override
+    public UserDTO unlockUser(String username) {
+        var user = userRepository.findByUsername(username);
+        user.setNotBlocked("");
+        return new UserDTO(user);
     }
 
     @Override

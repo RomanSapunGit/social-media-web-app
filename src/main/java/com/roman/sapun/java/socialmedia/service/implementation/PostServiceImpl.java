@@ -16,8 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -50,6 +49,15 @@ public class PostServiceImpl implements PostService {
         return new PostDTO(postEntity);
     }
 
+
+    @Override
+    public Map<String, Object> getPosts(int pageNumber) {
+        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize());
+        var posts = postRepository.findAll(pageable);
+        var postDtoPage = posts.map(PostDTO::new);
+        return pageConverter.convertPageToResponse(postDtoPage);
+    }
+
     @Override
     public Map<String, Object> findPostsByTitleContaining(String title, int pageNumber) {
         var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "title"));
@@ -59,8 +67,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Map<String, Object> findPostsByTags(String tag, int pageNumber) {
-        var existingTags = tagService.getExistingTagsFromText(tag);
+    public Map<String, Object> findPostsByTags(List<String> tags, int pageNumber) {
+        var listAsText = String.join(", ", tags);
+        var existingTags = tagService.getExistingTagsFromText(listAsText);
         var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "title"));
         var matchedPosts = postRepository.findPostEntitiesByTagsIn(existingTags, pageable);
         var postDtoPage = matchedPosts.map(PostDTO::new);

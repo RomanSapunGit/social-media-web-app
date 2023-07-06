@@ -2,6 +2,7 @@ package com.roman.sapun.java.socialmedia.controller;
 
 import com.roman.sapun.java.socialmedia.dto.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.PostDTO;
+import com.roman.sapun.java.socialmedia.dto.RequestTagDTO;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,13 @@ public class PostController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/search-by-tags") //TODO write encoding stuff in a frontend(# -> %23)
-    public Map<String, Object> findPostsByTags(@RequestParam String tags, @RequestParam int page) {
-        return postService.findPostsByTags(tags, page);
+    public Map<String, Object> findPostsByTags(@RequestBody RequestTagDTO tags, @RequestParam int page) {
+        return postService.findPostsByTags(tags.tags(), page);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/search")
+    public Map<String, Object> findPosts(@RequestParam int page) {
+        return postService.getPosts(page);
     }
 }

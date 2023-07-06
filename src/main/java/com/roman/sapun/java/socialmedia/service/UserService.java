@@ -11,6 +11,10 @@ public interface UserService {
 
     UserDTO updateUser(UserDTO userDTO, Authentication authentication);
 
+    UserDTO blockUser(String username);
+
+    UserDTO unlockUser(String username);
+
     UserEntity findUserByAuth(Authentication authentication);
 
 }

@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users
     username            VARCHAR(255) NOT NULL UNIQUE,
     email               VARCHAR(255) NOT NULL UNIQUE,
     password            VARCHAR(255),
+    not_blocked         CHAR(255) DEFAULT 'true',
     token               VARCHAR(255),
     token_creation_date DATETIME,
     PRIMARY KEY (id)

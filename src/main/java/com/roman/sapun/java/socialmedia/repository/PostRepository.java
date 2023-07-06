@@ -5,6 +5,7 @@ import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Set;
@@ -14,4 +15,6 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     Page<PostEntity> findPostEntitiesByTagsIn(Set<TagEntity> tags, Pageable pageable);
     Page<PostEntity> findPostEntitiesByTitleContaining(String title, Pageable pageable);
     PostEntity findByIdentifier(String identifier);
+    @NonNull
+    Page<PostEntity> findAll(@NonNull Pageable pageable);
 }

@@ -24,6 +24,8 @@ public class UserEntity {
     private String email;
     @Column(nullable = false)
     private String password;
+    @Column(name = "not_blocked")
+    private String notBlocked;
     private String token;
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime tokenCreationDate;

@@ -12,11 +12,13 @@ import java.util.stream.Collectors;
 public class UserDetailsImpl implements UserDetails {
     private final String username;
     private final String password;
+    private final String notBlocked;
     private final List<GrantedAuthority> authorities;
 
     public UserDetailsImpl(UserEntity userEntity) {
         username = userEntity.getUsername();
         password = userEntity.getPassword();
+        notBlocked = userEntity.getNotBlocked();
         authorities = userEntity.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
@@ -37,7 +39,6 @@ public class UserDetailsImpl implements UserDetails {
         return username;
     }
 
-
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -45,7 +46,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return notBlocked != null;
     }
 
     @Override

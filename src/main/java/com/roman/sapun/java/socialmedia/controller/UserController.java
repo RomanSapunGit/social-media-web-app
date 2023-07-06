@@ -4,6 +4,7 @@ import com.roman.sapun.java.socialmedia.dto.UserDTO;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,5 +31,19 @@ public class UserController {
     @PutMapping()
     public UserDTO updateUser(@RequestBody UserDTO userDTO, Authentication authentication) {
         return userService.updateUser(userDTO, authentication);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/{username}")
+    public UserDTO blockUser(@PathVariable String username) {
+        return userService.blockUser(username);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/{username}")
+    public UserDTO unlockUser(@PathVariable String username) {
+        return userService.unlockUser(username);
     }
 }
