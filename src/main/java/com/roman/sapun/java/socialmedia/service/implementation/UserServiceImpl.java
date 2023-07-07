@@ -51,14 +51,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO blockUser(String username) {
         var user = userRepository.findByUsername(username);
-        user.setNotBlocked(null);
+        user.setNotBlocked("false");
         return new UserDTO(user);
     }
 
     @Override
     public UserDTO unlockUser(String username) {
         var user = userRepository.findByUsername(username);
-        user.setNotBlocked("");
+        user.setNotBlocked("true");
         return new UserDTO(user);
     }
 

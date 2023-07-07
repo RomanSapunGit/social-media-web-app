@@ -17,9 +17,7 @@ import {CookieService} from "ngx-cookie-service";
 import { PageNotFoundComponent } from './component/pagenotfound/pagenotfound.component';
 import { ResetPasswordComponent } from './component/reset-password/reset-password.component';
 import {MatButtonModule} from "@angular/material/button";
-import { RegisterViaGoogleComponent } from './component/register-via-google/register-via-google.component';
 import {GoogleLoginProvider, GoogleSigninButtonModule, SocialAuthServiceConfig} from "@abacritt/angularx-social-login";
-import { LoginViaGoogleComponent } from './component/login-via-google/login-via-google.component';
 
 
 @NgModule({
@@ -30,9 +28,6 @@ import { LoginViaGoogleComponent } from './component/login-via-google/login-via-
     MainPageComponent,
     PageNotFoundComponent,
     ResetPasswordComponent,
-    RegisterViaGoogleComponent,
-    LoginViaGoogleComponent,
-
   ],
   imports: [
     BrowserModule,

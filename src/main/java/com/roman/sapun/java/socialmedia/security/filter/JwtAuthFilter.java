@@ -3,6 +3,7 @@ package com.roman.sapun.java.socialmedia.security.filter;
 import com.roman.sapun.java.socialmedia.security.UserDetailsServiceImpl;
 import com.roman.sapun.java.socialmedia.service.JwtAuthService;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,17 +51,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         jwtAuthService.extractUsername(token) :
                         usernameToMatch;
             }
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (username != null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (jwtAuthService.validateToken(token, userDetails.getUsername())) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (token.length() < 150) {
+                    if (jwtAuthService.validateToken(token, userDetails.getUsername()) &&
+                            SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
             }
             filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException | GeneralSecurityException | DisabledException e) {
+        } catch (ExpiredJwtException | GeneralSecurityException | DisabledException | UnsupportedJwtException e) {
             resolver.resolveException(request, response, null, e);
         }
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getRequestURI().startsWith("/account");
     }
 }

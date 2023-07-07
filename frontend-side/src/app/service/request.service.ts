@@ -41,16 +41,16 @@ export class RequestService {
     return this.http.post(`${this.baseUrl}/account`, registerData);
   }
 
-  registerAndRedirect(registerData: { email: string; password: string }): void {
+  registerAndRedirect(registerData: { email: string; password: string;}, navigationPage: string): void {
     this.register(registerData).subscribe(
       {
         error: (error: any) =>
           console.log('Error during registration: ' + error.error.message),
-        complete: () =>
-          this.router.navigate(['/login']).then(() => {
-              console.log('Redirected to login page');
-            }
-          )
+        complete: () => {
+          this.router.navigate([navigationPage]).then(() => {
+            console.log('Redirected to ' + navigationPage + ' page');
+          })
+        }
       }
     );
   }
@@ -64,6 +64,7 @@ export class RequestService {
     this.loginViaGoogle(token).subscribe(
       {
         next: (response: any) => {
+          console.log("check");
           const token: string = (response as TokenModel).token;
           this.authService.setAuthData(token, (response as TokenModel).username)
         },

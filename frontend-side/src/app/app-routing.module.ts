@@ -6,7 +6,6 @@ import {AuthGuard} from "./provider/auth.guard";
 import {MainPageComponent} from "./component/mainpage/mainpage.component";
 import {PageNotFoundComponent} from "./component/pagenotfound/pagenotfound.component";
 import {ResetPasswordComponent} from "./component/reset-password/reset-password.component";
-import {RegisterViaGoogleComponent} from "./component/register-via-google/register-via-google.component";
 
 const routes: Routes = [
   {path: '', component: RegisterComponent},
@@ -15,7 +14,6 @@ const routes: Routes = [
   {path: 'main', component: MainPageComponent, canActivate: [AuthGuard]},
   {path: 'reset-password', component: ResetPasswordComponent},
   {path: '?token', component: ResetPasswordComponent},
-  {path: 'register/google', component: RegisterViaGoogleComponent},
   {path: '**', component: PageNotFoundComponent},
 ];
 

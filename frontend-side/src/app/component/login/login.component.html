@@ -7,14 +7,16 @@
     </div>
     <div class="div-field">
       <label class="label">Username:</label>
-      <input class="input-field" type="text" [(ngModel)]="loginData.username" name="username" formControlName="username">
+      <input class="input-field" type="text" [(ngModel)]="loginData.username" name="username"
+             formControlName="username">
       <div *ngIf="loginForm.get('username')?.errors?.['required'] && loginForm.get('username')?.touched">
         Username is required.
       </div>
     </div>
     <div class="div-field">
       <label class="label">Password:</label>
-      <input class="input-field" type="password" [(ngModel)]="loginData.password" name="password" formControlName="password">
+      <input class="input-field" type="password" [(ngModel)]="loginData.password" name="password"
+             formControlName="password">
       <div *ngIf="loginForm.get('password')?.errors?.['required'] && loginForm.get('password')?.touched">
         Password is required.
       </div>

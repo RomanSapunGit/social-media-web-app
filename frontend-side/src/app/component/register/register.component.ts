@@ -2,9 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {RequestService} from "../../service/request.service";
 import {SnackBarService} from "../../service/snackbar.service";
-import {GoogleLoginProvider, SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
-import {Router} from "@angular/router";
-import {AuthService} from "../../service/auth.service";
+import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-register',
@@ -16,11 +15,11 @@ export class RegisterComponent implements OnInit {
   errorMessage = '';
   registerForm: FormGroup;
   socialUser!: SocialUser;
+  authSubscription!: Subscription
   image = 'assets/image/bg1.jpg'
 
   constructor(private requestService: RequestService, private formBuilder: FormBuilder,
-              private snackBarService: SnackBarService, private socialAuthService: SocialAuthService,
-              private router: Router, private authService: AuthService) {
+              private snackBarService: SnackBarService, private socialAuthService: SocialAuthService) {
     this.registerForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.minLength(12)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -39,16 +38,12 @@ export class RegisterComponent implements OnInit {
         this.errorMessage = message;
       }
     });
-    this.socialAuthService.authState.subscribe((user) => {
+  this.authSubscription =  this.socialAuthService.authState.subscribe((user) => {
       this.socialUser = user;
-      if (this.socialUser && this.socialUser.email) {
-        const userPayload = {
-          email: this.socialUser.email,
-          name: this.socialUser.name,
-        };
-        this.authService.setRegisterUser(userPayload)
-        this.router.navigate(['/register/google']).then(() =>
-          console.log("redirected to google register page"));
+      if (this.socialUser && this.socialUser.email ) {
+        this.registerForm.controls['email'].setValue(user.email);
+        this.registerForm.controls['username'].setValue(user.name);
+        this.registerForm.controls['name'].setValue(user.name);
       }
     });
   }
@@ -57,8 +52,14 @@ export class RegisterComponent implements OnInit {
     this.errorMessage = '';
   }
 
+  ngOnDestroy() {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
+  }
+
   register() {
     this.registerData = {...this.registerForm.value};
-    this.requestService.registerAndRedirect(this.registerData);
+    this.requestService.registerAndRedirect(this.registerData, 'main');
   }
 }

@@ -21,7 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity userEntity = userRepository.findByUsername(username);
-        if(userEntity.getNotBlocked() == null) {
+        if(userEntity.getNotBlocked().equals("false")) {
             throw new DisabledException("User account is blocked");
         }
         return new UserDetailsImpl(userEntity);

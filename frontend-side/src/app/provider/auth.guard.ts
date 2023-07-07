@@ -15,19 +15,24 @@ export class AuthGuard {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     let token = this.authService.getAuthToken();
     let username = this.authService.getUsername();
-    return this.requestService.validateToken(token, username)
-      .pipe(
-        map((isValid: boolean) => {
-          return isValid
-        }),
-        catchError((error: any) => {
-          if (error && error.error && error.error.message && error.error.message.startsWith("JWT expired")) {
-            const redirectUrl = state.url;
-            return of(this.router.createUrlTree([redirectUrl]));
-          } else {
-            return of(false);
-          }
-        })
-      );
+    let requestedUrl = state.url;
+    if (token && username) {
+      return this.requestService.validateToken(token, username)
+        .pipe(
+          map((isValid: boolean) => {
+              return isValid
+          }),
+          catchError((error: any) => {
+            if (error && error.error && error.error.message && error.error.message.startsWith("JWT expired")) {
+              const redirectUrl = state.url;
+              return of(this.router.createUrlTree([redirectUrl]));
+            } else {
+              return of(false);
+            }
+          })
+        );
+    }
+    console.log("check")
+    return of(this.router.createUrlTree(['/login']));
   }
 }

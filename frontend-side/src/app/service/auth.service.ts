@@ -70,10 +70,6 @@ export class AuthService {
     this.cookieService.delete(this.isGoogleAccountName)
   }
 
-  public clearRegisterUser(): void {
-    this.cookieService.delete(this.user)
-  }
-
   public logout(): void {
     let authToken = this.getAuthToken();
     let username = this.getUsername();
