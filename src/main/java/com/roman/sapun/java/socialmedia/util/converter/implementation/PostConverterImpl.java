@@ -1,7 +1,7 @@
 package com.roman.sapun.java.socialmedia.util.converter.implementation;
 
 import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
-import com.roman.sapun.java.socialmedia.dto.RequestPostDTO;
+import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
@@ -16,12 +16,16 @@ import java.util.Set;
 @Component
 public class PostConverterImpl implements PostConverter {
     private final IdentifierGenerator identifierGenerator;
+
     @Autowired
     public PostConverterImpl(IdentifierGenerator identifierGenerator) {
         this.identifierGenerator = identifierGenerator;
     }
+
+
     @Override
-    public PostEntity convertToPostEntity(RequestPostDTO postDTO, Set<TagEntity> tags, UserEntity user, PostEntity postEntity) {
+    public PostEntity convertToPostEntity(RequestPostDTO postDTO, Set<TagEntity> tags, UserEntity user,
+                                          PostEntity postEntity) {
         postEntity.setTitle(postDTO.title());
         postEntity.setDescription(postDTO.description());
         postEntity.setCreationTime(Timestamp.from(ZonedDateTime.now().toInstant()));

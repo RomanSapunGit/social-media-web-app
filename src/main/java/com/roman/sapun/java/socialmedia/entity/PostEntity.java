@@ -37,5 +37,6 @@ public class PostEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<CommentEntity> comments;
-
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<ImageEntity> images;
 }

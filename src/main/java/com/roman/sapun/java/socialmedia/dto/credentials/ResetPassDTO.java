@@ -1,4 +1,4 @@
-package com.roman.sapun.java.socialmedia.dto;
+package com.roman.sapun.java.socialmedia.dto.credentials;
 
 import lombok.NonNull;
 

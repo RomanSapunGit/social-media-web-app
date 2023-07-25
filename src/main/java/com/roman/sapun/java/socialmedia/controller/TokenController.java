@@ -1,8 +1,8 @@
 package com.roman.sapun.java.socialmedia.controller;
 
-import com.roman.sapun.java.socialmedia.dto.AuthRequestDTO;
-import com.roman.sapun.java.socialmedia.dto.TokenDTO;
-import com.roman.sapun.java.socialmedia.dto.ValidatorDTO;
+import com.roman.sapun.java.socialmedia.dto.credentials.AuthRequestDTO;
+import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
+import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.service.JwtAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

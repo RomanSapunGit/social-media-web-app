@@ -15,7 +15,6 @@ export class AuthGuard {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     let token = this.authService.getAuthToken();
     let username = this.authService.getUsername();
-    let requestedUrl = state.url;
     if (token && username) {
       return this.requestService.validateToken(token, username)
         .pipe(

@@ -1,4 +1,4 @@
-package com.roman.sapun.java.socialmedia.dto;
+package com.roman.sapun.java.socialmedia.dto.tag;
 
 import java.util.List;
 

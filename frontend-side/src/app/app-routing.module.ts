@@ -6,6 +6,7 @@ import {AuthGuard} from "./provider/auth.guard";
 import {MainPageComponent} from "./component/mainpage/mainpage.component";
 import {PageNotFoundComponent} from "./component/pagenotfound/pagenotfound.component";
 import {ResetPasswordComponent} from "./component/reset-password/reset-password.component";
+import { CommonModule } from "@angular/common";
 
 const routes: Routes = [
   {path: '', component: RegisterComponent},
@@ -18,7 +19,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes), CommonModule],
   exports: [RouterModule]
 })
 export class AppRoutingModule {

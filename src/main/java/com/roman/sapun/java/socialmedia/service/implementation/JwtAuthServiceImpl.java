@@ -2,7 +2,7 @@ package com.roman.sapun.java.socialmedia.service.implementation;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
-import com.roman.sapun.java.socialmedia.dto.TokenDTO;
+import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.CredentialsService;
 import com.roman.sapun.java.socialmedia.service.JwtAuthService;
@@ -47,12 +47,11 @@ public class JwtAuthServiceImpl implements JwtAuthService {
 
     @Override
     public TokenDTO generateJwtToken(String username, String password) {
-        if (credentialsService.checkUserByCredentials(username, password)) {
-            Map<String, Object> claims = new HashMap<>();
-            return new TokenDTO(createToken(claims, username), username);
-        } else {
+        if (!(credentialsService.checkUserByCredentials(username, password))) {
             throw new UsernameNotFoundException(INVALID_USER_REQUEST);
         }
+        Map<String, Object> claims = new HashMap<>();
+        return new TokenDTO(createToken(claims, username), username);
     }
 
     @Override
@@ -143,7 +142,7 @@ public class JwtAuthServiceImpl implements JwtAuthService {
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 *30))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 

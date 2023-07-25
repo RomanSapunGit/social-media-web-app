@@ -1,13 +1,48 @@
-<div [ngStyle]="{backgroundImage: 'url(' + image + ')'}" class="main-container">
-  <h2>
-    <p>mainpage works!</p>
-    <form (ngSubmit)="logout()">
-      <button type="button" (click)="confirmLogout()">Logout</button>
-    </form>
-  </h2>
-  <div class="confirmation-dialog" *ngIf="showConfirmation">
-    <div class="message">Are you sure you want to logout?</div>
-    <button (click)="onConfirm()">Yes</button>
-    <button (click)="onCancel()">No</button>
+<h2>
+  <form (ngSubmit)="logout()">
+    <button type="button" (click)="confirmLogout()">Logout</button>
+  </form>
+</h2>
+<div class="confirmation-dialog" *ngIf="showConfirmation">
+  <div class="message">Are you sure you want to logout?</div>
+  <button (click)="onConfirm()">Yes</button>
+  <button (click)="onCancel()">No</button>
+</div>
+
+<div *ngIf="hasPosts">
+  Nothing to show yet...
+</div>
+
+<div class="container">
+
+
+  <div class="user-list">
+    <h2>Posts related to users</h2>
+    <div class="table-type-border" *ngFor="let user of users | async">
+      <a (click)="showPostsByUsername(user.username)">
+        <p>{{ user.name }}</p>
+        <p class="username">{{ user.username }}</p>
+      </a>
+    </div>
   </div>
+
+
+    <div class="tag-list">
+      <h2>Posts related to tags</h2>
+      <div class="table-type-border" *ngFor="let tag of tags | async">
+        <a (click)="showPostsByTag(tag.name)">
+          <p class="username">{{tag.name}}</p>
+        </a>
+      </div>
+    </div>
+
+  <div class="post-list">
+    <h1 class="social-post">Posts</h1>
+      <app-post></app-post>
+        </div>
+      </div>
+
+<div *ngIf="errorMessage" class="error-message text-center">
+  <span>{{ errorMessage }}</span>
+  <button class="close-button" (click)="closeError()">&times;</button>
 </div>

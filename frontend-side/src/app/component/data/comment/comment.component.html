@@ -1,0 +1,36 @@
+
+<div class="comments-container" *ngIf="commentVisibility">
+  <div class="comments-border" *ngFor="let comment of (postComments[postIdentifier] | async)?.content">
+    <div class="items-info">
+      <p class="username">{{ comment.username }}</p>
+      <p class="creation-time">{{ comment.creationTime | timestampDate }}</p>
+    </div>
+    <p>{{ comment.title }}</p>
+    <p class="description">{{ comment.description }}</p>
+    <div>
+      <button class="button" (click)="updateComment(comment.identifier, comment.title, comment.description)">
+        Edit
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <button class="button" (click)="createComment(postIdentifier)">
+      Create comment
+    </button>
+  </div>
+
+<ng-container *ngIf="isCommentPaginationVisible$ | async" class="pagination">
+  <p>
+    Page {{ (currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined && currentCommentPage[postIdentifier] !== 0) ? currentCommentPage[postIdentifier] + 1 : 1 }}
+    of {{ (postComments[postIdentifier] | async)?.pages }}</p>
+  <button (click)="previousCommentPage(postIdentifier)"
+          [disabled]="(currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined && currentCommentPage[postIdentifier] !== 0) && currentCommentPage[postIdentifier] + 1 === 1">
+    Previous
+  </button>
+  <button (click)="nextCommentPage(postIdentifier)"
+          [disabled]="(currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined) &&
+      currentCommentPage[postIdentifier] + 1 === ((postComments[postIdentifier] | async)?.pages || 0)">Next
+  </button>
+</ng-container>
+</div>

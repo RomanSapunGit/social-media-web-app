@@ -1,8 +1,8 @@
 package com.roman.sapun.java.socialmedia.controller;
 
-import com.roman.sapun.java.socialmedia.dto.RequestPostDTO;
-import com.roman.sapun.java.socialmedia.dto.PostDTO;
-import com.roman.sapun.java.socialmedia.dto.RequestTagDTO;
+import com.roman.sapun.java.socialmedia.dto.post.PostDTO;
+import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
+import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,21 +23,33 @@ public class PostController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
+    @PostMapping()
     public PostDTO createPost(@RequestBody RequestPostDTO requestPostDTO, Authentication authentication) {
         return postService.createPost(requestPostDTO, authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/search-by-title")
+    @PutMapping
+    public PostDTO updatePost(@RequestBody RequestPostDTO requestPostDTO, Authentication authentication) throws PostNotFoundException {
+        return postService.updatePost(requestPostDTO, authentication);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/title")
     public Map<String, Object> findPostsByTitleContaining(@RequestParam String title, @RequestParam int page) {
         return postService.findPostsByTitleContaining(title, page);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/search-by-tags") //TODO write encoding stuff in a frontend(# -> %23)
-    public Map<String, Object> findPostsByTags(@RequestBody RequestTagDTO tags, @RequestParam int page) {
-        return postService.findPostsByTags(tags.tags(), page);
+    @GetMapping("/{tag}")
+    public Map<String, Object> findPostsByTag(@PathVariable String tag, @RequestParam int page) {
+        return postService.getPostsByTag(tag, page);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/author/{username}")
+    public Map<String, Object> findPostsByUsername(@PathVariable String username, @RequestParam int page) {
+        return postService.getPostsByUsername(username, page);
     }
 
     @ResponseStatus(HttpStatus.OK)

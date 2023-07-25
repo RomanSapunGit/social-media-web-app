@@ -1,8 +1,8 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
-import com.roman.sapun.java.socialmedia.dto.RequestCommentDTO;
-import com.roman.sapun.java.socialmedia.dto.ResponseCommentDTO;
+import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
+import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.entity.CommentEntity;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
 import com.roman.sapun.java.socialmedia.repository.CommentRepository;
@@ -64,6 +64,21 @@ public class CommentServiceImpl implements CommentService {
             throw new CommentNotFoundException();
         }
         commentRepository.delete(commentEntity);
+        return new ResponseCommentDTO(commentEntity);
+    }
+
+    @Override
+    public ResponseCommentDTO updateCommentById(RequestCommentDTO requestCommentDTO, String identifier, Authentication authentication) throws CommentNotFoundException {
+        var commentOwner = userService.findUserByAuth(authentication);
+        var commentEntity = commentRepository.findByIdentifier(identifier);
+        if (!commentEntity.getAuthor().equals(commentOwner)) {
+            throw new CommentNotFoundException();
+        }
+        commentEntity.setTitle(requestCommentDTO.title() == null ? commentEntity.getTitle() : requestCommentDTO.title());
+
+        commentEntity.setDescription(requestCommentDTO.description() == null ?
+                commentEntity.getDescription() : requestCommentDTO.description());
+        commentRepository.save(commentEntity);
         return new ResponseCommentDTO(commentEntity);
     }
 }

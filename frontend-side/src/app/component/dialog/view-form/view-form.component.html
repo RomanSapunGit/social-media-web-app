@@ -1,0 +1,14 @@
+<div class="draggable-style">
+  <div class="draggable-container" mat-dialog-title
+       appDraggableDirective>
+    <h1 class="text-center">{{ tagName ? tagName : username }}</h1>
+  </div>
+</div>
+
+<div class="post-list">
+  <app-post [tagName]="tagName"
+            [username]="username"></app-post>
+</div>
+
+
+

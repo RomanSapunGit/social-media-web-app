@@ -9,8 +9,9 @@ import {Subject} from "rxjs";
 export class SnackBarService {
   private snackbarSubject: Subject<string> = new Subject<string>();
 
-  constructor(public snackBar: MatSnackBar) {
+  constructor() {
   }
+
   get errorMessage$() {
     return this.snackbarSubject.asObservable();
   }

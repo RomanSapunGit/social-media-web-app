@@ -18,6 +18,17 @@ import { PageNotFoundComponent } from './component/pagenotfound/pagenotfound.com
 import { ResetPasswordComponent } from './component/reset-password/reset-password.component';
 import {MatButtonModule} from "@angular/material/button";
 import {GoogleLoginProvider, GoogleSigninButtonModule, SocialAuthServiceConfig} from "@abacritt/angularx-social-login";
+import {TimestampDatePipe} from "./pipe/timestamp-date.pipe";
+import {CommonModule} from "@angular/common";
+import { CommentActionComponent } from './component/dialog/creation-form/comment-action.component';
+import {MatDialogModule} from "@angular/material/dialog";
+import { ViewFormComponent } from './component/dialog/view-form/view-form.component';
+import {CdkDrag, CdkDragHandle} from "@angular/cdk/drag-drop";
+import { DraggableDirectiveDirective } from './directive/draggable-directive.directive';
+import {CONTENT_TOKEN, CURRENT_PAGE, Page, PAGES, TOTAL_TOKEN} from "./model/page.model";
+import { PostComponent } from './component/data/post/post.component';
+import { CommentComponent } from './component/data/comment/comment.component';
+import { ImageComponent } from './component/data/image/image.component';
 
 
 @NgModule({
@@ -28,24 +39,40 @@ import {GoogleLoginProvider, GoogleSigninButtonModule, SocialAuthServiceConfig} 
     MainPageComponent,
     PageNotFoundComponent,
     ResetPasswordComponent,
+    TimestampDatePipe,
+    CommentActionComponent,
+    ViewFormComponent,
+    DraggableDirectiveDirective,
+    PostComponent,
+    CommentComponent,
+    ImageComponent,
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
-    FormsModule,
-    MatSnackBarModule,
-    BrowserAnimationsModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    GoogleSigninButtonModule,
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        HttpClientModule,
+        FormsModule,
+        MatSnackBarModule,
+        BrowserAnimationsModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        GoogleSigninButtonModule,
+        CommonModule,
+        MatDialogModule,
+        CdkDrag,
+        CdkDragHandle,
+    ],
   providers: [
+    { provide: CONTENT_TOKEN, useValue: [] },
+    { provide: TOTAL_TOKEN, useValue: 0 },
+    { provide: CURRENT_PAGE, useValue: 0 },
+    { provide: PAGES, useValue: 0 },
     { provide: HTTP_INTERCEPTORS,
       useClass: ServerErrorInterceptor,
       multi: true },
     AuthGuard,
     CookieService,
+    Page,
     {
       provide: 'SocialAuthServiceConfig',
       useValue: {
@@ -59,6 +86,6 @@ import {GoogleLoginProvider, GoogleSigninButtonModule, SocialAuthServiceConfig} 
       } as SocialAuthServiceConfig,
     },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule { }

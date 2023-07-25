@@ -31,6 +31,7 @@ $my-app-theme: mat.define-light-theme((
   ),
   typography: $my-typography
 ));
+
 .error-message {
   text-align: center;
   position: fixed;
@@ -94,4 +95,96 @@ $my-app-theme: mat.define-light-theme((
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 0.25rem;
+}
+.draggable-container {
+  cursor: move;
+  background-color: red;
+  top: 0;
+  flex: 1 1 auto;
+}
+.specific-container {
+  position: absolute;
+}
+.post {
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.social-post {
+  padding: 10px;
+  border-top: none;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.social-post:first-child {
+  border-top: 1px solid #ccc;
+}
+
+.comments-border {
+  border-bottom: 1px solid #ccc;
+}
+
+.items-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.username {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.creation-time {
+  color: gray;
+  font-size: 12px;
+  margin-right: 10px;
+}
+
+.social-post-container {
+  flex-direction: column;
+  gap: 20px;
+}
+.social-post {
+  flex: 1 1 auto;
+  padding: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: auto;
+  align-items: center;
+}
+.post {
+  flex: 1 1 auto;
+  padding: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.button {
+  border-radius: 9999px;
+  background-color: cornflowerblue;
+  color: #fff;
+  padding: 0.5rem 1rem;
+}
+.content {
+  position: relative;
+}
+.draggable-style {
+  position: sticky;
+  height: 100px;
+  top: 0;
+}
+.comments-container {
+  max-width: 500px;
+  word-break: break-word;
+  flex-direction: column;
 }

@@ -1,6 +1,6 @@
 package com.roman.sapun.java.socialmedia.service;
 
-import com.roman.sapun.java.socialmedia.dto.TokenDTO;
+import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
 import io.jsonwebtoken.Claims;
 
 import java.io.IOException;

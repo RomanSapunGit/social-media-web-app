@@ -38,9 +38,9 @@ export class RegisterComponent implements OnInit {
         this.errorMessage = message;
       }
     });
-  this.authSubscription =  this.socialAuthService.authState.subscribe((user) => {
+    this.authSubscription = this.socialAuthService.authState.subscribe((user) => {
       this.socialUser = user;
-      if (this.socialUser && this.socialUser.email ) {
+      if (this.socialUser && this.socialUser.email) {
         this.registerForm.controls['email'].setValue(user.email);
         this.registerForm.controls['username'].setValue(user.name);
         this.registerForm.controls['name'].setValue(user.name);
@@ -60,6 +60,13 @@ export class RegisterComponent implements OnInit {
 
   register() {
     this.registerData = {...this.registerForm.value};
-    this.requestService.registerAndRedirect(this.registerData, 'main');
+    this.requestService.register(this.registerData).subscribe({
+        error: (error: any) =>
+          console.log('Error during registration: ' + error.error.message),
+        complete: () => {
+          this.requestService.loginAndRedirect(this.registerData);
+        }
+      }
+    );
   }
 }

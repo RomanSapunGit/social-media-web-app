@@ -29,6 +29,10 @@ export class ServerErrorInterceptor implements HttpInterceptor {
               this.snackBarService.showNotification(notificationMessage);
             }
             break;
+          case 500:
+            this.snackBarService.showNotification('something went wrong with server, please try again later');
+            console.log(errorMessage);
+            break;
           default:
             this.snackBarService.showNotification(errorMessage);
             break;

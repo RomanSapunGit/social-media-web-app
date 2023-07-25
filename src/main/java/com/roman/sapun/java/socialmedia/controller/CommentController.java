@@ -1,7 +1,7 @@
 package com.roman.sapun.java.socialmedia.controller;
 
-import com.roman.sapun.java.socialmedia.dto.RequestCommentDTO;
-import com.roman.sapun.java.socialmedia.dto.ResponseCommentDTO;
+import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
+import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.service.CommentService;
@@ -39,5 +39,12 @@ public class CommentController {
     @GetMapping("/{id}")
     public Map<String, Object> getCommentsByPostIdentifier(@PathVariable String id, @RequestParam int page) {
         return commentService.getCommentsByPostIdentifier(id, page);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/{id}")
+    public ResponseCommentDTO updateCommentById(@RequestBody RequestCommentDTO requestCommentDTO, @PathVariable String id,
+                                                Authentication authentication) throws CommentNotFoundException {
+        return commentService.updateCommentById(requestCommentDTO, id, authentication);
     }
 }

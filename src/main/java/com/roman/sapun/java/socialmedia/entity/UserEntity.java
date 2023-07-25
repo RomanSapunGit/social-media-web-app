@@ -3,7 +3,6 @@ package com.roman.sapun.java.socialmedia.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,6 +41,9 @@ public class UserEntity {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "author")
     private List<CommentEntity> comments;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+    private ImageEntity image;
+
     @PrePersist
     public void prePersist() {
         if (notBlocked == null) {

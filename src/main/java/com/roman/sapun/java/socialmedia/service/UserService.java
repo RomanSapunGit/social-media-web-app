@@ -1,19 +1,21 @@
 package com.roman.sapun.java.socialmedia.service;
 
-import com.roman.sapun.java.socialmedia.dto.UserDTO;
+import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import org.springframework.security.core.Authentication;
 
 import java.util.Map;
 
 public interface UserService {
-    Map<String, Object> getUsersByUsername(String regex, int page);
+    Map<String, Object> getUsersByUsernameContaining(String regex, int page);
 
-    UserDTO updateUser(UserDTO userDTO, Authentication authentication);
+    Map<String, Object> getUsers(int page);
 
-    UserDTO blockUser(String username);
+    RequestUserDTO updateUser(RequestUserDTO requestUserDTO, Authentication authentication);
 
-    UserDTO unlockUser(String username);
+    RequestUserDTO blockUser(String username);
+
+    RequestUserDTO unlockUser(String username);
 
     UserEntity findUserByAuth(Authentication authentication);
 

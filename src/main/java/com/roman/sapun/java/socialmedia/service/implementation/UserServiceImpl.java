@@ -1,7 +1,8 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
-import com.roman.sapun.java.socialmedia.dto.UserDTO;
+import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
+import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
@@ -27,39 +28,46 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Object> getUsersByUsername(String username, int pageNumber) {
+    public Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "username"));
         var matchedUsers = userRepository.getAllByUsernameContaining(username, pageable);
-        var postDtoPage = matchedUsers.map(UserDTO::new);
+        var postDtoPage = matchedUsers.map(RequestUserDTO::new);
+        return pageConverter.convertPageToResponse(postDtoPage);
+    }
+    @Override
+    public Map<String, Object> getUsers(int page) {
+        var pageable = PageRequest.of(page, valueConfig.getPageSize() - 45);
+        var posts = userRepository.findAll(pageable);
+        var postDtoPage = posts.map(ResponseUserDTO::new);
         return pageConverter.convertPageToResponse(postDtoPage);
     }
 
     @Override
-    public UserDTO updateUser(UserDTO userDTO, Authentication authentication) {
+    public RequestUserDTO updateUser(RequestUserDTO requestUserDTO, Authentication authentication) {
         var currentUser = findUserByAuth(authentication);
 
-        currentUser.setName(userDTO.name() != null ? userDTO.name() : currentUser.getName());
+        currentUser.setName(requestUserDTO.name() != null ? requestUserDTO.name() : currentUser.getName());
 
-        currentUser.setUsername(userDTO.username() != null ? userDTO.username() : currentUser.getUsername());
+        currentUser.setUsername(requestUserDTO.username() != null ? requestUserDTO.username() : currentUser.getUsername());
 
-        currentUser.setEmail(userDTO.email() != null ? userDTO.email() : currentUser.getEmail());
+        currentUser.setEmail(requestUserDTO.email() != null ? requestUserDTO.email() : currentUser.getEmail());
 
         var updatedUser = userRepository.save(currentUser);
-        return new UserDTO(updatedUser);
+        return new RequestUserDTO(updatedUser);
     }
 
     @Override
-    public UserDTO blockUser(String username) {
+    public RequestUserDTO blockUser(String username) {
         var user = userRepository.findByUsername(username);
         user.setNotBlocked("false");
-        return new UserDTO(user);
+        return new RequestUserDTO(user);
     }
 
     @Override
-    public UserDTO unlockUser(String username) {
+    public RequestUserDTO unlockUser(String username) {
         var user = userRepository.findByUsername(username);
         user.setNotBlocked("true");
-        return new UserDTO(user);
+        return new RequestUserDTO(user);
     }
 
     @Override

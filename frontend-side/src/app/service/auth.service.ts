@@ -10,7 +10,6 @@ export class AuthService {
   private authTokenCookieName = 'authToken';
   private usernameCookieName = 'username';
   private isGoogleAccountName = 'is_google_account';
-  private user: any
 
   constructor(private router: Router, private cookieService: CookieService, private socialService: SocialAuthService) {
   }
@@ -26,21 +25,11 @@ export class AuthService {
     return atob(encodedToken);
   }
 
-  public setRegisterUser(user: any): void {
-    const jsonString = JSON.stringify(user);
-    this.cookieService.set('userData', this.encodeToken(jsonString));
-  }
-
   public setIsGoogleAccount(): void {
     this.cookieService.set(this.isGoogleAccountName ,'true')
   }
   public getIsGoogleAccount(): string {
    return  this.cookieService.get(this.isGoogleAccountName)
-  }
-
-  public getRegisterUser(): any {
-    const encodedUser = this.cookieService.get('userData');
-    return this.decodeToken(encodedUser)
   }
 
   public setAuthData(token: string, username: string): void {

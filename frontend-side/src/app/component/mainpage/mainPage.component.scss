@@ -52,3 +52,108 @@
   top: 10px;
   right: 10px;
 }
+.social-post {
+  flex: 1 1 auto;
+  padding: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  margin-right: auto;
+  align-items: center;
+}
+.post {
+  flex: 1 1 auto;
+  padding: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.items-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.username {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.creation-time {
+  color: gray;
+  font-size: 12px;
+  margin-right: 10px;
+}
+
+.post {
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.social-post {
+  padding: 10px;
+  border-top: none;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.social-post:first-child {
+  border-top: 1px solid #ccc;
+}
+
+.social-post-container {
+
+  flex-direction: column;
+  gap: 20px;
+}
+
+.button {
+  border-radius: 9999px;
+  background-color: cornflowerblue;
+  color: #fff;
+  padding: 0.5rem 1rem;
+}
+
+.user-list {
+  position: sticky;
+  padding: 10px;
+  flex: 1 1 auto;
+  top: 0;
+  width: 200px;
+}
+.user-list a {
+  cursor: pointer;
+}
+
+.tag-list {
+  position: sticky;
+  top: 0;
+  padding: 10px;
+  width: 200px;
+  order: 3;
+}
+
+.tag-list a {
+  cursor: pointer;
+}
+
+
+.table-type-border {
+  border: 1px solid #ccc;
+}
+
+.container {
+  display: flex;
+  align-items: flex-start;
+}
+
+.post-list {
+  flex: 2 2 auto;
+}

@@ -1,6 +1,6 @@
 package com.roman.sapun.java.socialmedia.controller;
 
-import com.roman.sapun.java.socialmedia.dto.UserDTO;
+import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,28 +22,34 @@ public class UserController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("{username}")
-    public Map<String, Object> getUsersByUsername(@PathVariable String username, @RequestParam int page) {
-        return userService.getUsersByUsername(username, page);
+    @GetMapping("/{username}")
+    public Map<String, Object> getUserByUsername(@PathVariable String username, @RequestParam int page) {
+        return userService.getUsersByUsernameContaining(username, page);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping()
-    public UserDTO updateUser(@RequestBody UserDTO userDTO, Authentication authentication) {
-        return userService.updateUser(userDTO, authentication);
+    public RequestUserDTO updateUser(@RequestBody RequestUserDTO requestUserDTO, Authentication authentication) {
+        return userService.updateUser(requestUserDTO, authentication);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping()
+    public Map<String, Object> getUsers(@RequestParam int page) {
+        return  userService.getUsers(page);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{username}")
-    public UserDTO blockUser(@PathVariable String username) {
+    public RequestUserDTO blockUser(@PathVariable String username) {
         return userService.blockUser(username);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/{username}")
-    public UserDTO unlockUser(@PathVariable String username) {
+    public RequestUserDTO unlockUser(@PathVariable String username) {
         return userService.unlockUser(username);
     }
 }
