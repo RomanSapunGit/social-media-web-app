@@ -1,9 +1,11 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {RequestService} from "../../service/request.service";
-import {SnackBarService} from "../../service/snackbar.service";
+import {NotificationService} from "../../service/notification.service";
 import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
 import {Subscription} from "rxjs";
+import {MatDialogService} from "../../service/mat-dialog.service";
+import {ImageCropperService} from "../../service/image-cropper.service";
 
 @Component({
   selector: 'app-register',
@@ -11,15 +13,26 @@ import {Subscription} from "rxjs";
   styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
-  registerData = {email: '', password: '', name: '', username: ''};
-  errorMessage = '';
+  registerData: { email: string, password: string, name: string, username: string };
   registerForm: FormGroup;
   socialUser!: SocialUser;
-  authSubscription!: Subscription
+  authSubscription: Subscription;
+  selectedImage: File | null = null;
   image = 'assets/image/bg1.jpg'
+  imageUrl = 'assets/image/png-transparent-default-avatar.png';
+  message: string;
+  isErrorMessage: boolean
+  isImageChosen: boolean;
 
   constructor(private requestService: RequestService, private formBuilder: FormBuilder,
-              private snackBarService: SnackBarService, private socialAuthService: SocialAuthService) {
+              private notificationService: NotificationService, private socialAuthService: SocialAuthService,
+              private changeDetectorRef: ChangeDetectorRef, private imageCropperService: ImageCropperService,
+              private matDialogService: MatDialogService) {
+    this.isImageChosen = false;
+    this.message = '';
+    this.isErrorMessage = false;
+    this.registerData = {email: '', password: '', name: '', username: ''}
+    this.authSubscription = new Subscription();
     this.registerForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.minLength(12)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -29,14 +42,18 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.snackBarService.errorMessage$.subscribe(message => {
-      if (message.includes('Duplicate entry') && message.includes("'users.username'")) {
-        this.errorMessage = 'Username already exists. Please choose a different username.';
-      } else if (message.includes('Duplicate entry') && message.includes("'users.email'")) {
-        this.errorMessage = "Email already exists. Please choose a different email.";
+    this.notificationService.notification$.subscribe(message => {
+      if (message.message.includes('Duplicate entry') && message.message.includes("'users.username'")) {
+        this.message = 'Username already exists. Please choose a different username.';
+        this.isErrorMessage = message.isErrorMessage;
+      } else if (message.message.includes('Duplicate entry') && message.message.includes("'users.email'")) {
+        this.message = ('Email already exists. Please choose a different email.');
+        this.isErrorMessage = message.isErrorMessage;
       } else {
-        this.errorMessage = message;
+        this.message = message.message;
+        this.isErrorMessage = message.isErrorMessage;
       }
+      this.changeDetectorRef.detectChanges();
     });
     this.authSubscription = this.socialAuthService.authState.subscribe((user) => {
       this.socialUser = user;
@@ -46,11 +63,15 @@ export class RegisterComponent implements OnInit {
         this.registerForm.controls['name'].setValue(user.name);
       }
     });
+    this.imageCropperService.getCroppedImageObjectUrl$().subscribe({
+      next: (imageFile) => {
+        this.readImageAsBase64(imageFile);
+        this.isImageChosen = false;
+      },
+      error: (err) => console.log(err.error.message)
+    });
   }
 
-  closeError(): void {
-    this.errorMessage = '';
-  }
 
   ngOnDestroy() {
     if (this.authSubscription) {
@@ -58,15 +79,58 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  register() {
+  async register() {
     this.registerData = {...this.registerForm.value};
-    this.requestService.register(this.registerData).subscribe({
-        error: (error: any) =>
-          console.log('Error during registration: ' + error.error.message),
-        complete: () => {
-          this.requestService.loginAndRedirect(this.registerData);
-        }
+    let formData = new FormData();
+    formData.append('name', this.registerData.name);
+    formData.append('username', this.registerData.username);
+    formData.append('email', this.registerData.email);
+    formData.append('password', this.registerData.password);
+
+    const imageToUpload = this.selectedImage || await this.imageUrlToBlob(this.imageUrl);
+    if (imageToUpload) {
+      formData.append('image', imageToUpload);
+    }
+
+    this.requestService.register(formData).subscribe({
+      next: () => {
+        this.requestService.loginAndRedirect(this.registerData);
+        this.notificationService.showNotification('User registered successfully', false);
       }
-    );
+    });
+  }
+
+  onFileSelected(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    const file = inputElement.files?.[0];
+    if (file) {
+      this.matDialogService.displayCropper(file);
+    }
+  }
+
+  readImageAsBase64(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imageUrl = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearFileInput() {
+    const inputElement = document.getElementById('file') as HTMLInputElement;
+    inputElement.value = '';
+  }
+
+  async imageUrlToBlob(url: string): Promise<Blob | null> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        return null;
+      }
+      return await response.blob();
+    } catch (error) {
+      console.error('Error fetching image:', error);
+      return null;
+    }
   }
 }

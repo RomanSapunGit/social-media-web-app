@@ -3,50 +3,44 @@ package com.roman.sapun.java.socialmedia.util.implementation;
 import com.roman.sapun.java.socialmedia.util.ImageUtil;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
+import java.util.zip.*;
 
 @Component
 public class ImageUtilImpl implements ImageUtil {
     @Override
     public byte[] compressImage(byte[] data) throws IOException {
+        ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream(data.length);
+        Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
+        DeflaterOutputStream defOutputStream = new DeflaterOutputStream(byteArrayOut, deflater);
 
-        Deflater deflater = new Deflater();
-        deflater.setLevel(Deflater.BEST_COMPRESSION);
-        deflater.setInput(data);
-        deflater.finish();
+        defOutputStream.write(data);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-        byte[] tmp = new byte[4 * 1024];
-        while (!deflater.finished()) {
-            int size = deflater.deflate(tmp);
-            outputStream.write(tmp, 0, size);
-        }
-        outputStream.close();
+        defOutputStream.close();
+        byteArrayOut.close();
 
-        return outputStream.toByteArray();
+        return byteArrayOut.toByteArray();
     }
 
     @Override
     public byte[] decompressImage(byte[] data) {
-        Inflater inflater = new Inflater();
-        inflater.setInput(data);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
-        try {
-            byte[] tmp = new byte[4 * 1024];
-            while (!inflater.finished()) {
-                int count = inflater.inflate(tmp);
-                outputStream.write(tmp, 0, count);
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
+        InflaterInputStream inflaterStream = new InflaterInputStream(byteStream);
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inflaterStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
             }
-        } catch (DataFormatException e) {
+
+            inflaterStream.close();
+            return outputStream.toByteArray();
+        } catch (IOException e) {
             e.printStackTrace();
             return new byte[0];
-        } finally {
-            inflater.end();
         }
-        return outputStream.toByteArray();
     }
 }

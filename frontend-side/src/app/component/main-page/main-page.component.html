@@ -1,0 +1,30 @@
+<app-error *ngIf="errorMessage"
+           [message]="errorMessage"
+           [isError] = "isErrorMessage"
+           (resetError)="errorMessage = ''"></app-error>
+<app-navigation-bar></app-navigation-bar>
+
+<div class="container">
+  <div class="user-list" (window:scroll)="onWindowScroll()">
+    <h2>Posts related to users</h2>
+    <div class="table-type-border" *ngFor="let user of users | async">
+      <a (click)="showPostsByUsername(user.username);$event.stopPropagation()">
+        <p>{{ user.name }}</p>
+        <p class="username">{{ user.username }}</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="tag-list" (window:scroll)="onWindowScroll()">
+    <h2>Posts related to tags</h2>
+    <div class="table-type-border" *ngFor="let tag of tags | async">
+      <a (click)="showPostsByTag(tag.name);$event.stopPropagation()">
+        <p class="username">{{tag.name}}</p>
+      </a>
+    </div>
+  </div>
+
+  <div (window:scroll)="onWindowScroll()" class="post-list">
+    <app-post></app-post>
+  </div>
+</div>

@@ -29,6 +29,7 @@ public class MailSenderImpl implements MailSender {
         this.valueConfig = valueConfig;
     }
 
+    @Override
     public void sendEmail(String email, UriComponents uri) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);

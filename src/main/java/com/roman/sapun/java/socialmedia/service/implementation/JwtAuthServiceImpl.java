@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
@@ -98,11 +99,10 @@ public class JwtAuthServiceImpl implements JwtAuthService {
         if (authToken != null && authToken.startsWith("Bearer ")) {
             authToken = authToken.substring(7);
         }
-
-        var email = validateTokenViaGoogleAndGetEmail(authToken);
-        if (email == null) {
+        if (!isJwtTokenAGoogle(authToken)) {
             return null;
         }
+        var email = getEmailFromGoogleToken(authToken);
         return userRepository.findByEmail(email).getUsername();
     }
 
@@ -111,22 +111,33 @@ public class JwtAuthServiceImpl implements JwtAuthService {
         if (authToken != null && authToken.startsWith("Bearer ")) {
             authToken = authToken.substring(7);
         }
-        var email = validateTokenViaGoogleAndGetEmail(authToken);
+        if (!isJwtTokenAGoogle(authToken)) {
+            return null;
+        }
+        var email = getEmailFromGoogleToken(authToken);
         return generateJwtToken(userRepository.findByEmail(email).getUsername());
     }
 
-    @Override
-    public String validateTokenViaGoogleAndGetEmail(String authToken) throws GeneralSecurityException, IOException {
-        var httpTransport = new com.google.api.client.http.javanet.NetHttpTransport();
-        var verifier = new GoogleIdTokenVerifier.Builder(httpTransport, gsonFactory)
-                .setAudience(Collections.singletonList(valueConfig.getClientId()))
-                .build();
-        var idToken = verifier.verify(authToken);
+    private String getEmailFromGoogleToken(String authToken) throws GeneralSecurityException, IOException {
+        var idToken = extractIdToken(authToken);
         if (idToken != null) {
             var payload = idToken.getPayload();
             return (String) payload.get("email");
         }
         return null;
+    }
+
+    @Override
+    public boolean isJwtTokenAGoogle(String authToken) throws GeneralSecurityException, IOException {
+        var idToken = extractIdToken(authToken);
+        return idToken != null;
+    }
+    private GoogleIdToken extractIdToken(String authToken) throws GeneralSecurityException, IOException {
+        var httpTransport = new com.google.api.client.http.javanet.NetHttpTransport();
+        var verifier = new GoogleIdTokenVerifier.Builder(httpTransport, gsonFactory)
+                .setAudience(Collections.singletonList(valueConfig.getClientId()))
+                .build();
+        return verifier.verify(authToken);
     }
 
     private Claims extractAllClaims(String token) throws ExpiredJwtException {
@@ -142,7 +153,7 @@ public class JwtAuthServiceImpl implements JwtAuthService {
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 *30))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 30))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 

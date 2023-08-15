@@ -4,6 +4,7 @@ import {Router} from "@angular/router";
 import {Observable, of} from "rxjs";
 import {AuthService} from "./auth.service";
 import {TokenModel} from "../model/token.model";
+import {FileDTO} from "../model/file.model";
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +38,7 @@ export class RequestService {
     );
   }
 
-  register(registerData: { email: string, password: string }) {
+  register(registerData: FormData) {
     return this.http.post(`${this.baseUrl}/account`, registerData);
   }
 
@@ -96,7 +97,6 @@ export class RequestService {
 
   getPosts(page: number, token: string | null) {
     let params = new HttpParams();
-    console.log(page);
     params = params.set('page', page.toString());
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.get(`${this.baseUrl}/api/v1/post/search`, {params, headers});
@@ -113,9 +113,10 @@ export class RequestService {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.post(`${this.baseUrl}/api/v1/comment`, {postIdentifier, ...creationData}, {headers});
   }
-  updateComment(updateData: {title: string; description: string}, token: string | null, id: string | null) {
+
+  updateComment(updateData: { title: string; description: string }, token: string | null, id: string | null) {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.patch(`${this.baseUrl}/api/v1/comment/${id}`, { ...updateData}, {headers})
+    return this.http.patch(`${this.baseUrl}/api/v1/comment/${id}`, {...updateData}, {headers})
   }
 
   getUsers(page: number, token: string | null) {
@@ -136,7 +137,7 @@ export class RequestService {
     let params = new HttpParams();
     params = params.set('page', page.toString());
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/post/${tag}`, {params, headers});
+    return this.http.get(`${this.baseUrl}/api/v1/post/tag/${tag}`, {params, headers});
   }
 
   getPostsByUsername(page: number, token: string | null, username: string | null) {
@@ -146,8 +147,47 @@ export class RequestService {
     return this.http.get(`${this.baseUrl}/api/v1/post/author/${username}`, {params, headers});
   }
 
-  getImagesByPostId(token: string | null, id: string | null) {
+  isUserHasSubscriptions(token: string | null) {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/image/${id}`, {headers})
+    return this.http.get(`${this.baseUrl}/api/v1/user/follower`, {headers})
+  }
+
+  getPostsBySubscription(token: string | null, page: number) {
+    let params = new HttpParams();
+    params = params.set('page', page.toString());
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    return this.http.get(`${this.baseUrl}/api/v1/post/follower`, {params, headers})
+  }
+
+  getImageByUser(token: string | null) {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    return this.http.get(`${this.baseUrl}/api/v1/image`, {headers})
+  }
+
+  createPost(token: string | null, postData: FormData) {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    return this.http.post(`${this.baseUrl}/api/v1/post`, postData, {headers})
+  }
+
+  updatePost(token: string | null, postData: FormData) {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    return this.http.put(`${this.baseUrl}/api/v1/post`, postData, {headers})
+  }
+
+  searchPostsByText(token: string | null, text: string, page: number) {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    let params = new HttpParams();
+    params = params.set('page', page.toString());
+
+    return this.http.get(`${this.baseUrl}/api/v1/post/search/${text}`, {params, headers})
+  }
+
+  getPostById(token: string | null, identifier: string) {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.baseUrl}/api/v1/post/${identifier}`, {headers})
   }
 }

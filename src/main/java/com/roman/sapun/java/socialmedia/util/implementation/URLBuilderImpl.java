@@ -12,12 +12,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class URLBuilderImpl implements URLBuilder {
 
     private final ValueConfig valueConfig;
+
     @Autowired
     public URLBuilderImpl(ValueConfig valueConfig) {
         this.valueConfig = valueConfig;
     }
 
-    public UriComponents buildUrl(HttpServletRequest request, String token) {
+    @Override
+    public UriComponents buildUrl(String token) {
         return UriComponentsBuilder
                 .fromHttpUrl(valueConfig.getUrl())
                 .pathSegment("reset-password")

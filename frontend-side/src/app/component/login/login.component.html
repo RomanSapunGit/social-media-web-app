@@ -1,4 +1,5 @@
 <div [ngStyle]="{backgroundImage: 'url(' + image + ')'}" class="login-container">
+  <app-error *ngIf="errorMessage" [message]="errorMessage" (resetError)="errorMessage = ''"></app-error>
   <h2 class="label">Login</h2>
   <form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
     <div class="flex justify-center">
@@ -28,9 +29,5 @@
     <p class="text-center mt-4">
       Don't have an account? <a href="/register">Register</a> | <a href="/reset-password">Reset Password</a>
     </p>
-    <div *ngIf="errorMessage" class="error-message">
-      <span>{{ errorMessage }}</span>
-      <button class="close-button" (click)="closeError()">&times;</button>
-    </div>
   </form>
 </div>

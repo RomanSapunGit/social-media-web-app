@@ -1,10 +1,11 @@
-import {Component} from '@angular/core';
+import {ChangeDetectorRef, Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {RequestService} from "../../service/request.service";
-import {SnackBarService} from "../../service/snackbar.service";
-import { SocialAuthService, SocialUser, GoogleLoginProvider } from "@abacritt/angularx-social-login";
+import {NotificationService} from "../../service/notification.service";
+import {SocialAuthService, SocialUser, GoogleLoginProvider} from "@abacritt/angularx-social-login";
 import {AuthService} from "../../service/auth.service";
 import {Subscription} from "rxjs";
+import {MatDialogService} from "../../service/mat-dialog.service";
 
 @Component({
   selector: 'app-login',
@@ -15,14 +16,16 @@ export class LoginComponent {
   loginData = {username: '', password: ''};
   loginForm: FormGroup;
   image = 'assets/image/bg1.jpg'
-  errorMessage = '';
   authSubscription!: Subscription
-
+  errorMessage: string;
+  isErrorMessage: boolean;
   socialUser!: SocialUser;
 
   constructor(private requestService: RequestService, private formBuilder: FormBuilder,
-              private snackBarService: SnackBarService, private socialAuthService: SocialAuthService,
-              private authService: AuthService) {
+              private notificationService: NotificationService, private socialAuthService: SocialAuthService,
+              private authService: AuthService, private changeDetectorRef: ChangeDetectorRef) {
+    this.errorMessage = '';
+    this.isErrorMessage = false;
     this.loginForm = this.formBuilder.group({
       password: ['', [Validators.required, Validators.minLength(6)]],
       username: ['', [Validators.required, Validators.minLength(3)]]
@@ -35,14 +38,16 @@ export class LoginComponent {
   }
 
   ngOnInit() {
-    this.snackBarService.errorMessage$.subscribe((message) => {
-      this.errorMessage = message;
+    this.notificationService.notification$.subscribe((message) => {
+      this.errorMessage = (message.message);
+      this.isErrorMessage = message.isErrorMessage;
+      this.changeDetectorRef.detectChanges();
     });
     this.authSubscription = this.socialAuthService.authState.subscribe((user) => {
       this.socialUser = user;
       if (this.socialUser && this.socialUser.idToken) {
-          this.requestService.loginViaGoogleAndRedirect(this.socialUser.idToken);
-          this.authService.setIsGoogleAccount();
+        this.requestService.loginViaGoogleAndRedirect(this.socialUser.idToken);
+        this.authService.setIsGoogleAccount();
       }
     });
   }
@@ -51,9 +56,5 @@ export class LoginComponent {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
-  }
-
-  closeError(): void {
-    this.errorMessage = '';
   }
 }

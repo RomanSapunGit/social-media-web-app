@@ -15,6 +15,12 @@ public class TagController {
         this.tagService = tagService;
     }
 
+    /**
+     * Retrieves all tags.
+     *
+     * @param page The page number of the results.
+     * @return A map containing all the tags and page.
+     */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public Map<String, Object> getTags(@RequestParam int page) {

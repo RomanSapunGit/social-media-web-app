@@ -53,7 +53,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
             if (username != null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (token.length() < 150) {
+                if (!jwtAuthService.isJwtTokenAGoogle(token)) {
                     if (jwtAuthService.validateToken(token, userDetails.getUsername()) &&
                             SecurityContextHolder.getContext().getAuthentication() == null) {
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());

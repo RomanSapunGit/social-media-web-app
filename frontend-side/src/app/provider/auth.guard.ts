@@ -3,16 +3,17 @@ import {ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree} from "@ang
 import {AuthService} from "../service/auth.service";
 import {Injectable} from "@angular/core";
 import {RequestService} from "../service/request.service";
+import {MatDialogService} from "../service/mat-dialog.service";
 
 @Injectable()
 export class AuthGuard {
-
+errorMessage: string
   constructor(private requestService: RequestService, private authService: AuthService,
-              private router: Router) {
-
+              private router: Router, private matDialogService: MatDialogService) {
+this.errorMessage = '';
   }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+  canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     let token = this.authService.getAuthToken();
     let username = this.authService.getUsername();
     if (token && username) {
@@ -23,15 +24,14 @@ export class AuthGuard {
           }),
           catchError((error: any) => {
             if (error && error.error && error.error.message && error.error.message.startsWith("JWT expired")) {
-              const redirectUrl = state.url;
-              return of(this.router.createUrlTree([redirectUrl]));
+              this.matDialogService.displayError('Your session expired, please log in');
+              return of(this.router.createUrlTree(['/login']));
             } else {
               return of(false);
             }
           })
         );
     }
-    console.log("check")
     return of(this.router.createUrlTree(['/login']));
   }
 }

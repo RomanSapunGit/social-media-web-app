@@ -1,0 +1,24 @@
+<div class="profile-menu-wrapper">
+  <div class="profile-menu-options" *ngIf="!isProfileMenu">
+    <button (click)="displayPostWindow(usernameToDisplay); $event.stopPropagation()">Profile</button>
+  </div>
+</div>
+<div *ngIf="isProfileMenu">
+  <div class="profile-menu-options">
+    <p>{{username}}</p>
+    <button (click)="displayPostWindow(username); $event.stopPropagation()">Profile</button>
+    <a href="#">Settings</a>
+    <form (ngSubmit)="logout()">
+      <button class="nav-link" type="button" (click)="confirmLogout()">Logout</button>
+    </form>
+    <button class="button" (click)="createPost()">
+      Create post
+    </button>
+  </div>
+</div>
+
+<div class="confirmation-dialog" *ngIf="showConfirmation">
+  <div class="message">Are you sure you want to logout?</div>
+  <button (click)="onConfirm()">Yes</button>
+  <button (click)="onCancel()">No</button>
+</div>

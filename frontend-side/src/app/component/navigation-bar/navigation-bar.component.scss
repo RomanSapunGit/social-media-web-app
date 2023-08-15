@@ -1,0 +1,19 @@
+
+
+.circular-image {
+  user-select: none;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: 35px;
+}
+.profile-menu-window {
+  position: absolute;
+  top: 50px;
+  right: 25px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+}

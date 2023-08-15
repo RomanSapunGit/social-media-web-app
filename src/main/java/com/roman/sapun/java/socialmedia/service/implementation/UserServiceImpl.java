@@ -1,6 +1,7 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
+import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
@@ -34,6 +35,7 @@ public class UserServiceImpl implements UserService {
         var postDtoPage = matchedUsers.map(RequestUserDTO::new);
         return pageConverter.convertPageToResponse(postDtoPage);
     }
+
     @Override
     public Map<String, Object> getUsers(int page) {
         var pageable = PageRequest.of(page, valueConfig.getPageSize() - 45);
@@ -57,17 +59,43 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public RequestUserDTO blockUser(String username) {
+    public ResponseUserDTO blockUser(String username) {
         var user = userRepository.findByUsername(username);
         user.setNotBlocked("false");
-        return new RequestUserDTO(user);
+        userRepository.save(user);
+        return new ResponseUserDTO(user);
     }
 
     @Override
-    public RequestUserDTO unlockUser(String username) {
+    public ResponseUserDTO unlockUser(String username) {
         var user = userRepository.findByUsername(username);
         user.setNotBlocked("true");
-        return new RequestUserDTO(user);
+        userRepository.save(user);
+        return new ResponseUserDTO(user);
+    }
+
+    @Override
+    public ResponseUserDTO addFollowing(Authentication authentication, String username) {
+        var user = findUserByAuth(authentication);
+        var userToFollow = userRepository.findByUsername(username);
+        user.getFollowing().add(userToFollow);
+        userRepository.save(user);
+        return new ResponseUserDTO(userToFollow);
+    }
+
+    @Override
+    public ValidatorDTO hasSubscriptions(Authentication authentication) {
+        var user = findUserByAuth(authentication);
+        return new ValidatorDTO(user.getFollowing().size() > 0);
+    }
+
+    @Override
+    public ResponseUserDTO removeFollowing(Authentication authentication, String username) {
+        var user = findUserByAuth(authentication);
+        var userToFollow = userRepository.findByUsername(username);
+        user.getFollowing().remove(userToFollow);
+        userRepository.save(user);
+        return new ResponseUserDTO(userToFollow);
     }
 
     @Override

@@ -1,9 +1,19 @@
 <div [ngStyle]="{backgroundImage: 'url(' + image + ')'}" class="image-container">
+  <app-error *ngIf="message" [message]="message" (resetError)="message = ''"></app-error>
   <h2 class="text-center">Register</h2>
   <form [formGroup]="registerForm" (ngSubmit)="register()">
     <div class="flex justify-center">
       <asl-google-signin-button>
       </asl-google-signin-button>
+    </div>
+    <div class="div-field">
+      <input type="file" id="file" (change)="onFileSelected($event)" accept=".img,.png,.jpg" style="display: none;">
+      <label for="file">
+        <div class="register-image-container">
+          <img  *ngIf="imageUrl" [src]="imageUrl" alt="User image" />
+          <div class="image-overlay"></div>
+        </div>
+      </label>
     </div>
     <div class="div-field">
       <label class="label">Email:</label>
@@ -40,9 +50,5 @@
     <p class="text-center mt-4">
       Already have an account? <a href="/login">Login</a> | <a href="/reset-password">Reset Password</a>
     </p>
-    <div *ngIf="errorMessage" class="error-message text-center">
-      <span>{{ errorMessage }}</span>
-      <button class="close-button" (click)="closeError()">&times;</button>
-    </div>
   </form>
 </div>

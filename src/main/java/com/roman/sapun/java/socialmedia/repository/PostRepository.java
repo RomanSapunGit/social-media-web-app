@@ -9,6 +9,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+
 @Repository
 public interface PostRepository extends JpaRepository<PostEntity, Long> {
     Page<PostEntity> findPostEntitiesByTitleContaining(String title, Pageable pageable);
@@ -17,4 +22,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     Page<PostEntity> getPostEntitiesByTagsContaining(TagEntity tag, Pageable pageable);
     @NonNull
     Page<PostEntity> findAll(@NonNull Pageable pageable);
+    Page<PostEntity> findPostsByAuthorInAndCreationTimeBetween(Set<UserEntity> authors, Timestamp startTime, Timestamp endTime,
+                                                               Pageable pageable);
+    PostEntity getPostEntityByIdentifier(String identifier);
 }

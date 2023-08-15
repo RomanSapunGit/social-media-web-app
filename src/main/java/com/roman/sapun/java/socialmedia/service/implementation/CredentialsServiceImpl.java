@@ -6,6 +6,7 @@ import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.exception.TokenExpiredException;
 import com.roman.sapun.java.socialmedia.exception.ValuesAreNotEqualException;
+import com.roman.sapun.java.socialmedia.service.ImageService;
 import com.roman.sapun.java.socialmedia.util.mail.MailSender;
 import com.roman.sapun.java.socialmedia.repository.RoleRepository;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
@@ -19,7 +20,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -36,12 +39,13 @@ public class CredentialsServiceImpl implements CredentialsService {
     private final URLBuilder urlBuilder;
     private final MailSender mailSender;
     private final AuthenticationManager authenticationManager;
+    private final ImageService imageService;
 
 
     @Autowired
     public CredentialsServiceImpl(UserConverter userConverter, RoleRepository roleRepository, UserRepository userRepository,
                                   PasswordEncoder passwordEncoder, URLBuilder urlBuilder,
-                                  MailSender mailSender, AuthenticationManager authenticationManager) {
+                                  MailSender mailSender, AuthenticationManager authenticationManager, ImageService imageService) {
         this.userConverter = userConverter;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -49,14 +53,16 @@ public class CredentialsServiceImpl implements CredentialsService {
         this.urlBuilder = urlBuilder;
         this.mailSender = mailSender;
         this.authenticationManager = authenticationManager;
+        this.imageService = imageService;
     }
 
     @Override
-    public RequestUserDTO addNewUser(SignUpDTO signUpDto) {
+    public RequestUserDTO addNewUser(SignUpDTO signUpDto, MultipartFile image) throws IOException {
         var createdUser = userConverter.convertToUserEntity(signUpDto, new UserEntity());
         var role = roleRepository.findByName("ROLE_USER");
         createdUser.setRoles(Collections.singleton(role));
         userRepository.save(createdUser);
+        imageService.uploadImageForUser(image, signUpDto.username());
         return new RequestUserDTO(createdUser);
     }
 
@@ -80,9 +86,9 @@ public class CredentialsServiceImpl implements CredentialsService {
     }
 
     @Override
-    public void sendEmail(String email, HttpServletRequest request) throws MessagingException, UnsupportedEncodingException {
+    public void sendEmail(String email) throws MessagingException, UnsupportedEncodingException {
         var userToken = setTokensByEmail(email);
-        var uri = urlBuilder.buildUrl(request, userToken);
+        var uri = urlBuilder.buildUrl(userToken);
         mailSender.sendEmail(email, uri);
     }
 
@@ -111,5 +117,4 @@ public class CredentialsServiceImpl implements CredentialsService {
         var token = new StringBuilder();
         return String.valueOf(token.append(UUID.randomUUID()));
     }
-
 }

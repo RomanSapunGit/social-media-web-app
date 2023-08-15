@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,6 +36,15 @@ public class UserEntity {
             joinColumns = {@JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "role_id", nullable = false, referencedColumnName = "id"))
     private Set<RoleEntity> roles;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_followers",
+            joinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "following_id", nullable = false, referencedColumnName = "id"))
+    private Set<UserEntity> following = new HashSet<>();
+
+    @ManyToMany(mappedBy = "following", fetch = FetchType.EAGER)
+    private Set<UserEntity> followers = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "author")
     private List<PostEntity> posts;

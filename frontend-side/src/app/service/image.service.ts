@@ -1,29 +1,32 @@
 import {Injectable} from '@angular/core';
-import {RequestService} from "./request.service";
-import {AuthService} from "./auth.service";
-import {map, Observable} from "rxjs";
+import {map, Observable, of, share} from "rxjs";
 import {FileDTO} from "../model/file.model";
-import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
+import {AuthService} from "./auth.service";
+import {RequestService} from "./request.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImageService {
-  imageSrcArray: string[];
 
-  constructor(private requestService: RequestService, private authService: AuthService, private sanitizer: DomSanitizer) {
-    this.imageSrcArray = [];
+  constructor(private authService: AuthService, private requestService: RequestService) {
   }
 
-  fetchImagesByPostId(postId: string | null): Observable<SafeResourceUrl[]> {
+  fetchImagesFromModel(files: FileDTO[]): Observable<string[]> {
+    return of(files.map((file: FileDTO) => {
+      return 'data:' + file.fileType + ';base64,' + file.fileData;
+    }));
+  }
+
+  fetchImageFromModel(file: FileDTO): Observable<string> {
+    return of('data:' + file.fileType + ';base64,' + file.fileData);
+  }
+
+  fetchUserImage(): Observable<string> {
     let token = this.authService.getAuthToken();
-    return this.requestService.getImagesByPostId(token, postId).pipe(
-      map((response: any) => {
-        return response.map((file: any) => {
-          const imageUrl = 'data:'+ file.fileType + ';base64,' + file.fileData;
-          return this.sanitizer.bypassSecurityTrustResourceUrl(imageUrl);
-        });
-      })
+    return this.requestService.getImageByUser(token).pipe(
+      map((response: any) => 'data:' + response.fileType + ';base64,' + response.fileData),
+      share()
     );
   }
 }

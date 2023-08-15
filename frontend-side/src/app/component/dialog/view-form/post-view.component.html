@@ -1,0 +1,37 @@
+<div class="draggable-style">
+  <div class="draggable-container" mat-dialog-title
+       appDraggableDirective>
+    <button class="close-button" (click)="closeDialog()">&times;</button>
+  </div>
+</div>
+
+<div *ngIf="(postView | async) as post">
+<div class="social-post">
+  <h2>{{ post.title }}</h2>
+  <div class="items-info">
+    <ng-container *ngIf="post.userImage">
+      <app-image [usernameToDisplay]="post.username.toString()" [image]="post.userImage"></app-image>
+      <span class="username">{{ post.username }}</span>
+      <span class="creation-time">{{ post.creationTime | timestampDate }}</span>
+    </ng-container>
+  </div>
+  <app-image [images]="post.postImages"></app-image>
+  <p class="description">{{ post.description }}</p>
+</div>
+<div>
+  <button class="button" (click)="toggleCommentsVisibility(post.identifier.toString(), post.commentsPage)">
+    {{ commentVisibility[post.identifier] ? 'Hide Comments' : 'Show Comments' }}
+  </button>
+</div>
+
+<ng-container *ngIf="commentVisibility[post.identifier]; else notLoaded">
+  <ng-container *ngTemplateOutlet="lazyLoad"></ng-container>
+</ng-container>
+
+<ng-template #notLoaded></ng-template>
+
+<ng-template #lazyLoad>
+  <app-comment [postIdentifier]="post.identifier.toString()"
+               [commentVisibility]="commentVisibility[post.identifier]"></app-comment>
+</ng-template>
+</div>

@@ -35,8 +35,8 @@ public class PostEntity {
             inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false, referencedColumnName = "id"))
     private Set<TagEntity> tags;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentEntity> comments;
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ImageEntity> images;
 }

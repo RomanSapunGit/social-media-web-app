@@ -1,0 +1,16 @@
+<div (appClickOutside)="closeDialog()">
+<div class="draggable-style">
+  <div class="draggable-container" mat-dialog-title
+       appDraggableDirective>
+    <button class="close-button" (click)="closeDialog()">&times;</button>
+    <h1 class="text-center">{{ tagName ? tagName : username }}</h1>
+  </div>
+</div>
+
+<div class="post-list">
+  <app-post [tagName]="tagName"
+            [username]="username"></app-post>
+</div>
+</div>
+
+

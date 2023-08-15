@@ -1,7 +1,6 @@
-import {PostModel} from "./post.model";
 
 export interface PageModelInterface {
-  content: any[],
+  entities: any[],
   total: number,
-  pages: number
+  totalPages: number
 }

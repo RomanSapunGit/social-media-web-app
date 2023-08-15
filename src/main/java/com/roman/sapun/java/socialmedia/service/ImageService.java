@@ -1,23 +1,65 @@
 package com.roman.sapun.java.socialmedia.service;
 
 import com.roman.sapun.java.socialmedia.dto.FileDTO;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
+import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.zip.DataFormatException;
 
 public interface ImageService {
 
+    /**
+     * <p>Saves image to database and bound it to User.</p>
+     * @param image - image to save.
+     * @param username - User's username to bound.
+     * @return DTO object that contains image data.
+     * @throws IOException if image compressing is failed.
+     */
+    FileDTO uploadImageForUser(MultipartFile image, String username) throws IOException;
 
-    List<FileDTO> uploadImagesForUser(List<MultipartFile> files, Authentication authentication);
+    /**
+     * <p>Saves images to database and bounds it to specific post.</p>
+     * @param images to save.
+     * @param postId post's generated unique identifier.
+     * @param authentication for searching currently logged-in user.
+     * @return list of images.
+     */
 
-    List<FileDTO> uploadImagesForPost(List<MultipartFile> files, String postId);
+    List<FileDTO> uploadImagesForPost(List<MultipartFile> images, String postId, Authentication authentication);
 
-    FileDTO uploadImage(MultipartFile file, String postId, Authentication authentication);
+    /**
+     * <p>Updates images for specific post.</p>
+     * @param images to update.
+     * @param postId post's generated unique identifier.
+     * @param authentication for searching currently logged-in user.
+     * @return list of Images.
+     * @throws PostNotFoundException if post is not found or author and current user doesn't match.
+     */
 
-    List<FileDTO> getImagesByPostIdentifier(String postId);
+    List<FileDTO> updateImagesForPost(List<MultipartFile> images, String postId, Authentication authentication) throws PostNotFoundException;
+
+    /**
+     * <p>Retrieve images by specific post.</p>
+     * @param post we want to retrieve images from.
+     * @return list of images.
+     */
+    List<FileDTO> getImagesByPost(PostEntity post);
+
+    /**
+     * <p>Get image by User.</p>
+     * @param authentication for searching currently logged-in user..
+     * @return image.
+     */
 
     FileDTO getImageByUser(Authentication authentication);
+
+    /**
+     * <p>Get image by User's username.</p>
+     * @param username User's username.
+     * @return image.
+     */
+    FileDTO getImageByUser(String username);
 }

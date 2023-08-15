@@ -1,29 +1,39 @@
-<div class="post" *ngFor="let post of (posts | async)?.content">
+<h1 class="social-post">
+  {{isUserSubscribed.getValue() && !isLoading.getValue() && (hasPostsBySubscription() | async) ? 'Subscription posts' : 'Posts'}}</h1>
+<div class="post" *ngFor="let post of (posts | async)?.entities">
+<div (click)="displaySinglePost(post.identifier)">
   <div class="social-post">
     <h2>{{ post.title }}</h2>
     <div class="items-info">
-      <p class="username">{{ post.username }}</p>
-      <p class="creation-time">{{ post.creationTime | timestampDate }}</p>
+      <ng-container *ngIf="post.userImage">
+        <app-image [usernameToDisplay]="post.username.toString()" [image]="post.userImage"></app-image>
+        <span class="username">{{ post.username }}</span>
+        <span class="creation-time">{{ post.creationTime | timestampDate }}</span>
+        <button *ngIf="currentUser === post.username" class="button"
+                (click)="updatePost(post.identifier);$event.stopPropagation()">
+          Edit post
+        </button>
+      </ng-container>
     </div>
-    <app-image [postIdentifier]="post.identifier.toString()"></app-image>
+    <app-image [images]="post.postImages"></app-image>
     <p class="description">{{ post.description }}</p>
   </div>
-
-  <div>
-    <button class="button" (click)="toggleCommentsVisibility(post.identifier.toString())">
-      {{ commentVisibility[post.identifier] ? 'Hide Comments' : 'Show Comments' }}
-    </button>
-  </div>
-
-  <div *ngIf="commentVisibility">
-    <app-comment [postIdentifier]="post.identifier.toString()"
-                 [commentVisibility]="commentVisibility[post.identifier]"></app-comment>
+</div>
+</div>
+  <div *ngIf="currentPostPage.getValue() + 1 != (posts | async)?.totalPages">
+  <div infiniteScroll
+       [infiniteScrollDistance]="1"
+       [infiniteScrollThrottle]="1000"
+       (scrolled)="nextPostPage()">
+    <div *ngIf="isLoading.getValue()">
+      <p>Loading...</p>
+    </div>
   </div>
 </div>
-
-<ng-container *ngIf="isPostPaginationVisible$ | async" class="pagination">
-  <p>Page {{ currentPostPage.getValue() + 1 }} of {{ (posts | async)?.pages }}</p>
-  <button (click)="previousPostPage()" [disabled]="currentPostPage.getValue() + 1 === 1">Previous</button>
-  <button (click)="nextPostPage()" [disabled]="currentPostPage.getValue()+1 === (posts | async)?.pages">Next</button>
-</ng-container>
-
+<div *ngIf="(posts | async)?.entities?.length === 0 && !isLoading.getValue() ">
+  <p>{{'Current ' + (username ? 'user: ' + username : 'site') + ' has nothing to show yet'}}</p>
+</div>
+<div *ngIf="isUserSubscribed.getValue() && currentPostPage.getValue()+1 === (posts | async)?.totalPages">
+  <h3>That's all regarding your subscription posts</h3>
+  <button class="button" (click)="onPostChange()">Return to regular posts</button>
+</div>

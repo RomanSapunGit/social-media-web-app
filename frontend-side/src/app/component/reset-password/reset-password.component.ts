@@ -1,8 +1,9 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {RequestService} from "../../service/request.service";
 import {ActivatedRoute} from "@angular/router";
-import {SnackBarService} from "../../service/snackbar.service";
-import {interval, map, Observable, takeWhile} from "rxjs";
+import {NotificationService} from "../../service/notification.service";
+import {interval, map, Observable, share, takeWhile} from "rxjs";
+import {MatDialogService} from "../../service/mat-dialog.service";
 
 @Component({
   selector: 'app-reset-password',
@@ -15,33 +16,39 @@ export class ResetPasswordComponent implements OnInit {
   newPassword = '';
   confirmPassword = '';
   image = 'assets/image/bg1.jpg'
-  errorMessage = '';
+  message: string;
+  isErrorMessage: boolean;
   timerValue$: Observable<number> = interval(0);
   isTimerRunning$: Observable<boolean> = interval(0).pipe(map(() => false));
 
   constructor(private route: ActivatedRoute, private requestService: RequestService,
-              private snackbar: SnackBarService) {
+              private notificationService: NotificationService, private changeDetectorRef: ChangeDetectorRef) {
+    this.message = '';
     this.email = '';
+    this.isErrorMessage = false;
   }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.token = params['token'];
-      console.log(this.token);
     });
-    this.snackbar.errorMessage$.subscribe(message => {
-      this.errorMessage = message;
+    this.notificationService.notification$.subscribe(message => {
+      this.message = (message.message);
+      this.isErrorMessage = message.isErrorMessage;
+      this.changeDetectorRef.detectChanges();
     });
   }
 
   startTimer(seconds: number): void {
     this.timerValue$ = interval(1000).pipe(
       map(count => seconds - count),
-      takeWhile(value => value >= 0)
+      takeWhile(value => value >= 0),
+      share()
     );
 
     this.isTimerRunning$ = this.timerValue$.pipe(
-      map(value => value > 0)
+      map(value => value > 0),
+      share()
     );
   }
 
@@ -57,11 +64,11 @@ export class ResetPasswordComponent implements OnInit {
     this.requestService.forgotPassword(this.email).subscribe(
       {
         next: () => {
-          this.snackbar.showNotification('Email sent successfully');
+          this.notificationService.showNotification('Email sent successfully', false);
           this.startTimer(60);
         },
         error: (error: any) => {
-          this.snackbar.showNotification('Error sending email' + error)
+          this.newPassword = ('Error sending email' + error)
         },
       }
     );
@@ -71,10 +78,10 @@ export class ResetPasswordComponent implements OnInit {
     this.requestService.resetPassword(this.token, this.newPassword, this.confirmPassword).subscribe(
       {
         next: () => {
-          this.snackbar.showNotification('Password reset successfully');
+          this.notificationService.showNotification('Password reset successfully', false);
         },
         error: (error: any) => {
-          this.snackbar.showNotification('Error resetting password' + error)
+          this.notificationService.showNotification('Error resetting password' + error, true)
         },
       }
     );
@@ -83,9 +90,4 @@ export class ResetPasswordComponent implements OnInit {
   confirmPasswordMismatch(): boolean {
     return !(this.confirmPassword === this.newPassword);
   }
-
-  closeError(): void {
-    this.errorMessage = '';
-  }
-
 }
