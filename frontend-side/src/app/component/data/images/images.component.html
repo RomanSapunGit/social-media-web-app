@@ -1,0 +1,24 @@
+<label *ngIf="imageToDisplay | async as image">
+  <div class="register-image-container">
+    <img [lazyLoad]="image.toString()" alt="User image" (click)="toggleProfileMenu($event)"/>
+  </div>
+</label>
+
+<div [ngClass]="{'dropdown-window': showMenu}" *ngIf="showMenu" (appClickOutside)="closeDropDown()">
+  <app-drop-down-menu [usernameToDisplay]="usernameToDisplay"></app-drop-down-menu>
+</div>
+
+<div *ngIf="imagesToDisplay | async">
+  <div>
+    <p class="carousel-info">Current image:{{ currentImageIndex + 1 }}/{{(imagesToDisplay | async)?.length}}</p>
+  </div>
+  <div class="carousel-container">
+  <ngx-slick-carousel class="carousel" [config]="slideConfig"
+                      (afterChange)="onAfterChange($event)" (beforeChange)="onBeforeChange($event)">
+    <div ngxSlickItem *ngFor="let img of imagesToDisplay | async; trackBy: trackByFn" class="slide">
+      <img  class="carousel-image" (click)="adjustImageSize($event)"
+           [src]="img.toString()" alt="Post images">
+    </div>
+  </ngx-slick-carousel>
+  </div>
+</div>

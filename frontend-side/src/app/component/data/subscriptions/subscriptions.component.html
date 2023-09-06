@@ -1,0 +1,15 @@
+<div *ngIf="currentUser !== username">
+    <div *ngIf="!isSubscribed">
+        <button class="button" (click)="addSubscription()">Subscribe</button>
+    </div>
+    <div *ngIf="isSubscribed">
+        <form (ngSubmit)="logout()">
+            <button class="nav-link" type="button" (click)="confirmUnsubscribe()">Subscribed</button>
+        </form>
+    </div>
+    <div class="confirmation-dialog" *ngIf="showConfirmation">
+        <div class="message">Are you sure you want to unsubscribe?</div>
+        <button (click)="onConfirm()">Yes</button>
+        <button (click)="onCancel()">No</button>
+    </div>
+</div>
