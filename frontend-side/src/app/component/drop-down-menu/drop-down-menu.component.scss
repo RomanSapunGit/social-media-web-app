@@ -8,60 +8,15 @@
   padding: 8px;
   border-bottom: 1px solid #ccc;
 }
+
 .profile-menu-options form:hover {
   background-color: #f0f0f0;
   color: #007bff;
 }
+
 .profile-menu-options a:hover {
   background-color: #f0f0f0;
   color: #007bff;
 }
-.confirmation-dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 9999;
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-}
 
-.confirmation-dialog .message {
-  margin-bottom: 20px;
-  font-size: 18px;
-  color: #333333;
-}
 
-.confirmation-dialog button {
-  padding: 10px 20px;
-  border-radius: 4px;
-  border: none;
-  color: #ffffff;
-  background-color: #f44336;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.confirmation-dialog button:hover {
-  background-color: #d32f2f;
-}
-
-.confirmation-dialog button + button {
-  margin-left: 10px;
-}
-
-.confirmation-dialog .close-button {
-  background-color: transparent;
-  color: #ffffff;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}

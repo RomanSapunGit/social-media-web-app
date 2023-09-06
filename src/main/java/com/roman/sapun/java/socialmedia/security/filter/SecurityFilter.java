@@ -2,6 +2,7 @@ package com.roman.sapun.java.socialmedia.security.filter;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -28,29 +29,17 @@ public class SecurityFilter {
         this.authFilter = authFilter;
     }
 
-
     @Order(2)
     @Bean
-    public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .cors().and()
-                .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/account/**").permitAll()
-                        .requestMatchers("/token/**").permitAll());
-        return http.build();
-    }
-
-    @Order(1)
-    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
+        http.csrf().disable()
                 .cors().and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .securityMatcher("/api/**")
                 .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/api/v1/account/**", "/api/v1/token/**", "/api/v1/notifications/slack/**").permitAll()
                         .anyRequest().hasAnyRole("USER", "ADMIN"))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling()

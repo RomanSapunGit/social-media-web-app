@@ -1,11 +1,13 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.UserService;
+import com.roman.sapun.java.socialmedia.util.TextExtractor;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,19 +15,23 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PageConverter pageConverter;
     private final ValueConfig valueConfig;
+    private final TextExtractor textExtractor;
 
-    public UserServiceImpl(UserRepository userRepository, PageConverter pageConverter, ValueConfig valueConfig) {
+    public UserServiceImpl(UserRepository userRepository, PageConverter pageConverter, ValueConfig valueConfig, TextExtractor textExtractor) {
         this.userRepository = userRepository;
         this.pageConverter = pageConverter;
         this.valueConfig = valueConfig;
+        this.textExtractor = textExtractor;
     }
 
     @Override
@@ -75,12 +81,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseUserDTO addFollowing(Authentication authentication, String username) {
+    public ResponseUserDTO addFollowing(Authentication authentication, String username) throws JsonProcessingException {
         var user = findUserByAuth(authentication);
-        var userToFollow = userRepository.findByUsername(username);
+        var usernameAsValue = textExtractor.extractUsernameFromJson(username);
+        var userToFollow = userRepository.findByUsername(usernameAsValue);
         user.getFollowing().add(userToFollow);
         userRepository.save(user);
         return new ResponseUserDTO(userToFollow);
+    }
+
+    @Override
+    public ValidatorDTO findFollowingByUsername(Authentication authentication, String username) {
+        var user = findUserByAuth(authentication);
+        return new ValidatorDTO(user.getFollowing().contains(userRepository.findByUsername(username)));
     }
 
     @Override

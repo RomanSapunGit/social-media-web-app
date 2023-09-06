@@ -2,10 +2,10 @@ import {ChangeDetectorRef, Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {RequestService} from "../../service/request.service";
 import {NotificationService} from "../../service/notification.service";
-import {SocialAuthService, SocialUser, GoogleLoginProvider} from "@abacritt/angularx-social-login";
+import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
 import {AuthService} from "../../service/auth.service";
 import {Subscription} from "rxjs";
-import {MatDialogService} from "../../service/mat-dialog.service";
+import {ServerSendEventService} from "../../service/server-send-event.service";
 
 @Component({
   selector: 'app-login',
@@ -23,7 +23,8 @@ export class LoginComponent {
 
   constructor(private requestService: RequestService, private formBuilder: FormBuilder,
               private notificationService: NotificationService, private socialAuthService: SocialAuthService,
-              private authService: AuthService, private changeDetectorRef: ChangeDetectorRef) {
+              private authService: AuthService, private changeDetectorRef: ChangeDetectorRef,
+              private firebaseTokenService: ServerSendEventService) {
     this.errorMessage = '';
     this.isErrorMessage = false;
     this.loginForm = this.formBuilder.group({
@@ -32,18 +33,18 @@ export class LoginComponent {
     });
   }
 
-  login() {
+ async login() {
     this.loginData = {...this.loginForm.value};
     this.requestService.loginAndRedirect(this.loginData)
   }
 
-  ngOnInit() {
+ async ngOnInit() {
     this.notificationService.notification$.subscribe((message) => {
       this.errorMessage = (message.message);
       this.isErrorMessage = message.isErrorMessage;
       this.changeDetectorRef.detectChanges();
     });
-    this.authSubscription = this.socialAuthService.authState.subscribe((user) => {
+    this.authSubscription = this.socialAuthService.authState.subscribe(async (user) => {
       this.socialUser = user;
       if (this.socialUser && this.socialUser.idToken) {
         this.requestService.loginViaGoogleAndRedirect(this.socialUser.idToken);

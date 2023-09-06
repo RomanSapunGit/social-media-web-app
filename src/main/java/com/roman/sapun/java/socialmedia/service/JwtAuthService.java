@@ -18,20 +18,6 @@ public interface JwtAuthService {
     TokenDTO generateJwtToken(String username, String password);
 
     /**
-     * <p>Generates Jwt token based on Google token.</p>
-     * @param token another token.
-     * @return DTO object containing username and token.
-     */
-    TokenDTO generateJwtTokenByAnotherToken(String token) throws GeneralSecurityException, IOException;
-
-    /**
-     * <p>Validates token and then returns extracted from the given Google token username.</p>
-     * @param authToken token for extracting username.
-     * @return username string.
-     */
-    String validateAndGetUsername(String authToken) throws GeneralSecurityException, IOException;
-
-    /**
      * <p>Generates token based on username.</p>
      * @return DTO object containing username and token.
      */
@@ -73,11 +59,4 @@ public interface JwtAuthService {
      * @return boolean result from validating
      */
     Boolean validateToken(String token, String usernameToMatch);
-
-    /**
-     * <p>Validates whether it is a google token or not</p>
-     * @param authToken The token from which to validate it
-     * @return boolean
-     */
-    boolean isJwtTokenAGoogle(String authToken) throws GeneralSecurityException, IOException;
 }

@@ -3,13 +3,11 @@ import {AuthService} from "../../service/auth.service";
 import {RequestService} from "../../service/request.service";
 import {NotificationService} from "../../service/notification.service";
 import {map, Observable} from "rxjs";
-import {MatDialog} from "@angular/material/dialog";
 import {CommentService} from "../../service/comment.service";
 import {UserModel} from "../../model/user.model";
 import {TagModel} from "../../model/tag.model";
 import {MatDialogService} from "../../service/mat-dialog.service";
-import {ActivatedRoute, NavigationExtras, Router} from "@angular/router";
-import {Location} from '@angular/common';
+import {ActivatedRoute} from "@angular/router";
 import {RoutingService} from "../../service/routing.service";
 
 
@@ -61,8 +59,9 @@ export class MainPageComponent {
         this.errorMessage = message.message;
         this.isErrorMessage = message.isErrorMessage;
         this.changeDetectorRef.detectChanges();
+        console.log(message.message);
       },
-      error: (err) => console.log(err.error.message)
+      error: (err) => this.notificationService.sendErrorNotificationToSlack(err.error.message, err.error.stack, err.error.timestamp)
     });
   }
 

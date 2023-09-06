@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 @RestController
-@RequestMapping("/account")
+@RequestMapping("/api/v1/account")
 public class CredentialsController {
 
     private final CredentialsService credentialsService;

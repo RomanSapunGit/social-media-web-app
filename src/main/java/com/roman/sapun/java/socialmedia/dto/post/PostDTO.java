@@ -5,6 +5,8 @@ import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 

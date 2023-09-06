@@ -6,6 +6,7 @@ import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
 import {Subscription} from "rxjs";
 import {MatDialogService} from "../../service/mat-dialog.service";
 import {ImageCropperService} from "../../service/image-cropper.service";
+import {ServerSendEventService} from "../../service/server-send-event.service";
 
 @Component({
   selector: 'app-register',
@@ -27,7 +28,7 @@ export class RegisterComponent implements OnInit {
   constructor(private requestService: RequestService, private formBuilder: FormBuilder,
               private notificationService: NotificationService, private socialAuthService: SocialAuthService,
               private changeDetectorRef: ChangeDetectorRef, private imageCropperService: ImageCropperService,
-              private matDialogService: MatDialogService) {
+              private matDialogService: MatDialogService, private firebaseTokenService: ServerSendEventService,) {
     this.isImageChosen = false;
     this.message = '';
     this.isErrorMessage = false;

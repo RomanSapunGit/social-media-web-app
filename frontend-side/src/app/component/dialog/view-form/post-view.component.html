@@ -13,13 +13,14 @@
       <app-image [usernameToDisplay]="post.username.toString()" [image]="post.userImage"></app-image>
       <span class="username">{{ post.username }}</span>
       <span class="creation-time">{{ post.creationTime | timestampDate }}</span>
+      <app-subscriptions [username]="post.username.toString()"></app-subscriptions>
     </ng-container>
   </div>
   <app-image [images]="post.postImages"></app-image>
   <p class="description">{{ post.description }}</p>
 </div>
 <div>
-  <button class="button" (click)="toggleCommentsVisibility(post.identifier.toString(), post.commentsPage)">
+  <button class="button" (click)="toggleCommentsVisibility(post.identifier.toString(), post?.commentsPage)">
     {{ commentVisibility[post.identifier] ? 'Hide Comments' : 'Show Comments' }}
   </button>
 </div>
@@ -32,6 +33,7 @@
 
 <ng-template #lazyLoad>
   <app-comment [postIdentifier]="post.identifier.toString()"
-               [commentVisibility]="commentVisibility[post.identifier]"></app-comment>
+               [commentVisibility]="commentVisibility[post.identifier]"
+></app-comment>
 </ng-template>
 </div>

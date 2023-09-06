@@ -1,6 +1,7 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
+import com.roman.sapun.java.socialmedia.dto.comment.CommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.entity.CommentEntity;
@@ -43,18 +44,18 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public ResponseCommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication) {
+    public CommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication) {
         var commentOwner = userService.findUserByAuth(authentication);
         var postEntity = postRepository.findByIdentifier(requestCommentDTO.postIdentifier());
         var commentEntity = commentConverter.convertToCommentEntity(requestCommentDTO, new CommentEntity(), commentOwner, postEntity);
         commentRepository.save(commentEntity);
-        return new ResponseCommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
+        return new CommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
     }
 
     @Override
     public Map<String, Object> getCommentsByPostIdentifier(String identifier, int pageNumber) {
         var postEntity = postRepository.findByIdentifier(identifier);
-        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize()-49);
+        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize() - 47);
         var commentPage = commentRepository.findCommentEntitiesByPost(postEntity, pageable);
         return pageConverter.convertPageToResponse(commentPage.map(comment ->
                 new ResponseCommentDTO(comment, imageService.getImageByUser(comment.getAuthor().getUsername()))));

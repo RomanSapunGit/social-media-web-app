@@ -44,7 +44,6 @@ export class PostServiceService {
   }
 
   fetchPostsBySubscription(page: number): Observable<Page> {
-    console.log('check')
     const token = this.authService.getAuthToken();
     return this.requestService.getPostsBySubscription(token, page).pipe(
       map(response => this.convertToPostPage(response))
@@ -81,9 +80,9 @@ export class PostServiceService {
   private convertToPostPage(response: any): Page {
     return this.page.createPostPage(
       response['entities'] as PostModel[],
-      response['total-items'],
-      response['current-page'],
-      response['totalPages']
+      response['total-items'] as number,
+      response['current-page'] as number,
+      response['totalPages'] as number
     );
   }
 }

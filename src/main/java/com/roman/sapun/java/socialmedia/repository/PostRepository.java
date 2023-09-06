@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.repository;
 
+import com.roman.sapun.java.socialmedia.entity.CommentEntity;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
@@ -10,8 +11,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Repository
@@ -25,4 +24,5 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     Page<PostEntity> findPostsByAuthorInAndCreationTimeBetween(Set<UserEntity> authors, Timestamp startTime, Timestamp endTime,
                                                                Pageable pageable);
     PostEntity getPostEntityByIdentifier(String identifier);
+    PostEntity findPostEntityByCommentsContaining(CommentEntity comment);
 }

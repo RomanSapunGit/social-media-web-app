@@ -67,9 +67,6 @@ export class ResetPasswordComponent implements OnInit {
           this.notificationService.showNotification('Email sent successfully', false);
           this.startTimer(60);
         },
-        error: (error: any) => {
-          this.newPassword = ('Error sending email' + error)
-        },
       }
     );
   }

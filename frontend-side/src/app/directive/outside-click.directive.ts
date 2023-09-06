@@ -17,8 +17,23 @@ export class ClickOutsideDirective {
     }
 
     const clickedInside = this._elementRef.nativeElement.contains(targetElement);
-    if (!clickedInside) {
+    const clickedOnDialog = this.elementIsInMatDialog(targetElement);
+
+    if (!clickedInside && !clickedOnDialog) {
       this.appClickOutside.emit(event);
     }
+  }
+
+  private elementIsInMatDialog(element: HTMLElement): boolean {
+    let parent: HTMLElement | null = element;
+    while (parent) {
+      if (parent.classList.contains('cdk-overlay-pane')) {
+        return true;
+      } else if(parent.classList.contains('confirmation-dialog')) {
+        return true;
+      }
+      parent = parent.parentElement ? parent.parentElement : null;
+    }
+    return false;
   }
 }

@@ -6,4 +6,8 @@ public interface ValueConfig {
      String getUrl();
      String getClientId();
      int getPageSize();
+
+     int getTwelveHours();
+
+    String getSlackWebhookUrl();
 }

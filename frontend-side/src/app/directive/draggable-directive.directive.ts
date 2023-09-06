@@ -7,6 +7,7 @@ import {Position} from "../model/position.model";
 })
 export class DraggableDirectiveDirective {
   private _subscription: Subscription | undefined;
+  private _element: HTMLElement | undefined;
 
   mouseStart: Position;
 
@@ -23,7 +24,7 @@ export class DraggableDirectiveDirective {
     this.mouseStart = { x: 0, y: 0 };
     this.mouseDelta = { x: 0, y: 0 };
     this.offset = { x: 0, y: 0 };
-
+    this._element = this.container['_elementRef'].nativeElement;
 
   }
 
@@ -35,14 +36,19 @@ export class DraggableDirectiveDirective {
   onMouseDown(event: MouseEvent) {
     this.mouseStart = { x: event.pageX, y: event.pageY };
 
-    const mouseup$: Observable<Event> = fromEvent(document, 'mouseup');
-    this._subscription = mouseup$.subscribe(() => this.onMouseup());
+    const mouseup$ = fromEvent(document, 'mouseup');
+    this._subscription = mouseup$.subscribe(() => {
+      this.onMouseUp();
+    });
 
-    const mousemove$ = fromEvent<MouseEvent>(document, 'mousemove')
-      .pipe(takeUntil(mouseup$))
-      .subscribe((e: MouseEvent) => this.onMouseMove(e));
+    const mousemove$ = fromEvent<MouseEvent>(document, 'mousemove').pipe(
+        takeUntil(mouseup$)
+    );
+    this._subscription.add(mousemove$.subscribe((e: MouseEvent) => {
+      this.onMouseMove(e);
+    }));
 
-    this._subscription.add(mousemove$);
+    this.renderer.setStyle(this._element, 'user-select', 'none');
   }
 
   onMouseMove(event: MouseEvent) {
@@ -51,7 +57,7 @@ export class DraggableDirectiveDirective {
     this._updatePosition(this.offset.y + this.mouseDelta.y, this.offset.x + this.mouseDelta.x);
   }
 
-  onMouseup() {
+  onMouseUp() {
     if (this._subscription) {
       this._subscription.unsubscribe();
       this._subscription = undefined;

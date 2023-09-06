@@ -1,15 +1,18 @@
 import {Injectable} from '@angular/core';
-import {Subject} from "rxjs";
-import {NotificationModelInterface} from "../model/notification.model.interface";
+import {catchError, Subject, Subscription} from "rxjs";
+import {NotificationModel} from "../model/notification.model";
+import {RequestService} from "./request.service";
+import {AuthService} from "./auth.service";
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
-  private notificationSubject: Subject<NotificationModelInterface> = new Subject<NotificationModelInterface>();
-
-  constructor() {
+  private notificationSubject: Subject<NotificationModel> = new Subject<NotificationModel>();
+  private subscription: Subscription;
+  constructor(private requestService: RequestService) {
+    this.subscription = new Subscription();
   }
 
   get notification$() {
@@ -17,6 +20,11 @@ export class NotificationService {
   }
 
   showNotification(message: string, isError: boolean): void {
-    this.notificationSubject.next(new NotificationModelInterface(message, isError));
+    this.notificationSubject.next(new NotificationModel(message, isError));
+  }
+
+  sendErrorNotificationToSlack(message: string, causedBy:string, timestamp: Date): void {
+     this.subscription = this.requestService.sendNotificationToSlack(message, causedBy, timestamp).subscribe();
+     this.subscription.unsubscribe();
   }
 }

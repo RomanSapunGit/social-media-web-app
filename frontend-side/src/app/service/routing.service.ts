@@ -13,7 +13,6 @@ export class RoutingService {
   }
 
   setPathVariable(pathVariable: string) {
-    console.log(pathVariable)
     this.location.go('/main/' + pathVariable)
   }
 }

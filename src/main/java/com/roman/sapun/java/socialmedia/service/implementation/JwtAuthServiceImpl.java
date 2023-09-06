@@ -6,6 +6,7 @@ import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.CredentialsService;
+import com.roman.sapun.java.socialmedia.service.ExternalJwtTokenAuthService;
 import com.roman.sapun.java.socialmedia.service.JwtAuthService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -28,7 +29,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
-public class JwtAuthServiceImpl implements JwtAuthService {
+public class JwtAuthServiceImpl implements JwtAuthService, ExternalJwtTokenAuthService {
     private final CredentialsService credentialsService;
 
     private final ValueConfig valueConfig;
@@ -107,7 +108,7 @@ public class JwtAuthServiceImpl implements JwtAuthService {
     }
 
     @Override
-    public TokenDTO generateJwtTokenByAnotherToken(String authToken) throws GeneralSecurityException, IOException {
+    public TokenDTO generateJwtTokenByGoogleToken(String authToken) throws GeneralSecurityException, IOException {
         if (authToken != null && authToken.startsWith("Bearer ")) {
             authToken = authToken.substring(7);
         }
@@ -116,6 +117,12 @@ public class JwtAuthServiceImpl implements JwtAuthService {
         }
         var email = getEmailFromGoogleToken(authToken);
         return generateJwtToken(userRepository.findByEmail(email).getUsername());
+    }
+
+    @Override
+    public boolean isJwtTokenAGoogle(String authToken) throws GeneralSecurityException, IOException {
+        var idToken = extractIdToken(authToken);
+        return idToken != null;
     }
 
     private String getEmailFromGoogleToken(String authToken) throws GeneralSecurityException, IOException {
@@ -127,11 +134,6 @@ public class JwtAuthServiceImpl implements JwtAuthService {
         return null;
     }
 
-    @Override
-    public boolean isJwtTokenAGoogle(String authToken) throws GeneralSecurityException, IOException {
-        var idToken = extractIdToken(authToken);
-        return idToken != null;
-    }
     private GoogleIdToken extractIdToken(String authToken) throws GeneralSecurityException, IOException {
         var httpTransport = new com.google.api.client.http.javanet.NetHttpTransport();
         var verifier = new GoogleIdTokenVerifier.Builder(httpTransport, gsonFactory)

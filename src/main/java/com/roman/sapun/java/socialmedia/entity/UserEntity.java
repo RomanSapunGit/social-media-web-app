@@ -53,6 +53,8 @@ public class UserEntity {
     private List<CommentEntity> comments;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
     private ImageEntity image;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+    private List<NotificationEntity> notifications;
 
     @PrePersist
     public void prePersist() {

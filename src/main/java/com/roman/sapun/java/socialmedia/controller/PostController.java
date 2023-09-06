@@ -6,6 +6,7 @@ import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,7 @@ public class PostController {
     }
 
     /**
-     * Retrieves posts that contain the specified text in their title.
+     * Retrieves posts that contain the specified text in their title and caches the results for 30 minutes.
      *
      * @param title The text to search for in the post titles.
      * @param page  The page number of the results.
@@ -65,6 +66,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/search/{title}")
+    @Cacheable(value = "postCache", key = "#title.toString() + '-' + #page", unless = "#result == null")
     public Map<String, Object> getPostsByTextContaining(@PathVariable String title, @RequestParam int page) {
         return postService.findPostsByTextContaining(title, page);
     }

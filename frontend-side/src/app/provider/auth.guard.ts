@@ -1,5 +1,5 @@
 import {catchError, map, Observable, of} from "rxjs";
-import {ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree} from "@angular/router";
+import {Router, UrlTree} from "@angular/router";
 import {AuthService} from "../service/auth.service";
 import {Injectable} from "@angular/core";
 import {RequestService} from "../service/request.service";

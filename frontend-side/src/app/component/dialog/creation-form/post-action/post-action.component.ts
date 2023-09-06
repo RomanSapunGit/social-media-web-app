@@ -39,6 +39,12 @@ export class PostActionComponent {
       description: ['', [Validators.required, Validators.minLength(6)]],
       images: [],
     });
+    if (this.isUpdating) {
+      this.postForm.patchValue({
+        title: data.title,
+        description: data.description
+      });
+    }
   }
 
   onSubmit() {
@@ -69,7 +75,6 @@ export class PostActionComponent {
         this.postActionService.addPost(response as PostModel)
         this.notificationService.showNotification('Post updated', false);
       }
-
     });
   }
 

@@ -4,10 +4,8 @@ import {ProfileFormComponent} from "../component/dialog/profile-form/profile-for
 import {MatDialog, MatDialogConfig} from "@angular/material/dialog";
 import {PostActionComponent} from "../component/dialog/creation-form/post-action/post-action.component";
 import {ErrorDialogComponent} from "../component/dialog/error-dialog/error-dialog.component";
-import {PostViewModel} from "../model/post-view.model";
 import {PostViewComponent} from "../component/dialog/view-form/post-view.component";
-import {BehaviorSubject, ReplaySubject} from "rxjs";
-import {CommentModel} from "../model/comment.model";
+import {BehaviorSubject} from "rxjs";
 import {ImageCropperComponent} from "../component/image-cropper/image-cropper.component";
 
 @Injectable({
@@ -43,10 +41,10 @@ export class MatDialogService {
     this.dialog.open(PostActionComponent, dialogConfig);
   }
 
-  updatePost(postIdentifier: string) {
+  updatePost(postIdentifier: string,title: string, description: string) {
     let dialogConfig = this.setDialogConfigWithData(true, true, '40%', '400px',
       false,
-      {isUpdating: true, postIdentifier: postIdentifier});
+      {isUpdating: true, postIdentifier: postIdentifier, title, description});
     this.dialog.open(PostActionComponent, dialogConfig);
   }
 
@@ -82,7 +80,7 @@ export class MatDialogService {
   displayCropper(selectedImage: File) {
     let dialogConfig = this.setDialogConfigWithData(false, true, '40%', '650px',
       false, {selectedImage: selectedImage});
-    const dialogRef = this.dialog.open(ImageCropperComponent, dialogConfig);
+    this.dialog.open(ImageCropperComponent, dialogConfig);
   }
 
   private setDialogConfigWithData(disableClose: boolean, autofocus: boolean, width: string, height: string, hasBackDrop: boolean, data: any): MatDialogConfig {

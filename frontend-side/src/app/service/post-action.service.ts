@@ -11,6 +11,7 @@ export class PostActionService {
   get postCreated$() {
     return this.postCreated;
   }
+
   addPost(postModel: PostModel) {
     this.postCreated.next(postModel);
   }

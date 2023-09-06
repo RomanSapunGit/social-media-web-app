@@ -15,7 +15,7 @@ public class PageConverterImpl implements PageConverter {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("entities", pageEntities.getContent());
         response.put("currentPage", pageEntities.getNumber());
-        response.put("total-items", pageEntities.getTotalElements());
+        response.put("total", pageEntities.getTotalElements());
         response.put("totalPages", pageEntities.getTotalPages());
         return response;
     }

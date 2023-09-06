@@ -4,190 +4,219 @@ import {Router} from "@angular/router";
 import {Observable, of} from "rxjs";
 import {AuthService} from "./auth.service";
 import {TokenModel} from "../model/token.model";
-import {FileDTO} from "../model/file.model";
+import {ServerSendEventService} from "./server-send-event.service";
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class RequestService {
-  private baseUrl = 'http://localhost:8080';
-  private bearerHeader: string;
+    private baseUrl = 'http://localhost:8080';
+    private bearerHeader: string;
 
-  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {
-    this.bearerHeader = '';
-  }
-
-  login(loginData: { username: string, password: string }) {
-    return this.http.post(`${this.baseUrl}/token`, loginData);
-  }
-
-  loginAndRedirect(loginData: { username: string, password: string }): void {
-    this.login(loginData).subscribe(
-      {
-        next: (response: any) => {
-          const token: string = (response as TokenModel).token;
-          this.authService.setAuthData(token, loginData.username)
-        },
-        error: (error: any) =>
-          console.log('Error during login ' + error.error.message),
-        complete: () =>
-          this.router.navigate(['/main']).then(() => {
-            console.log('Redirected to main page');
-          })
-      }
-    );
-  }
-
-  register(registerData: FormData) {
-    return this.http.post(`${this.baseUrl}/account`, registerData);
-  }
-
-  loginViaGoogle(token: string) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.post(`${this.baseUrl}/token/account`, null, {headers});
-  }
-
-  loginViaGoogleAndRedirect(token: string): void {
-    this.loginViaGoogle(token).subscribe(
-      {
-        next: (response: any) => {
-          const token: string = (response as TokenModel).token;
-          this.authService.setAuthData(token, (response as TokenModel).username)
-        },
-        error: (error: any) =>
-          console.log('Error during login ' + error.error.message),
-        complete: () =>
-          this.router.navigate(['/main']).then(() => {
-            console.log('Redirected to main page');
-          })
-      }
-    );
-  }
-
-  validateToken(token: string | null, username: string | null): Observable<boolean> {
-    if (username === null || token === null) {
-      return of(false);
+    constructor(private http: HttpClient, private router: Router, private authService: AuthService) {
+        this.bearerHeader = '';
     }
 
-    const headers = new HttpHeaders()
-      .set('Authorization', `Bearer ${token}`)
-    return this.http.get<boolean>(`${this.baseUrl}/token/${username}`, {headers});
-  }
+    login(loginData: { username: string, password: string }) {
+        return this.http.post(`${this.baseUrl}/api/v1/token`, loginData);
+    }
 
-  refreshToken(token: string | null, username: string | null): void {
-    this.http.put<string>(`${this.baseUrl}/token`, {token, username}).subscribe(
-      {
-        next: (response: any) => {
-          const token: string = (response as TokenModel).token;
-          this.authService.setAuthToken(token)
-        },
-        error: (error: any) =>
-          console.log('Error during refreshing token: ' + error.error.message),
-      }
-    );
-  }
+    loginAndRedirect(loginData: { username: string, password: string }): void {
+        this.login(loginData).subscribe(
+            {
+                next: (response: any) => {
+                    const token: string = (response as TokenModel).token;
+                    this.authService.setAuthData(token, loginData.username);
+                },
+                error: (error: any) =>
+                    console.log('Error during login ' + error.error.message),
+                complete: () =>
+                    this.router.navigate(['/main']).then(() => {
+                        console.log('Redirected to main page');
+                    })
+            }
+        );
+    }
 
-  forgotPassword(email: string) {
-    return this.http.post<void>(`${this.baseUrl}/account/${email}`, {});
-  }
+    register(registerData: FormData) {
+        return this.http.post(`${this.baseUrl}/api/v1/account`, registerData);
+    }
 
-  resetPassword(token: string, password: string, matchPassword: string) {
-    return this.http.put<void>(`${this.baseUrl}/account/${token}`, {password, matchPassword});
-  }
+    loginViaGoogle(token: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.post(`${this.baseUrl}/api/v1/token/account`, null, {headers});
+    }
 
-  getPosts(page: number, token: string | null) {
-    let params = new HttpParams();
-    params = params.set('page', page.toString());
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/post/search`, {params, headers});
-  }
+    loginViaGoogleAndRedirect(token: string): void {
+        this.loginViaGoogle(token).subscribe(
+            {
+                next: (response: any) => {
+                    const token: string = (response as TokenModel).token;
+                    console.log(((response as TokenModel).username))
+                    this.authService.setAuthData(token, (response as TokenModel).username);
+                },
+                error: (error: any) =>
+                    console.log('Error during login ' + error.error.message),
+                complete: () =>
+                    this.router.navigate(['/main']).then(() => {
+                    })
+            }
+        );
+    }
 
-  getCommentsByPost(id: string, token: string | null, page: number) {
-    let params = new HttpParams();
-    params = params.set('page', page.toString());
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/comment/${id}`, {params, headers});
-  }
+    validateToken(token: string | null, username: string | null): Observable<boolean> {
+        if (username === null || token === null) {
+            return of(false);
+        }
 
-  createComment(postIdentifier: string | null, token: string | null, creationData: { title: string; description: string }) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.post(`${this.baseUrl}/api/v1/comment`, {postIdentifier, ...creationData}, {headers});
-  }
+        const headers = new HttpHeaders()
+            .set('Authorization', `Bearer ${token}`)
+        return this.http.get<boolean>(`${this.baseUrl}/api/v1/token/${username}`, {headers});
+    }
 
-  updateComment(updateData: { title: string; description: string }, token: string | null, id: string | null) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.patch(`${this.baseUrl}/api/v1/comment/${id}`, {...updateData}, {headers})
-  }
+    refreshToken(token: string | null, username: string | null): void {
+        this.http.put<string>(`${this.baseUrl}/api/v1/token`, {token, username}).subscribe(
+            {
+                next: (response: any) => {
+                    const token: string = (response as TokenModel).token;
+                    this.authService.setAuthToken(token)
+                },
+                error: (error: any) =>
+                    console.log('Error during refreshing token: ' + error.error.message),
+            }
+        );
+    }
 
-  getUsers(page: number, token: string | null) {
-    let params = new HttpParams();
-    params = params.set('page', page.toString());
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/user`, {params, headers});
-  }
+    forgotPassword(email: string) {
+        return this.http.post<void>(`${this.baseUrl}/api/v1/account/${email}`, {});
+    }
 
-  getTags(page: number, token: string | null) {
-    let params = new HttpParams();
-    params = params.set('page', page.toString());
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/tag`, {params, headers});
-  }
+    resetPassword(token: string, password: string, matchPassword: string) {
+        return this.http.put<void>(`${this.baseUrl}/api/v1/account/${token}`, {password, matchPassword});
+    }
 
-  getPostsByTag(page: number, token: string | null, tag: string | null) {
-    let params = new HttpParams();
-    params = params.set('page', page.toString());
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/post/tag/${tag}`, {params, headers});
-  }
+    getPosts(page: number, token: string | null) {
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/post/search`, {params, headers});
+    }
 
-  getPostsByUsername(page: number, token: string | null, username: string | null) {
-    let params = new HttpParams();
-    params = params.set('page', page.toString());
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/post/author/${username}`, {params, headers});
-  }
+    getCommentsByPost(id: string, token: string | null, page: number) {
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/comment/${id}`, {params, headers});
+    }
 
-  isUserHasSubscriptions(token: string | null) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/user/follower`, {headers})
-  }
+    createComment(postIdentifier: string | null, token: string | null, creationData: { title: string; description: string }) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.post(`${this.baseUrl}/api/v1/comment`, {postIdentifier, ...creationData}, {headers});
+    }
 
-  getPostsBySubscription(token: string | null, page: number) {
-    let params = new HttpParams();
-    params = params.set('page', page.toString());
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    updateComment(updateData: { title: string; description: string }, token: string | null, id: string | null) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.patch(`${this.baseUrl}/api/v1/comment/${id}`, {...updateData}, {headers})
+    }
 
-    return this.http.get(`${this.baseUrl}/api/v1/post/follower`, {params, headers})
-  }
+    getUsers(page: number, token: string | null) {
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/user`, {params, headers});
+    }
 
-  getImageByUser(token: string | null) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    getTags(page: number, token: string | null) {
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/tag`, {params, headers});
+    }
 
-    return this.http.get(`${this.baseUrl}/api/v1/image`, {headers})
-  }
+    getPostsByTag(page: number, token: string | null, tag: string | null) {
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/post/tag/${tag}`, {params, headers});
+    }
 
-  createPost(token: string | null, postData: FormData) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    getPostsByUsername(page: number, token: string | null, username: string | null) {
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/post/author/${username}`, {params, headers});
+    }
 
-    return this.http.post(`${this.baseUrl}/api/v1/post`, postData, {headers})
-  }
+    isUserHasSubscriptions(token: string | null) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/user/follower`, {headers})
+    }
 
-  updatePost(token: string | null, postData: FormData) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    getPostsBySubscription(token: string | null, page: number) {
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-    return this.http.put(`${this.baseUrl}/api/v1/post`, postData, {headers})
-  }
+        return this.http.get(`${this.baseUrl}/api/v1/post/follower`, {params, headers})
+    }
 
-  searchPostsByText(token: string | null, text: string, page: number) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    let params = new HttpParams();
-    params = params.set('page', page.toString());
+    getImageByUser(token: string | null) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-    return this.http.get(`${this.baseUrl}/api/v1/post/search/${text}`, {params, headers})
-  }
+        return this.http.get(`${this.baseUrl}/api/v1/image`, {headers})
+    }
 
-  getPostById(token: string | null, identifier: string) {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get(`${this.baseUrl}/api/v1/post/${identifier}`, {headers})
-  }
+    createPost(token: string | null, postData: FormData) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+        return this.http.post(`${this.baseUrl}/api/v1/post`, postData, {headers})
+    }
+
+    updatePost(token: string | null, postData: FormData) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+        return this.http.put(`${this.baseUrl}/api/v1/post`, postData, {headers})
+    }
+
+    searchPostsByText(token: string | null, text: string, page: number) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+
+        return this.http.get(`${this.baseUrl}/api/v1/post/search/${text}`, {params, headers})
+    }
+
+    getPostById(token: string | null, identifier: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/post/${identifier}`, {headers})
+    }
+
+    sendCommentNotification(token: string, commentIdentifier: string, message: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.post(`${this.baseUrl}/api/v1/notifications/comments`, {commentIdentifier, message}, {headers})
+    }
+
+    getNotifications(token: string, username: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/notifications/${username}`, {headers})
+    }
+
+    sendNotificationToSlack( message: string, causedBy: string, timestamp: Date) {
+        return this.http.post(`${this.baseUrl}/api/v1/notifications/slack`, {causedBy, timestamp, message})
+    }
+
+    addFollowing(token: string | null, username: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.post(`${this.baseUrl}/api/v1/user/follower`, {username}, {headers})
+    }
+
+    removeFollowing(token: string | null, username: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.delete(`${this.baseUrl}/api/v1/user/follower/${username}`, {headers})
+    }
+
+    findFollowingByUsername(token: string | null, username: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/user/follower/${username}`, {headers})
+    }
 }

@@ -11,5 +11,5 @@ export interface PostViewModel {
   username: string;
   userImage: FileDTO;
   postImages: FileDTO[];
-  commentsPage: Page;
+  commentsPage?: Page;
 }

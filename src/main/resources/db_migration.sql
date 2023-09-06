@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users
 
 CREATE TABLE IF NOT EXISTS user_followers
 (
-    user_id     BIGINT NOT NULL,
+    user_id      BIGINT NOT NULL,
     following_id BIGINT NOT NULL,
     PRIMARY KEY (user_id, following_id),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
@@ -54,6 +54,18 @@ CREATE TABLE IF NOT EXISTS posts
     user_id       BIGINT        NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT FK_posts_users FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS notifications
+(
+    id            BIGINT NOT NULL AUTO_INCREMENT,
+    message       VARCHAR(255),
+    Creation_Date TIMESTAMP,
+    user_id       BIGINT,
+    post_id       BIGINT,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (post_id) REFERENCES posts (id)
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS tags

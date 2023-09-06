@@ -3,6 +3,7 @@
     <button (click)="displayPostWindow(usernameToDisplay); $event.stopPropagation()">Profile</button>
   </div>
 </div>
+
 <div *ngIf="isProfileMenu">
   <div class="profile-menu-options">
     <p>{{username}}</p>

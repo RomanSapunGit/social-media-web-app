@@ -23,7 +23,7 @@ export class ImageCropperComponent {
   imageUrl: string = '';
 
   constructor(private imageCropperService: ImageCropperService, private matDialogRef: MatDialogRef<ImageCropperComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: any) {
+              @Inject(MAT_DIALOG_DATA) public data: any, private notificationService: NotificationService) {
   }
 
   ngOnInit() {
@@ -41,14 +41,16 @@ export class ImageCropperComponent {
   imageCropped(event: ImageCroppedEvent) {
     console.log('Image Cropped Event:', event);
     if (!event.blob) {
-      console.log('Base64 blob is undefined.');
+      this.notificationService.sendErrorNotificationToSlack('Base64 blob is undefined.',
+          "in image cropper (image cropped method).", new Date());
       return;
     }
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
     if (!context) {
-      console.log('Canvas 2D context is not available.');
+      this.notificationService.sendErrorNotificationToSlack('Canvas 2D context is not available.',
+          "in image cropper (image cropped method).", new Date());
       return;
     }
 
@@ -69,7 +71,8 @@ export class ImageCropperComponent {
 
       canvas.toBlob((blob) => {
         if (!blob) {
-          console.log('Failed to create blob.');
+          this.notificationService.sendErrorNotificationToSlack('Failed to create blob.',
+              "in image cropper (image cropped method).", new Date());
           return;
         }
         this.croppedImage = new File([blob], 'cropped-image.png', {type: 'image/png'});

@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
@@ -17,6 +18,7 @@ public interface UserService {
      * @return map containing 50 Users, overall number of comments, current comment page and overall number of pages.
      */
     Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber);
+
     /**
      * Retrieves a paginated list of all users.
      *
@@ -24,14 +26,16 @@ public interface UserService {
      * @return map containing 50 Users, overall number of comments, current comment page and overall number of pages.
      */
     Map<String, Object> getUsers(int page);
+
     /**
      * Updates the details of the current user.
      *
-     * @param requestUserDTO   The updated user details.
-     * @param authentication   The authentication object of the current user.
+     * @param requestUserDTO The updated user details.
+     * @param authentication The authentication object of the current user.
      * @return The updated user details.
      */
     RequestUserDTO updateUser(RequestUserDTO requestUserDTO, Authentication authentication);
+
     /**
      * Blocks a user with the specified username.
      *
@@ -39,6 +43,7 @@ public interface UserService {
      * @return The blocked user details.
      */
     ResponseUserDTO blockUser(String username);
+
     /**
      * Unlocks a user with the specified username.
      *
@@ -46,6 +51,7 @@ public interface UserService {
      * @return The unlocked user details.
      */
     ResponseUserDTO unlockUser(String username);
+
     /**
      * Adds a user to the following list of the current user.
      *
@@ -53,7 +59,18 @@ public interface UserService {
      * @param username       The username of the user to follow.
      * @return The details of the user being followed.
      */
-    ResponseUserDTO addFollowing(Authentication authentication, String username);
+    ResponseUserDTO addFollowing(Authentication authentication, String username) throws JsonProcessingException;
+
+    /**
+     * Retrieves information about a user's following relationship with another user identified by their username.
+     *
+     * @param authentication The authentication object representing the currently authenticated user.
+     * @param username       The username of the user for whom the following relationship is to be checked.
+     * @return A ValidatorDTO containing information about the following relationship:
+     * - {@code valid}: Indicates whether the following relationship exists (true) or not (false).
+     */
+    ValidatorDTO findFollowingByUsername(Authentication authentication, String username);
+
     /**
      * Checks if the current user has any subscriptions (followings).
      *
@@ -61,6 +78,7 @@ public interface UserService {
      * @return A validator object indicating if the user has subscriptions.
      */
     ValidatorDTO hasSubscriptions(Authentication authentication);
+
     /**
      * Removes a user from the following list of the current user.
      *
@@ -69,6 +87,7 @@ public interface UserService {
      * @return The details of the user being unfollowed.
      */
     ResponseUserDTO removeFollowing(Authentication authentication, String username);
+
     /**
      * Finds the user entity based on the authentication object.
      *

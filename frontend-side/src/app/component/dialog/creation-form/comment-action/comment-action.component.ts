@@ -51,7 +51,7 @@ export class CommentActionComponent {
     this.requestService.createComment(postId, token, this.commentData).subscribe({
         next: (response: any) => {
           this.commentService.addComment(response as CommentModel);
-          this.notificationService.showNotification('post created successfully', false);
+          this.notificationService.showNotification('comment created successfully', false);
           this.closeDialog();
         }
       }

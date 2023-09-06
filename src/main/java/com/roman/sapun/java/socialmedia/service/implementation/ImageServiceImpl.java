@@ -55,7 +55,7 @@ public class ImageServiceImpl implements ImageService {
     }
     @Transactional
     @Override
-    public List<FileDTO> updateImagesForPost(List<MultipartFile> images, String postId, Authentication authentication) throws PostNotFoundException {
+    public List<FileDTO> updateImagesForPost(List<MultipartFile> images, String postId, Authentication authentication)  {
         var post = postRepository.findByIdentifier(postId);
         imageRepository.deleteAllByPost(post);
         return images.stream()
@@ -79,13 +79,13 @@ public class ImageServiceImpl implements ImageService {
     }
 
     private FileDTO uploadImage(MultipartFile image, ImageEntity imageEntity) throws IOException {
-        byte[] imageData = imageUtil.compressImage(image.getBytes());
+        var imageData = imageUtil.compressImage(image.getBytes());
         imageEntity.setImageData(imageData);
         imageEntity.setName(image.getOriginalFilename());
         imageEntity.setType(image.getContentType());
 
-        ImageEntity savedImage = imageRepository.save(imageEntity);
-        return new FileDTO(savedImage);
+        var savedImage = imageRepository.save(imageEntity);
+        return new FileDTO(savedImage, imageUtil.decompressImage(savedImage.getImageData()));
     }
 
     @Override

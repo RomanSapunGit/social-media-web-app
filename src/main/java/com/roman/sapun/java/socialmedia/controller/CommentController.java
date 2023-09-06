@@ -1,11 +1,15 @@
 package com.roman.sapun.java.socialmedia.controller;
 
+import com.roman.sapun.java.socialmedia.dto.comment.CommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.service.CommentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +19,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/comment")
 public class CommentController {
-
+    private static final Logger log = LoggerFactory.getLogger(CommentController.class);
     private final CommentService commentService;
 
     @Autowired
     public CommentController(CommentService commentService) {
+
         this.commentService = commentService;
     }
 
@@ -32,9 +37,10 @@ public class CommentController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ResponseCommentDTO createComment(@RequestBody RequestCommentDTO requestCommentDTO, Authentication authentication) {
+    public CommentDTO createComment(@RequestBody RequestCommentDTO requestCommentDTO, Authentication authentication) {
         return commentService.createComment(requestCommentDTO, authentication);
     }
+
     /**
      * Deletes a comment by its ID.
      *
@@ -49,7 +55,7 @@ public class CommentController {
         return commentService.deleteComment(id, authentication);
     }
     /**
-     * Retrieves comments for a post identified by its ID.
+     * Retrieves comments for a post identified by its ID and caches the results for 30 minutes.
      *
      * @param id   The ID of the post.
      * @param page The page number for pagination.
@@ -57,9 +63,12 @@ public class CommentController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
+    @Cacheable(value = "commentCache", key = "#id.toString() + '-' + #page", unless = "#result == null")
     public Map<String, Object> getCommentsByPostIdentifier(@PathVariable String id, @RequestParam int page) {
+        log.info("Executing method to generate data");
         return commentService.getCommentsByPostIdentifier(id, page);
     }
+
     /**
      * Updates a comment by its ID.
      *

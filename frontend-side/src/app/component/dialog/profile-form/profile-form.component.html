@@ -4,6 +4,9 @@
        appDraggableDirective>
     <button class="close-button" (click)="closeDialog()">&times;</button>
     <h1 class="text-center">{{ tagName ? tagName : username }}</h1>
+    <div *ngIf="username">
+      <app-subscriptions [username]="username"></app-subscriptions>
+    </div>
   </div>
 </div>
 

@@ -28,6 +28,8 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
+              "src/firebase-messaging-sw.js",
+              "src/manifest.json",
               {
                 "glob": "**/*",
                 "input": "src/fonts",
@@ -36,6 +38,7 @@
             ],
             "styles": [
               "node_modules/slick-carousel/slick/slick.scss",
+              "node_modules/slick-carousel/slick/slick-theme.css",
               "src/styles.scss"
             ],
             "scripts": [
@@ -99,7 +102,9 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/firebase-messaging-sw.js",
+              "src/manifest.json"
             ],
             "styles": [
               "node_modules/slick-carousel/slick/slick.scss",
@@ -110,6 +115,13 @@
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/slick-carousel/slick/slick.min.js"
             ]
+          }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {
+            "version": 2,
+            "browserTarget": "frontend-side:build:production"
           }
         }
       }

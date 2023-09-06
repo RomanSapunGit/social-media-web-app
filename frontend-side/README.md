@@ -1,27 +1,13 @@
-# FrontendSide
+# Version 1.1 (Jul 25 - Aug 15)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.0.
+Added mockito testing, displaying user profiles in angular, deployed application in a docker, added image cropper for
+cropping image with basic set of tools, persistent displaying single post after reloading, made image caching in a
+client side (deprecated), implemented 'endless' post list, disabled text selection during scrolling through posts,
+added notification window in client side, added search bar, dropdown menu, implemented adding custom image during registration,
+creating posts
 
-## Development server
+# Version 1.2 (Aug 16 - Sep 06)
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Implemented subscriptions, sending notifications to a slack, real time communication between users (during creating
+comments or updating post), disabled text selection during dragging mat dialogs,made navigation-bar.component.html
+sticky, resolved bugs related to caching and overall displaying comments and images,

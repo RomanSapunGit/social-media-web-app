@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
@@ -65,14 +66,14 @@ public class UserController {
     /**
      * Adds a user to the following list of the currently authenticated user.
      *
-     * @param requestUserDTO The RequestUserDTO containing the username to follow.
+     * @param username The username containing the username value to follow.
      * @param authentication The authentication object representing the currently logged-in user.
      * @return The ResponseUserDTO indicating successful following.
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/follower")
-    public ResponseUserDTO addFollowing(@RequestBody RequestUserDTO requestUserDTO, Authentication authentication) {
-        return userService.addFollowing(authentication, requestUserDTO.username());
+    public ResponseUserDTO addFollowing(@RequestBody String username, Authentication authentication) throws JsonProcessingException {
+        return userService.addFollowing(authentication, username);
     }
 
     /**
@@ -85,6 +86,11 @@ public class UserController {
     @GetMapping("/follower")
     public ValidatorDTO hasSubscriptions(Authentication authentication) {
         return userService.hasSubscriptions(authentication);
+    }
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/follower/{username}")
+    public ValidatorDTO findFollowingByUsername(Authentication authentication, @PathVariable String username){
+        return userService.findFollowingByUsername(authentication, username);
     }
 
     /**

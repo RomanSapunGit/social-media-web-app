@@ -3,6 +3,7 @@ package com.roman.sapun.java.socialmedia.service;
 import com.roman.sapun.java.socialmedia.dto.credentials.ResetPassDTO;
 import com.roman.sapun.java.socialmedia.dto.credentials.SignUpDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
+import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.exception.TokenExpiredException;
 import com.roman.sapun.java.socialmedia.exception.ValuesAreNotEqualException;
 import jakarta.mail.MessagingException;
@@ -46,4 +47,5 @@ public interface CredentialsService {
      * @return is User authenticated or not.
      */
     boolean checkUserByCredentials(String username, String password);
+
 }

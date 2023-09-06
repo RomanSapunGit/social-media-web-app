@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.service;
 
+import com.roman.sapun.java.socialmedia.dto.comment.CommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
@@ -14,10 +15,10 @@ public interface CommentService {
      * <p>creates comment, adds a creation time to it and bonds it to author that created comment.</p>
      *
      * @param requestCommentDTO includes essential parts of comment as title and description for creating comment.
-     * @param authentication for searching currently logged-in user.
+     * @param authentication    for searching currently logged-in user.
      * @return comment DTO that includes author image and comment details.
      */
-    ResponseCommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication);
+    CommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication);
 
     /**
      * <p>Deletes comment based on comment identifier.</p>

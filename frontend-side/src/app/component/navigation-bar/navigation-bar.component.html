@@ -17,7 +17,7 @@
 
   <input class="input-search-field" type="text" [(ngModel)]="searchQuery" placeholder="Search posts..."
          (ngModelChange)="searchPosts()">
-
+<app-user-notification></app-user-notification>
   <div class="ml-auto">
     <img class="circular-image" [src]="userImage | async" alt="User avatar" (click)="toggleProfileMenu($event)">
     <div [ngClass]="{'profile-menu-window': showProfileMenu}" *ngIf="showProfileMenu" (appClickOutside)="closeDropDown()">

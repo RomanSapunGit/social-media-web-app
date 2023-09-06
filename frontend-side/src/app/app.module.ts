@@ -25,24 +25,32 @@ import {ProfileFormComponent} from './component/dialog/profile-form/profile-form
 import {CdkDrag, CdkDragHandle} from "@angular/cdk/drag-drop";
 import {DraggableDirectiveDirective} from './directive/draggable-directive.directive';
 import {CONTENT_TOKEN, CURRENT_PAGE, Page, PAGES, TOTAL_TOKEN} from "./model/page.model";
-import {PostComponent} from './component/data/post/post.component';
-import {CommentComponent} from './component/data/comment/comment.component';
-import {ImageComponent} from './component/data/image/image.component';
+import { PostsComponent} from './component/data/posts/posts.component';
+import {CommentsComponent} from './component/data/comments/comments.component';
+import { ImagesComponent} from './component/data/images/images.component';
 import {LazyLoadImageModule} from "ng-lazyload-image";
-import { NotificationComponent } from './component/notification/notification.component';
+import {NotificationComponent} from './component/notification/notification.component';
 import {TimestampDatePipe} from "./pipe/timestamp-date.pipe";
 import {environment} from "../environments/environment";
-import { NavigationBarComponent } from './component/navigation-bar/navigation-bar.component';
+import {NavigationBarComponent} from './component/navigation-bar/navigation-bar.component';
 import {MatToolbarModule} from "@angular/material/toolbar";
-import { PostActionComponent } from './component/dialog/creation-form/post-action/post-action.component';
-import { SlickCarouselModule } from 'ngx-slick-carousel';
-import { DropDownMenuComponent } from './component/drop-down-menu/drop-down-menu.component';
+import {PostActionComponent} from './component/dialog/creation-form/post-action/post-action.component';
+import {SlickCarouselModule} from 'ngx-slick-carousel';
+import {DropDownMenuComponent} from './component/drop-down-menu/drop-down-menu.component';
 import {ClickOutsideDirective} from './directive/outside-click.directive';
-import { ErrorDialogComponent } from './component/dialog/error-dialog/error-dialog.component'
+import {ErrorDialogComponent} from './component/dialog/error-dialog/error-dialog.component'
 import {InfiniteScrollModule} from "ngx-infinite-scroll";
-import { PostViewComponent } from './component/dialog/view-form/post-view.component';
-import { ImageCropperComponent } from './component/image-cropper/image-cropper.component';
-import { ImageCropperModule } from 'ngx-image-cropper';
+import {PostViewComponent} from './component/dialog/view-form/post-view.component';
+import {ImageCropperComponent} from './component/image-cropper/image-cropper.component';
+import {ImageCropperModule} from 'ngx-image-cropper';
+import {UserNotificationComponent} from './component/user-notification/user-notification.component';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
+import { AngularFireMessagingModule } from '@angular/fire/compat/messaging';
+import { SubscriptionsComponent } from './component/data/subscriptions/subscriptions.component';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -54,9 +62,9 @@ import { ImageCropperModule } from 'ngx-image-cropper';
     CommentActionComponent,
     ProfileFormComponent,
     DraggableDirectiveDirective,
-    PostComponent,
-    CommentComponent,
-    ImageComponent,
+    PostsComponent,
+    CommentsComponent,
+    ImagesComponent,
     NotificationComponent,
     TimestampDatePipe,
     NavigationBarComponent,
@@ -66,27 +74,33 @@ import { ImageCropperModule } from 'ngx-image-cropper';
     ErrorDialogComponent,
     PostViewComponent,
     ImageCropperComponent,
+    UserNotificationComponent,
+    SubscriptionsComponent,
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        HttpClientModule,
-        FormsModule,
-        MatSnackBarModule,
-        BrowserAnimationsModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        GoogleSigninButtonModule,
-        CommonModule,
-        MatDialogModule,
-        CdkDrag,
-        CdkDragHandle,
-        LazyLoadImageModule,
-        MatToolbarModule,
-        SlickCarouselModule,
-        InfiniteScrollModule,
-      ImageCropperModule
-    ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    FormsModule,
+    MatSnackBarModule,
+    BrowserAnimationsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    GoogleSigninButtonModule,
+    CommonModule,
+    MatDialogModule,
+    CdkDrag,
+    CdkDragHandle,
+    LazyLoadImageModule,
+    MatToolbarModule,
+    SlickCarouselModule,
+    InfiniteScrollModule,
+    ImageCropperModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFireAuthModule,
+    AngularFireDatabaseModule,
+    AngularFireMessagingModule,
+  ],
   providers: [
     {provide: CONTENT_TOKEN, useValue: []},
     {provide: TOTAL_TOKEN, useValue: 0},
@@ -112,7 +126,7 @@ import { ImageCropperModule } from 'ngx-image-cropper';
         ],
       } as SocialAuthServiceConfig,
     },
-  ],
+    ],
   bootstrap: [AppComponent],
 })
 export class AppModule {
