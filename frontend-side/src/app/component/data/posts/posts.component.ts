@@ -9,12 +9,13 @@ import {
     switchMap,
     take,
 } from "rxjs";
-import {PostServiceService} from "../../../service/post-service.service";
+import {PostService} from "../../../service/post.service";
 import {MatDialogService} from "../../../service/mat-dialog.service";
 import {AuthService} from "../../../service/auth.service";
 import {PostActionService} from "../../../service/post-action.service";
 import {PostModel} from "../../../model/post.model";
 import {RoutingService} from "../../../service/routing.service";
+import {SearchByTextService} from "../../../service/search-by-text.service";
 
 @Component({
     selector: 'app-post',
@@ -35,9 +36,9 @@ export class PostsComponent {
     loadedPosts: PostModel[] = [];
     totalPages: BehaviorSubject<number>;
 
-    constructor(private postService: PostServiceService, private matDialogService: MatDialogService,
+    constructor(private postService: PostService, private matDialogService: MatDialogService,
                 private authService: AuthService, private postActionService: PostActionService,
-                private routingService: RoutingService) {
+                private routingService: RoutingService, private searchByTextService: SearchByTextService) {
         this.totalPages = new BehaviorSubject(0);
         this.posts = new ReplaySubject<Page>(1);
         this.currentPostPage = new BehaviorSubject<number>(0);
@@ -57,29 +58,29 @@ export class PostsComponent {
                 this.updatePostView(post);
             }
         });
-
-        this.postService.textFound$.subscribe({
-            next: (text) => {
-                this.isLoading.next(true);
-                if (!text) {
-                    this.fetchPosts().pipe(
-                        tap((page) => {
-                            this.posts.next(page);
-                        })
-                    ).subscribe();
-                } else {
-                    this.postService.searchPostsByText(text, 0).pipe(
-                        tap((page) => {
-                            this.loadedPosts = page.entities;
-                            this.posts.next(page);
-                        })
-                    ).subscribe();
-                    this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
-                    this.isLoading.next(false);
+        if(!(this.username || this.tagName)) {
+            this.searchByTextService.textFound$.subscribe({
+                next: (text) => {
+                    this.isLoading.next(true);
+                    if (!text) {
+                        this.fetchPosts().pipe(
+                            tap((page) => {
+                                this.posts.next(page);
+                            })
+                        ).subscribe();
+                    } else {
+                        this.postService.searchPostsByText(text, 0).pipe(
+                            tap((page) => {
+                                this.loadedPosts = page.entities;
+                                this.posts.next(page);
+                            })
+                        ).subscribe();
+                        this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
+                        this.isLoading.next(false);
+                    }
                 }
-            }
-        })
-
+            })
+        }
         const subscription = this.postService.isUserHasSubscriptions().pipe(
             concatMap((isUserHasSubscriptions: boolean) => {
                 this.isUserSubscribed.next(!this.username && !this.tagName ? isUserHasSubscriptions : false);

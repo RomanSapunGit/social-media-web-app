@@ -1,16 +1,13 @@
 package com.roman.sapun.java.socialmedia.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.roman.sapun.java.socialmedia.dto.ResponseExceptionDTO;
 import com.roman.sapun.java.socialmedia.dto.notification.CommentNotificationDTO;
 import com.roman.sapun.java.socialmedia.dto.notification.NotificationDTO;
 import com.roman.sapun.java.socialmedia.service.NotificationService;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.security.PermitAll;
 import java.util.List;
 
 @RestController
@@ -52,6 +49,7 @@ public class NotificationController {
         notificationService.sendMessage(responseExceptionDTO.message(),
                 responseExceptionDTO.timestamp().toString(), responseExceptionDTO.causedBy());
     }
+
     /**
      * Retrieves a list of notifications for a specific user identified by their username.
      * Users can use this method to view their notifications.

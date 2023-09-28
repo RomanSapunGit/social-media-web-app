@@ -9,21 +9,11 @@ import {PostViewModel} from "../model/post-view.model";
 @Injectable({
   providedIn: 'root'
 })
-export class PostServiceService {
-  private textFound: ReplaySubject<string>;
+export class PostService {
 
   constructor(private authService: AuthService,
               private requestService: RequestService,
               private page: Page) {
-    this.textFound = new ReplaySubject<string>()
-  }
-
-  get textFound$() {
-    return this.textFound;
-  }
-
-  searchPostByText(text: string) {
-    this.textFound.next(text);
   }
 
   fetchPostsByPage(page: number, tagName: string | null, username: string | null): Observable<Page> {
@@ -70,10 +60,10 @@ export class PostServiceService {
     );
   }
 
-  getPostById(identifier: string): Observable<PostViewModel> {
+  getPostById(identifier: string): Observable<PostModel> {
     let token = this.authService.getAuthToken();
     return this.requestService.getPostById(token, identifier).pipe(
-      map(response => response as PostViewModel)
+      map(response => response as PostModel)
     )
   }
 

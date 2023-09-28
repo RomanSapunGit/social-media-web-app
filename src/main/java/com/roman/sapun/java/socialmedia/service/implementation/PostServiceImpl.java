@@ -150,12 +150,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDTO getPostById(String identifier) {
+    public ResponsePostDTO getPostById(String identifier) {
         var post = postRepository.getPostEntityByIdentifier(identifier);
         var postImages = imageService.getImagesByPost(post);
         var userImage = imageService.getImageByUser(post.getAuthor().getUsername());
-        var commentPage = commentService.getCommentsByPostIdentifier(identifier, 0);
-        return new PostDTO(post, postImages, userImage, commentPage);
+        return new ResponsePostDTO(post, postImages, userImage);
     }
 
     public Timestamp getStartTime() {

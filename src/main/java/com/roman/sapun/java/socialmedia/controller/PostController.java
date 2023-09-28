@@ -66,7 +66,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/search/{title}")
-    @Cacheable(value = "postCache", key = "#title.toString() + '-' + #page", unless = "#result == null")
+    @Cacheable(value = "postCache", key = "#title.toString() + '-' + #page", unless = "#result.get('total') == 0")
     public Map<String, Object> getPostsByTextContaining(@PathVariable String title, @RequestParam int page) {
         return postService.findPostsByTextContaining(title, page);
     }
@@ -118,6 +118,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/search")
+    @Cacheable(value = "postCache", key = "#page", unless = "#result.get('total') == 0")
     public Map<String, Object> getPosts(@RequestParam int page) {
         return postService.getPosts(page);
     }
@@ -130,7 +131,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{identifier}")
-    public PostDTO getPostById(@PathVariable String identifier) {
+    public ResponsePostDTO getPostById(@PathVariable String identifier) {
         return postService.getPostById(identifier);
     }
 }

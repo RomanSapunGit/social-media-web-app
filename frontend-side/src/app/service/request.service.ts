@@ -4,13 +4,13 @@ import {Router} from "@angular/router";
 import {Observable, of} from "rxjs";
 import {AuthService} from "./auth.service";
 import {TokenModel} from "../model/token.model";
-import {ServerSendEventService} from "./server-send-event.service";
+import {environment} from "../../environments/environment";
 
 @Injectable({
     providedIn: 'root'
 })
 export class RequestService {
-    private baseUrl = 'http://localhost:8080';
+    private baseUrl = environment.backendUrl;
     private bearerHeader: string;
 
     constructor(private http: HttpClient, private router: Router, private authService: AuthService) {
@@ -58,8 +58,7 @@ export class RequestService {
                 error: (error: any) =>
                     console.log('Error during login ' + error.error.message),
                 complete: () =>
-                    this.router.navigate(['/main']).then(() => {
-                    })
+                    this.router.navigate(['/main'])
             }
         );
     }
@@ -195,13 +194,17 @@ export class RequestService {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.post(`${this.baseUrl}/api/v1/notifications/comments`, {commentIdentifier, message}, {headers})
     }
+    sendNewSubscriptionNotification(token: string | null, username: string, message: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.post(`${this.baseUrl}/api/v1/notifications/subscriptions`, {username, message}, {headers})
+    }
 
     getNotifications(token: string, username: string) {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.get(`${this.baseUrl}/api/v1/notifications/${username}`, {headers})
     }
 
-    sendNotificationToSlack( message: string, causedBy: string, timestamp: Date) {
+    sendNotificationToSlack(message: string, causedBy: string, timestamp: Date) {
         return this.http.post(`${this.baseUrl}/api/v1/notifications/slack`, {causedBy, timestamp, message})
     }
 
@@ -218,5 +221,30 @@ export class RequestService {
     findFollowingByUsername(token: string | null, username: string) {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.get(`${this.baseUrl}/api/v1/user/follower/${username}`, {headers})
+    }
+
+    getTagsByText(token: string | null, text: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/tag/${text}`, {headers})
+    }
+
+    getUsersByText(token: string | null, text: string, page: number) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        return this.http.get(`${this.baseUrl}/api/v1/user/${text}`, {headers, params})
+    }
+
+    completeNotificationSSE(token: string, username: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        let params = new HttpParams();
+        params = params.set('username', username.toString());
+        return this.http.delete(`${this.baseUrl}/sse/notifications/complete`, {headers, params})
+    }
+    completePostUpdateSSE(token: string, postId: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        let params = new HttpParams();
+        params = params.set('postId', postId);
+        return this.http.delete(`${this.baseUrl}/sse/posts/updates/complete`, {headers, params})
     }
 }

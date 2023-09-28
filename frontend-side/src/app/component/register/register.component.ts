@@ -7,6 +7,9 @@ import {Subscription} from "rxjs";
 import {MatDialogService} from "../../service/mat-dialog.service";
 import {ImageCropperService} from "../../service/image-cropper.service";
 import {ServerSendEventService} from "../../service/server-send-event.service";
+import {environment} from "../../../environments/environment";
+import {AuthService} from "../../service/auth.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-register',
@@ -28,7 +31,7 @@ export class RegisterComponent implements OnInit {
   constructor(private requestService: RequestService, private formBuilder: FormBuilder,
               private notificationService: NotificationService, private socialAuthService: SocialAuthService,
               private changeDetectorRef: ChangeDetectorRef, private imageCropperService: ImageCropperService,
-              private matDialogService: MatDialogService, private firebaseTokenService: ServerSendEventService,) {
+              private matDialogService: MatDialogService, private authService: AuthService, private router: Router) {
     this.isImageChosen = false;
     this.message = '';
     this.isErrorMessage = false;
@@ -42,7 +45,10 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+ async ngOnInit() {
+    if(this.authService.getAuthToken() && this.authService.getUsername()) {
+      await this.router.navigate(['/main'])
+    }
     this.notificationService.notification$.subscribe(message => {
       if (message.message.includes('Duplicate entry') && message.message.includes("'users.username'")) {
         this.message = 'Username already exists. Please choose a different username.';

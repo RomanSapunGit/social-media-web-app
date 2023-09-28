@@ -13,6 +13,7 @@ import com.roman.sapun.java.socialmedia.service.ImageService;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import com.roman.sapun.java.socialmedia.util.converter.CommentConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
+import jakarta.persistence.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -51,7 +52,6 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(commentEntity);
         return new CommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
     }
-
     @Override
     public Map<String, Object> getCommentsByPostIdentifier(String identifier, int pageNumber) {
         var postEntity = postRepository.findByIdentifier(identifier);

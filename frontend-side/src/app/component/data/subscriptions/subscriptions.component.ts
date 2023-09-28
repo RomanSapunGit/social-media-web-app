@@ -3,6 +3,7 @@ import {AuthService} from "../../../service/auth.service";
 import {NotificationService} from "../../../service/notification.service";
 import {SubscriptionService} from "../../../service/subscription.service";
 import {ValidatorModel} from "../../../model/validator.model";
+import {RequestService} from "../../../service/request.service";
 
 @Component({
     selector: 'app-subscriptions',
@@ -17,7 +18,8 @@ export class SubscriptionsComponent {
     showConfirmation: boolean;
     confirmed: boolean;
 
-    constructor(private authService: AuthService, private notificationService: NotificationService, private subscriptionService: SubscriptionService) {
+    constructor(private authService: AuthService, private notificationService: NotificationService,
+                private subscriptionService: SubscriptionService, private requestService: RequestService) {
         this.username = '';
         this.isSubscribed = false;
         this.currentUser = '';
@@ -47,7 +49,12 @@ export class SubscriptionsComponent {
     addSubscription() {
         this.subscriptionService.addSubscription(this.username, this.token).subscribe({
             next: () => {
-                console.log('check');
+                this.requestService.sendNewSubscriptionNotification(this.token,this.username, `${this.currentUser} subscribed on you`)
+                    .subscribe({
+                        next: () => {
+                            console.log('check')
+                        }
+                    })
                 this.isSubscribed = true;
             }
         })

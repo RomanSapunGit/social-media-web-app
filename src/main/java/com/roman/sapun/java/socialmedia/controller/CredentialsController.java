@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.controller;
 
+import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.credentials.ResetPassDTO;
 import com.roman.sapun.java.socialmedia.dto.credentials.SignUpDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;

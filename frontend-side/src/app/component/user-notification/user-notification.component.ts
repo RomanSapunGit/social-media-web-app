@@ -4,6 +4,7 @@ import {BehaviorSubject, Observable, ReplaySubject, shareReplay, switchMap, take
 import {ServerSendEventService} from "../../service/server-send-event.service";
 import {NotificationModel} from "../../model/notification.model";
 import {UserNotificationModel} from "../../model/user-notification.model";
+import {AuthService} from "../../service/auth.service";
 
 
 @Component({
@@ -18,12 +19,21 @@ export class UserNotificationComponent {
     notifications: ReplaySubject<UserNotificationModel[]>
     isNotificationsOpened: BehaviorSubject<boolean>;
 
-    constructor(private sseService: ServerSendEventService) {
+    constructor(private sseService: ServerSendEventService, private authService: AuthService) {
         this.notifications = new ReplaySubject<UserNotificationModel[]>();
         this.isNotificationsOpened = new BehaviorSubject<boolean>(false);
     }
 
     ngOnInit(): void {
+        this.getNotifications();
+        this.subscription = this.sseService.getNotificationsFromServer().subscribe(event => {
+            take(1);
+            shareReplay(1)
+            this.getNotifications();
+        });
+    }
+
+    getNotifications() {
         this.sseService.getNotifications().pipe(
             take(1),
             tap(newNotifications => {
@@ -31,10 +41,6 @@ export class UserNotificationComponent {
                 this.notificationCount.next(newNotifications.length);
             })
         ).subscribe();
-        this.subscription = this.sseService.getNotificationsFromServer().subscribe(event => {
-            shareReplay(1)
-            this.notificationCount.next(this.notificationCount.value + 1);
-        });
     }
 
     toggleNotifications(): void {
@@ -44,6 +50,11 @@ export class UserNotificationComponent {
     ngOnDestroy(): void {
         if (this.subscription) {
             this.subscription.unsubscribe();
+        }
+        let token = this.authService.getAuthToken();
+        let username = this.authService.getUsername();
+        if(token && username) {
+            this.sseService.completeSSENotificationConnection(token, username);
         }
     }
 }

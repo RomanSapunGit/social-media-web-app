@@ -5,16 +5,13 @@ import com.roman.sapun.java.socialmedia.dto.tag.TagDTO;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import com.roman.sapun.java.socialmedia.repository.TagRepository;
 import com.roman.sapun.java.socialmedia.service.TagService;
-import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.TagConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -24,30 +21,43 @@ public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final TagConverter tagConverter;
     private final ValueConfig valueConfig;
-    private final PageConverter pageConverter;
 
     @Autowired
-    public TagServiceImpl(TagRepository tagRepository, TagConverter tagConverter, ValueConfig valueConfig,
-                          PageConverter pageConverter) {
+    public TagServiceImpl(TagRepository tagRepository, TagConverter tagConverter, ValueConfig valueConfig) {
         this.tagRepository = tagRepository;
         this.tagConverter = tagConverter;
         this.valueConfig = valueConfig;
-        this.pageConverter = pageConverter;
     }
+
     @Override
-    public Map<String, Object> getTags(int page) {
+    public List<TagDTO> getTags(int page) {
         var pageable = PageRequest.of(page, valueConfig.getPageSize() - 40);
         var tags = tagRepository.findAll(pageable);
-        var tagDtoPage = tags.map(TagDTO::new);
-        return pageConverter.convertPageToResponse(tagDtoPage);
+        return tags.stream().map(TagDTO::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TagDTO> getTagsByText(String text) {
+        var textWithHashtags = new StringBuilder();
+
+        var pattern = Pattern.compile("\\S+");
+        var matcher = pattern.matcher(text);
+
+        while (matcher.find()) {
+            var word = matcher.group();
+            var tag = "#" + word;
+            textWithHashtags.append(" ").append(tag);
+        }
+        return getExistingTagsFromText(textWithHashtags.toString()).stream().map(TagDTO::new).collect(Collectors.toList());
     }
 
     @Override
     public Set<TagEntity> getExistingTagsFromText(String text) {
         var tagSet = extractTagsFromText(text);
         return tagSet.stream()
-                .map(tagRepository::findByName)
+                .map(tagRepository::findByNameContaining)
                 .filter(Objects::nonNull)
+                .flatMap(Set::stream)
                 .collect(Collectors.toSet());
     }
 
@@ -60,8 +70,6 @@ public class TagServiceImpl implements TagService {
                 .map(tagRepository::save)
                 .collect(Collectors.toSet());
     }
-
-
 
     private Set<String> extractTagsFromText(String text) {
         var hashtags = new HashSet<String>();

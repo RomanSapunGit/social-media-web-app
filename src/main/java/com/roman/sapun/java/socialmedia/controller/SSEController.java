@@ -1,14 +1,15 @@
 package com.roman.sapun.java.socialmedia.controller;
 
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,8 +30,22 @@ public class SSEController {
     public Flux<ServerSentEvent<String>> getNotifications(@RequestParam String username) {
         Sinks.Many<ServerSentEvent<String>> sink = Sinks.many().unicast().onBackpressureBuffer();
         userSinks.put(username, sink);
-        return sink.asFlux()
-                .doFinally(signalType -> userSinks.remove(username));
+        Flux<Long> heartbeat = Flux.interval(Duration.ofSeconds(30));
+        Flux<ServerSentEvent<String>> sseWithHeartbeat = Flux.merge(
+                sink.asFlux(),
+                heartbeat.map(seq -> ServerSentEvent.builder(":heartbeat").build())
+        );
+        return sseWithHeartbeat
+                .doFinally(signalType -> {
+                    if (signalType == SignalType.ON_COMPLETE) {
+                        userSinks.remove(username);
+                    }
+                });
+    }
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/notifications/complete")
+    public void completeConnection(@RequestParam String username) {
+        userSinks.remove(username);
     }
 
     /**
@@ -45,7 +60,17 @@ public class SSEController {
         Sinks.Many<ServerSentEvent<ResponsePostDTO>> sink = Sinks.many().unicast().onBackpressureBuffer();
         updateSinks.put(postId, sink);
         return sink.asFlux()
-                .doFinally(signalType -> updateSinks.remove(postId));
+                .doFinally(signalType -> {
+                    if (signalType == SignalType.ON_COMPLETE) {
+                        updateSinks.remove(postId);
+                    }
+                });
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/posts/updates/complete")
+    public void completePostUpdateConnection(@RequestParam String postId) {
+        updateSinks.remove(postId);
     }
 
     /**
@@ -56,7 +81,7 @@ public class SSEController {
      * @param post   The updated post represented as a ResponsePostDTO.
      */
     public void sendPostUpdate(String postId, ResponsePostDTO post) {
-        Sinks.Many<ServerSentEvent<ResponsePostDTO>> postSink = updateSinks.get(postId);
+        var postSink = updateSinks.get(postId);
         if (postSink != null) {
             ServerSentEvent<ResponsePostDTO> event = ServerSentEvent.builder(post).build();
             postSink.tryEmitNext(event);
@@ -67,11 +92,11 @@ public class SSEController {
      * Sends a real-time notification to a specific user identified by their userId
      * using Server-Sent Events (SSE).
      *
-     * @param userId       The unique identifier of the user to whom the notification is sent.
+     * @param username     The unique username of the user to whom the notification is sent.
      * @param notification The notification message to be sent.
      */
-    public void sendNotification(String userId, String notification) {
-        Sinks.Many<ServerSentEvent<String>> userSink = userSinks.get(userId);
+    public void sendNotification(String username, String notification) {
+        var userSink = userSinks.get(username);
         if (userSink != null) {
             ServerSentEvent<String> event = ServerSentEvent.builder(notification).build();
             userSink.tryEmitNext(event);

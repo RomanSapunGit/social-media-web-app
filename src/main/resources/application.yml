@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/blog
+    url: jdbc:mysql://${DB_ENDPOINT}:3306/blog
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
@@ -34,7 +34,7 @@ spring:
   cache:
     caffeine:
       spec: expireAfterWrite=300s
-    cache-names: commentCache, postCache
+    cache-names: commentCache, postCache, tagCache, userCache
 logging:
   level:
     org:

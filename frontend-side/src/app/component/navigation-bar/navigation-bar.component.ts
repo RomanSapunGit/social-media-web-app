@@ -3,8 +3,9 @@ import {AuthService} from "../../service/auth.service";
 import {ImageService} from "../../service/image.service";
 import {Observable} from "rxjs";
 import {RequestService} from "../../service/request.service";
-import {PostServiceService} from "../../service/post-service.service";
+import {PostService} from "../../service/post.service";
 import {MatDialogService} from "../../service/mat-dialog.service";
+import {SearchByTextService} from "../../service/search-by-text.service";
 
 @Component({
   selector: 'app-navigation-bar',
@@ -17,7 +18,7 @@ export class NavigationBarComponent {
   userImage: Observable<string>;
   searchQuery: string;
 
-  constructor(private authService: AuthService, private imageService: ImageService, private postService: PostServiceService) {
+  constructor(private authService: AuthService, private imageService: ImageService, private searchByTextService: SearchByTextService) {
     this.showProfileMenu = false;
     this.userImage = new Observable<string>();
     this.searchQuery = '';
@@ -33,7 +34,7 @@ export class NavigationBarComponent {
   }
 
   searchPosts() {
-      this.postService.searchPostByText(this.searchQuery);
+      this.searchByTextService.searchByText(this.searchQuery);
   }
   closeDropDown() {
     this.showProfileMenu = false;

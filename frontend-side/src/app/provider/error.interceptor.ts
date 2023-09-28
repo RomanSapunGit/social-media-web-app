@@ -1,5 +1,5 @@
 import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from "@angular/common/http";
-import {catchError, Observable, throwError} from "rxjs";
+import {catchError, EMPTY, Observable, throwError} from "rxjs";
 import {Injectable} from "@angular/core";
 import {NotificationService} from "../service/notification.service";
 import {RequestService} from "../service/request.service";
@@ -16,7 +16,7 @@ export class ServerErrorInterceptor implements HttpInterceptor {
         return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
                 const errorMessage = error.error.message;
-                const errorCausedBy = error.error.causedBy
+                const errorCausedBy = error.error.causedBy;
                 const timestamp = error.error.timestamp;
                 switch (error.status) {
                     case 401:
@@ -29,19 +29,25 @@ export class ServerErrorInterceptor implements HttpInterceptor {
                                 ? 'Bad credentials: Wrong username'
                                 : errorMessage;
                             this.snackBarService.showNotification(notificationMessage, true);
+                            console.log(errorMessage, errorCausedBy, timestamp)
                             this.snackBarService.sendErrorNotificationToSlack(errorMessage, errorCausedBy, timestamp);
                         }
                         break;
                     case 500:
                         this.snackBarService.showNotification(errorMessage, true);
+                        console.log(errorMessage, errorCausedBy, timestamp)
                         this.snackBarService.sendErrorNotificationToSlack(errorMessage, errorCausedBy, timestamp);
+                        break;
+                    case 404:
+                        console.log(errorMessage, errorCausedBy, timestamp)
                         break;
                     default:
                         this.snackBarService.showNotification(errorMessage, true);
-                        this.snackBarService.sendErrorNotificationToSlack(errorMessage, errorCausedBy, timestamp);
-                        break;
+                        console.log(error.status)
+                        this.snackBarService.sendErrorNotificationToSlack(errorMessage + error.status, errorCausedBy, timestamp);
+                        return EMPTY;
                 }
-                return throwError(() => error);
+                return EMPTY;
             })
         );
     }

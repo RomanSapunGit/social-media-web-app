@@ -3,6 +3,7 @@ package com.roman.sapun.java.socialmedia.service;
 import com.roman.sapun.java.socialmedia.dto.tag.TagDTO;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +14,10 @@ public interface TagService {
      * @param page The page number to retrieve.
      * @return map containing 10 tags, overall number of comments, current comment page and overall number of pages.
      */
-    Map<String, Object> getTags(int page);
+    List<TagDTO> getTags(int page);
+
+    List<TagDTO> getTagsByText(String text);
+
     /**
      * Extracts existing tags from the given text.
      *

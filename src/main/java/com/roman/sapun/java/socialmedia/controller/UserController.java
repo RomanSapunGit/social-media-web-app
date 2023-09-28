@@ -6,6 +6,7 @@ import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -34,7 +35,8 @@ public class UserController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{username}")
-    public Map<String, Object> getUserByUsername(@PathVariable String username, @RequestParam int page) {
+    @Cacheable(value = "userCache", key = "#username.toString() + #page", unless = "#result == null")
+    public Map<String, Object> getUsersByUsernameContaining(@PathVariable String username, @RequestParam int page) {
         return userService.getUsersByUsernameContaining(username, page);
     }
 
@@ -55,13 +57,14 @@ public class UserController {
      * Retrieves a paginated list of users.
      *
      * @param page The page number for pagination.
-     * @return map that includes 50 users, overall number of comments, current comment page and overall number of pages.
+     * @return list that includes 50 users, overall number of comments, current comment page and overall number of pages.
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
-    public Map<String, Object> getUsers(@RequestParam int page) {
+    public List<ResponseUserDTO> getUsers(@RequestParam int page) {
         return userService.getUsers(page);
     }
+
 
     /**
      * Adds a user to the following list of the currently authenticated user.

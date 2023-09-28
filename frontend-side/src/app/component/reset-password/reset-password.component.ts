@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {RequestService} from "../../service/request.service";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {NotificationService} from "../../service/notification.service";
 import {interval, map, Observable, share, takeWhile} from "rxjs";
 import {MatDialogService} from "../../service/mat-dialog.service";
@@ -22,7 +22,8 @@ export class ResetPasswordComponent implements OnInit {
   isTimerRunning$: Observable<boolean> = interval(0).pipe(map(() => false));
 
   constructor(private route: ActivatedRoute, private requestService: RequestService,
-              private notificationService: NotificationService, private changeDetectorRef: ChangeDetectorRef) {
+              private notificationService: NotificationService, private changeDetectorRef: ChangeDetectorRef,
+              private router: Router) {
     this.message = '';
     this.email = '';
     this.isErrorMessage = false;
@@ -75,7 +76,10 @@ export class ResetPasswordComponent implements OnInit {
     this.requestService.resetPassword(this.token, this.newPassword, this.confirmPassword).subscribe(
       {
         next: () => {
-          this.notificationService.showNotification('Password reset successfully', false);
+          this.notificationService.showNotification('Password reset successfully. Redirecting to login page...', false);
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 5000);
         },
         error: (error: any) => {
           this.notificationService.showNotification('Error resetting password' + error, true)

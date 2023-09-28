@@ -201,6 +201,8 @@ $my-app-theme: mat.define-light-theme((
   max-width: 500px;
   word-break: break-word;
   flex-direction: column;
+  height: 300px;
+  overflow: auto;
 }
 .dynamic-textarea {
   resize: vertical;

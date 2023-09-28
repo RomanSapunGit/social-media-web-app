@@ -1,4 +1,4 @@
-<div class="comments-container" *ngIf="commentVisibility">
+<div class="comments-container" *ngIf="commentVisibility" >
   <div class="comments-border" *ngFor="let comment of (postComments | async)?.entities">
     <div class="items-info">
       <app-image [image]="comment.userImage"></app-image>

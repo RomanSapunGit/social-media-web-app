@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -36,18 +38,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber) {
-        Pageable pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "username"));
+        Pageable pageable = PageRequest.of(pageNumber, valueConfig.getPageSize() - 45, Sort.by(Sort.Direction.ASC, "username"));
         var matchedUsers = userRepository.getAllByUsernameContaining(username, pageable);
         var postDtoPage = matchedUsers.map(RequestUserDTO::new);
         return pageConverter.convertPageToResponse(postDtoPage);
     }
 
     @Override
-    public Map<String, Object> getUsers(int page) {
+    public List<ResponseUserDTO> getUsers(int page) {
         var pageable = PageRequest.of(page, valueConfig.getPageSize() - 45);
         var posts = userRepository.findAll(pageable);
-        var postDtoPage = posts.map(ResponseUserDTO::new);
-        return pageConverter.convertPageToResponse(postDtoPage);
+        return posts.stream().map(ResponseUserDTO::new).collect(Collectors.toList());
     }
 
     @Override

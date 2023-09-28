@@ -79,8 +79,13 @@ public class NotificationServiceImpl implements NotificationService {
         var user = userRepository.findByUsername(username);
         deleteOldNotifications(user.getNotifications(), user);
         var notifications = notificationRepository.findByUserOrderByNotificationCreationDateDesc(user);
-        return notifications.stream().map(NotificationDTO::new).collect(Collectors.toList());
+
+        return notifications.stream().map(notification ->
+                new NotificationDTO(notification,
+                        notification.getPost() != null ? notification.getPost().getIdentifier() : null,
+                        notification.getPost() != null ? notification.getPost().getTitle() : null)).collect(Collectors.toList());
     }
+
     @Override
     public void sendMessage(String messageText, String date, String causedBy) throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();

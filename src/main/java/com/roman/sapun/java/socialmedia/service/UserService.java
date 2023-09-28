@@ -7,6 +7,7 @@ import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import org.springframework.security.core.Authentication;
 
+import java.util.List;
 import java.util.Map;
 
 public interface UserService {
@@ -23,9 +24,9 @@ public interface UserService {
      * Retrieves a paginated list of all users.
      *
      * @param page The page number to retrieve.
-     * @return map containing 50 Users, overall number of comments, current comment page and overall number of pages.
+     * @return list containing 10 Users.
      */
-    Map<String, Object> getUsers(int page);
+    List<ResponseUserDTO> getUsers(int page);
 
     /**
      * Updates the details of the current user.

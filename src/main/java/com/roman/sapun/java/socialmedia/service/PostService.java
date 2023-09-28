@@ -80,5 +80,5 @@ public interface PostService {
      * @return The DTO representing the post.
      */
     @SuppressWarnings("unchecked")
-    PostDTO getPostById(String identifier);
+    ResponsePostDTO getPostById(String identifier);
 }

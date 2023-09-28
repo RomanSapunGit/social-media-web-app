@@ -6,6 +6,7 @@ import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
 import {AuthService} from "../../service/auth.service";
 import {Subscription} from "rxjs";
 import {ServerSendEventService} from "../../service/server-send-event.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-login',
@@ -24,7 +25,7 @@ export class LoginComponent {
   constructor(private requestService: RequestService, private formBuilder: FormBuilder,
               private notificationService: NotificationService, private socialAuthService: SocialAuthService,
               private authService: AuthService, private changeDetectorRef: ChangeDetectorRef,
-              private firebaseTokenService: ServerSendEventService) {
+              private router: Router) {
     this.errorMessage = '';
     this.isErrorMessage = false;
     this.loginForm = this.formBuilder.group({
@@ -39,6 +40,9 @@ export class LoginComponent {
   }
 
  async ngOnInit() {
+      if(this.authService.getAuthToken() && this.authService.getUsername()) {
+          await this.router.navigate(['/main'])
+      }
     this.notificationService.notification$.subscribe((message) => {
       this.errorMessage = (message.message);
       this.isErrorMessage = message.isErrorMessage;

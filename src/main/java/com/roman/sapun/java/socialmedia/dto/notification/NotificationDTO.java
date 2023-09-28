@@ -5,8 +5,8 @@ import com.roman.sapun.java.socialmedia.entity.NotificationEntity;
 import java.sql.Timestamp;
 
 public record NotificationDTO(String username, String message, String postIdentifier,String postTitle, Timestamp notificationCreationTime) {
-    public NotificationDTO(NotificationEntity notification) {
+    public NotificationDTO(NotificationEntity notification, String postIdentifier, String postTitle) {
         this(notification.getUser().getUsername(), notification.getMessage(),
-                notification.getPost().getIdentifier(),notification.getPost().getTitle(), notification.getNotificationCreationDate());
+                postIdentifier,postTitle, notification.getNotificationCreationDate());
     }
 }

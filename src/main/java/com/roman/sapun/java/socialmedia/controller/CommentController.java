@@ -19,7 +19,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/comment")
 public class CommentController {
-    private static final Logger log = LoggerFactory.getLogger(CommentController.class);
     private final CommentService commentService;
 
     @Autowired
@@ -54,6 +53,7 @@ public class CommentController {
     public ResponseCommentDTO deleteComment(@PathVariable String id, Authentication authentication) throws CommentNotFoundException {
         return commentService.deleteComment(id, authentication);
     }
+
     /**
      * Retrieves comments for a post identified by its ID and caches the results for 30 minutes.
      *
@@ -63,9 +63,8 @@ public class CommentController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
-    @Cacheable(value = "commentCache", key = "#id.toString() + '-' + #page", unless = "#result == null")
+    @Cacheable(value = "commentCache", key = "#id.toString() + '-' + #page", unless = "#result.get('total') == 0")
     public Map<String, Object> getCommentsByPostIdentifier(@PathVariable String id, @RequestParam int page) {
-        log.info("Executing method to generate data");
         return commentService.getCommentsByPostIdentifier(id, page);
     }
 

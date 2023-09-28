@@ -1,9 +1,7 @@
 package com.roman.sapun.java.socialmedia.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.roman.sapun.java.socialmedia.dto.notification.NotificationDTO;
-import com.roman.sapun.java.socialmedia.entity.UserEntity;
 
 import java.util.List;
 
