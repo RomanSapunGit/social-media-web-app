@@ -1,10 +1,10 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {environment} from "../../../environments/environment";
 import {BehaviorSubject, Observable, ReplaySubject, shareReplay, switchMap, take, tap} from "rxjs";
-import {ServerSendEventService} from "../../service/server-send-event.service";
+import {ServerSendEventService} from "../../services/server-send-event.service";
 import {NotificationModel} from "../../model/notification.model";
 import {UserNotificationModel} from "../../model/user-notification.model";
-import {AuthService} from "../../service/auth.service";
+import {AuthService} from "../../services/auth.service";
 
 
 @Component({

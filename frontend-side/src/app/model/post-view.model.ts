@@ -1,7 +1,7 @@
 import {Timestamp} from "rxjs";
 import {FileDTO} from "./file.model";
-import {CommentModel} from "./comment.model";
 import {Page} from "./page.model";
+import {UserModel} from "./user.model";
 
 export interface PostViewModel {
   identifier: string;
@@ -12,4 +12,6 @@ export interface PostViewModel {
   userImage: FileDTO;
   postImages: FileDTO[];
   commentsPage?: Page;
+  upvotes: UserModel[];
+  downvotes: UserModel[];
 }

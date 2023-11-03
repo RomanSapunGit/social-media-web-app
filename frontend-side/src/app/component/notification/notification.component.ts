@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Inject, Input, Output, SimpleChanges} from '@angular/core';
-import {NotificationService} from "../../service/notification.service";
+import {NotificationService} from "../../services/notification.service";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {BehaviorSubject} from "rxjs";
 
 @Component({
   selector: 'app-error',

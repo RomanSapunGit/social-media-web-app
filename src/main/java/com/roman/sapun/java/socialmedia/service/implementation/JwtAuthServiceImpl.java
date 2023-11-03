@@ -4,6 +4,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.CredentialsService;
 import com.roman.sapun.java.socialmedia.service.ExternalJwtTokenAuthService;
@@ -96,15 +97,16 @@ public class JwtAuthServiceImpl implements JwtAuthService, ExternalJwtTokenAuthS
     }
 
     @Override
-    public String validateAndGetUsername(String authToken) throws GeneralSecurityException, IOException {
-        if (authToken != null && authToken.startsWith("Bearer ")) {
-            authToken = authToken.substring(7);
-        }
-        if (!isJwtTokenAGoogle(authToken)) {
+    public String validateAndGetUsername(String authToken) throws GeneralSecurityException, IOException, UserNotFoundException {
+        if (!isGoogleJwtToken(authToken)) {
             return null;
         }
         var email = getEmailFromGoogleToken(authToken);
-        return userRepository.findByEmail(email).getUsername();
+        var user = userRepository.findByEmail(email);
+        if(user == null){
+            throw new UserNotFoundException("User with email " + email + " not found");
+        }
+        return user.getUsername();
     }
 
     @Override
@@ -112,7 +114,7 @@ public class JwtAuthServiceImpl implements JwtAuthService, ExternalJwtTokenAuthS
         if (authToken != null && authToken.startsWith("Bearer ")) {
             authToken = authToken.substring(7);
         }
-        if (!isJwtTokenAGoogle(authToken)) {
+        if (!isGoogleJwtToken(authToken)) {
             return null;
         }
         var email = getEmailFromGoogleToken(authToken);
@@ -120,7 +122,7 @@ public class JwtAuthServiceImpl implements JwtAuthService, ExternalJwtTokenAuthS
     }
 
     @Override
-    public boolean isJwtTokenAGoogle(String authToken) throws GeneralSecurityException, IOException {
+    public boolean isGoogleJwtToken(String authToken) throws GeneralSecurityException, IOException {
         var idToken = extractIdToken(authToken);
         return idToken != null;
     }

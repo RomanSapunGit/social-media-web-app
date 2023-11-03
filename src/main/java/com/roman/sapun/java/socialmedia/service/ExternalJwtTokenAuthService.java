@@ -1,6 +1,7 @@
 package com.roman.sapun.java.socialmedia.service;
 
 import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -17,11 +18,11 @@ public interface ExternalJwtTokenAuthService {
      * @param authToken The token from which to validate it
      * @return boolean
      */
-    boolean isJwtTokenAGoogle(String authToken) throws GeneralSecurityException, IOException;
+    boolean isGoogleJwtToken(String authToken) throws GeneralSecurityException, IOException;
     /**
      * <p>Validates token and then returns extracted from the given Google token username.</p>
      * @param authToken token for extracting username.
      * @return username string.
      */
-    String validateAndGetUsername(String authToken) throws GeneralSecurityException, IOException;
+    String validateAndGetUsername(String authToken) throws GeneralSecurityException, IOException, UserNotFoundException;
 }

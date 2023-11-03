@@ -30,8 +30,8 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<TagDTO> getTags(int page) {
-        var pageable = PageRequest.of(page, valueConfig.getPageSize() - 40);
+    public List<TagDTO> getTags(int page, int pageSize) {
+        var pageable = PageRequest.of(page, pageSize);
         var tags = tagRepository.findAll(pageable);
         return tags.stream().map(TagDTO::new).collect(Collectors.toList());
     }

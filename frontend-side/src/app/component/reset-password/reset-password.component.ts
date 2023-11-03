@@ -1,9 +1,9 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {RequestService} from "../../service/request.service";
+import {RequestService} from "../../services/request.service";
 import {ActivatedRoute, Router} from "@angular/router";
-import {NotificationService} from "../../service/notification.service";
+import {NotificationService} from "../../services/notification.service";
 import {interval, map, Observable, share, takeWhile} from "rxjs";
-import {MatDialogService} from "../../service/mat-dialog.service";
+import {MatDialogService} from "../../services/mat-dialog.service";
 
 @Component({
   selector: 'app-reset-password',

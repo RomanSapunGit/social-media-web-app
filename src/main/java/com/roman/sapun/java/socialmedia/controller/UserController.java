@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
+import com.roman.sapun.java.socialmedia.service.SubscriptionService;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,24 +21,30 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final SubscriptionService subscriptionService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, SubscriptionService subscriptionService) {
         this.userService = userService;
+        this.subscriptionService = subscriptionService;
     }
 
     /**
-     * Retrieves a paginated list of users by searching for usernames containing the provided substring.
+     * Retrieves a paginated list of users whose usernames contain the provided substring.
      *
      * @param username The substring to search for within usernames.
      * @param page     The page number for pagination.
-     * @return map that includes 50 users, overall number of comments, current comment page and overall number of pages.
+     * @param pageSize The number of users to display per page (default is 5).
+     * @param sortBy   The sorting criteria for the results (default is by username).
+     * @return A map containing a paginated list of users, overall number of users, current user page, and overall number of pages.
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{username}")
-    @Cacheable(value = "userCache", key = "#username.toString() + #page", unless = "#result == null")
-    public Map<String, Object> getUsersByUsernameContaining(@PathVariable String username, @RequestParam int page) {
-        return userService.getUsersByUsernameContaining(username, page);
+    @Cacheable(value = "userCache", key = "#username.toString() + #page+ '-' + #pageSize", unless = "#result == null")
+    public Map<String, Object> getUsersByUsernameContaining(@PathVariable String username, @RequestParam int page,
+                                                            @RequestParam(defaultValue = "5") int pageSize,
+                                                            @RequestParam(defaultValue = "username") String sortBy) {
+        return userService.getUsersByUsernameContaining(username, page, pageSize, sortBy);
     }
 
     /**
@@ -54,29 +61,30 @@ public class UserController {
     }
 
     /**
-     * Retrieves a paginated list of users.
+     * Retrieves a paginated list of users sorted by specific criteria.
      *
-     * @param page The page number for pagination.
-     * @return list that includes 50 users, overall number of comments, current comment page and overall number of pages.
+     * @param page     The page number for pagination.
+     * @param pageSize The number of users to display per page (default is 5).
+     * @return A list containing users, overall number of users, current user page, and overall number of pages.
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
-    public List<ResponseUserDTO> getUsers(@RequestParam int page) {
-        return userService.getUsers(page);
+    @Cacheable(value = "userCache", key = "#page + #page + '-' + #pageSize", unless = "#result == null")
+    public List<ResponseUserDTO> getUsers(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) {
+        return userService.getUsers(page, pageSize);
     }
-
 
     /**
      * Adds a user to the following list of the currently authenticated user.
      *
-     * @param username The username containing the username value to follow.
+     * @param username       The username containing the username value to follow.
      * @param authentication The authentication object representing the currently logged-in user.
      * @return The ResponseUserDTO indicating successful following.
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/follower")
     public ResponseUserDTO addFollowing(@RequestBody String username, Authentication authentication) throws JsonProcessingException {
-        return userService.addFollowing(authentication, username);
+        return subscriptionService.addFollowing(authentication, username);
     }
 
     /**
@@ -88,12 +96,13 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/follower")
     public ValidatorDTO hasSubscriptions(Authentication authentication) {
-        return userService.hasSubscriptions(authentication);
+        return subscriptionService.hasSubscriptions(authentication);
     }
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/follower/{username}")
-    public ValidatorDTO findFollowingByUsername(Authentication authentication, @PathVariable String username){
-        return userService.findFollowingByUsername(authentication, username);
+    public ValidatorDTO findFollowingByUsername(Authentication authentication, @PathVariable String username) {
+        return subscriptionService.findFollowingByUsername(authentication, username);
     }
 
     /**
@@ -106,7 +115,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/follower/{username}")
     public ResponseUserDTO removeFollowing(@PathVariable String username, Authentication authentication) {
-        return userService.removeFollowing(authentication, username);
+        return subscriptionService.removeFollowing(authentication, username);
     }
 
     /**

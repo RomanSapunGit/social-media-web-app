@@ -10,4 +10,6 @@ public interface ValueConfig {
      int getTwelveHours();
 
     String getSlackWebhookUrl();
+
+    String getLibreTranslateUrl();
 }

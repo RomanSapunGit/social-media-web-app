@@ -1,10 +1,12 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.controller.SSEController;
-import com.roman.sapun.java.socialmedia.dto.post.PostDTO;
+import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
+import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
@@ -12,9 +14,12 @@ import com.roman.sapun.java.socialmedia.repository.PostRepository;
 import com.roman.sapun.java.socialmedia.repository.TagRepository;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.*;
+import com.roman.sapun.java.socialmedia.util.TextExtractor;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -27,7 +32,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class PostServiceImpl implements PostService {
+public class PostServiceImpl implements PostService, VoteService {
 
     private final TagService tagService;
     private final UserService userService;
@@ -38,14 +43,14 @@ public class PostServiceImpl implements PostService {
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
     private final ImageService imageService;
-    private final CommentService commentService;
     private final SSEController sseController;
+    private final TextExtractor textExtractor;
 
 
     public PostServiceImpl(TagService tagService, PostConverter postConverter, UserService userService,
                            PostRepository postRepository, PageConverter pageConverter, ValueConfig valueConfig,
                            TagRepository tagRepository, UserRepository userRepository, ImageService imageService,
-                           CommentService commentService, SSEController sseController) {
+                           SSEController sseController, TextExtractor textExtractor) {
         this.tagService = tagService;
         this.postConverter = postConverter;
         this.userService = userService;
@@ -55,8 +60,8 @@ public class PostServiceImpl implements PostService {
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
         this.imageService = imageService;
-        this.commentService = commentService;
         this.sseController = sseController;
+        this.textExtractor = textExtractor;
     }
 
     @Override
@@ -65,13 +70,19 @@ public class PostServiceImpl implements PostService {
         Set<TagEntity> nonExistingTags = tagService.saveNonExistingTagsFromText(requestPostDTO.description());
         existingTags.addAll(nonExistingTags);
         var postOwner = userService.findUserByAuth(authentication);
-        var postEntity = postConverter.convertToPostEntity(requestPostDTO, existingTags, postOwner, new PostEntity());
+        var postEntity = postConverter.convertToPostEntity(requestPostDTO, existingTags, postOwner, new PostEntity(), new HashSet<>());
         postRepository.save(postEntity);
         if (images != null) {
             var dtoImages = imageService.uploadImagesForPost(images, postEntity.getIdentifier(), authentication);
-            return new ResponsePostDTO(postEntity, dtoImages, imageService.getImageByUser(postEntity.getAuthor().getUsername()));
+            return new ResponsePostDTO(postEntity,
+                    dtoImages,
+                    imageService.getImageByUser(postEntity.getAuthor().getUsername()),
+                    new HashSet<>(),
+                    new HashSet<>());
         }
-        return new ResponsePostDTO(postEntity, new ArrayList<>(), imageService.getImageByUser(postEntity.getAuthor().getUsername()));
+        return new ResponsePostDTO(postEntity, new ArrayList<>(), imageService.getImageByUser(postEntity.getAuthor().getUsername()),
+                postEntity.getUpvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet()),
+                postEntity.getDownvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet()));
     }
 
     @Override
@@ -89,64 +100,73 @@ public class PostServiceImpl implements PostService {
         postEntity.setTitle(requestPostDTO.title());
         postEntity.setDescription(requestPostDTO.description());
         postRepository.save(postEntity);
-        var postDTO = new ResponsePostDTO(postEntity, dtoImages, imageService.getImageByUser(postEntity.getAuthor().getUsername()));
-        sseController.sendPostUpdate(postDTO.identifier(),postDTO);
+        var postDTO = new ResponsePostDTO(postEntity, dtoImages, imageService.getImageByUser(postEntity.getAuthor().getUsername()),
+                postEntity.getUpvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet()),
+                postEntity.getDownvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet()));
+        sseController.sendPostUpdate(postDTO.identifier(), postDTO);
         return postDTO;
     }
 
     @Override
-    public Map<String, Object> getPosts(int pageNumber) {
-        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize());
+    public Map<String, Object> getPosts(int pageNumber, int pageSize, String sortByValue) {
+        var pageable = setPageable(pageNumber, pageSize, sortByValue);
         var posts = postRepository.findAll(pageable);
-        var postDtoPage = posts.map(post -> new ResponsePostDTO(post, imageService.getImagesByPost(post),
-                imageService.getImageByUser(post.getAuthor().getUsername())));
-        return pageConverter.convertPageToResponse(postDtoPage);
+        return convertPageToResponsePostDTO(posts);
     }
 
     @Override
-    public Map<String, Object> getPostsByTag(String tagName, int page) {
+    public Map<String, Object> getPostsByTag(String tagName, int page, int pageSize, String sortByValue) {
+        var pageable = setPageable(page, pageSize, sortByValue);
         var tag = tagRepository.findByName(tagName);
-        var pageable = PageRequest.of(page, valueConfig.getPageSize());
         var posts = postRepository.getPostEntitiesByTagsContaining(tag, pageable);
-        var postDTOPage = posts.map(post -> new ResponsePostDTO(post, imageService.getImagesByPost(post),
-                imageService.getImageByUser(post.getAuthor().getUsername())));
-        return pageConverter.convertPageToResponse(postDTOPage);
+        return convertPageToResponsePostDTO(posts);
     }
 
     @Override
-    public Map<String, Object> getPostsByUsername(String username, int page) {
+    public Map<String, Object> getPostsByUsername(String username, int page, int pageSize, String sortByValue) {
+        var pageable = setPageable(page, pageSize, sortByValue);
         var userEntity = userRepository.findByUsername(username);
-        var pageable = PageRequest.of(page, valueConfig.getPageSize());
+
         var posts = postRepository.findPostEntitiesByAuthor(userEntity, pageable);
+        return convertPageToResponsePostDTO(posts);
+    }
+
+    private Map<String, Object> convertPageToResponsePostDTO(Page<PostEntity> posts) {
         var postDTOPage = posts
                 .map(post -> new ResponsePostDTO(post, imageService.getImagesByPost(post),
-                        imageService.getImageByUser(post.getAuthor().getUsername())));
+                        imageService.getImageByUser(post.getAuthor().getUsername()),
+                        post.getUpvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet()),
+                        post.getDownvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet())));
         return pageConverter.convertPageToResponse(postDTOPage);
     }
 
     @Override
-    public Map<String, Object> getPostsByUserFollowing(Authentication authentication, int pageNumber) {
+    public Map<String, Object> getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) {
+        if (pageSize >= 35) {
+            throw new IllegalArgumentException("Page size must be less than 35");
+        }
         var user = userService.findUserByAuth(authentication);
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
-        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize());
+        var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("creationTime").descending());
         var followedUsers = user.getFollowing();
         var postsFromFollowedUsers = postRepository.findPostsByAuthorInAndCreationTimeBetween(
                 followedUsers, getStartTime(), getCurrentTime(), pageable);
         var postDTOForPage = postsFromFollowedUsers.stream().parallel()
                 .map(post -> new ResponsePostDTO(post, imageService.getImagesByPost(post),
-                        imageService.getImageByUser(post.getAuthor().getUsername()))).collect(Collectors.toList());
+                        imageService.getImageByUser(post.getAuthor().getUsername()),
+                        post.getUpvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet()),
+                        post.getDownvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet())))
+                .collect(Collectors.toList());
         return pageConverter.convertPageToResponse(postsFromFollowedUsers, postDTOForPage);
     }
 
     @Override
-    public Map<String, Object> findPostsByTextContaining(String title, int pageNumber) {
-        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize(), Sort.by(Sort.Direction.ASC, "title"));
+    public Map<String, Object> findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) {
+        var pageable = setPageable(pageNumber, pageSize, sortByValue);
         var matchedPosts = postRepository.findPostEntitiesByTitleContaining(title, pageable);
-        var postDtoPage = matchedPosts.map(post -> new ResponsePostDTO(post, imageService.getImagesByPost(post),
-                imageService.getImageByUser(post.getAuthor().getUsername())));
-        return pageConverter.convertPageToResponse(postDtoPage);
+        return convertPageToResponsePostDTO(matchedPosts);
     }
 
     @Override
@@ -154,7 +174,64 @@ public class PostServiceImpl implements PostService {
         var post = postRepository.getPostEntityByIdentifier(identifier);
         var postImages = imageService.getImagesByPost(post);
         var userImage = imageService.getImageByUser(post.getAuthor().getUsername());
-        return new ResponsePostDTO(post, postImages, userImage);
+        return new ResponsePostDTO(post, postImages, userImage,
+                post.getUpvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet()),
+                post.getDownvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet()));
+    }
+
+    @Override
+    public Set<ResponseUserDTO> addUpvote(String identifier, Authentication authentication) throws JsonProcessingException {
+        if (identifier == null) {
+            throw new IllegalArgumentException("Identifier is null");
+        }
+        var identifierAsValue = textExtractor.extractIdentifierFromJson(identifier);
+        var user = userService.findUserByAuth(authentication);
+        var post = postRepository.findByIdentifier(identifierAsValue);
+        post.getUpvotes().add(user);
+        postRepository.save(post);
+        return post.getUpvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<ResponseUserDTO> removeUpvote(String identifier, Authentication authentication) {
+        var user = userService.findUserByAuth(authentication);
+        var post = postRepository.findByIdentifier(identifier);
+        post.getUpvotes().remove(user);
+        postRepository.save(post);
+        return post.getUpvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<ResponseUserDTO> addDownvote(String identifier, Authentication authentication) throws JsonProcessingException {
+        var identifierAsValue = textExtractor.extractIdentifierFromJson(identifier);
+        var user = userService.findUserByAuth(authentication);
+        var post = postRepository.findByIdentifier(identifierAsValue);
+        post.getDownvotes().add(user);
+        postRepository.save(post);
+        return post.getDownvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<ResponseUserDTO> removeDownvote(String identifier, Authentication authentication) {
+        var user = userService.findUserByAuth(authentication);
+        var post = postRepository.findByIdentifier(identifier);
+        post.getDownvotes().remove(user);
+        postRepository.save(post);
+        return post.getDownvotes().stream().map(ResponseUserDTO::new).collect(Collectors.toSet());
+    }
+
+    @Override
+    public ValidatorDTO isUpvoteMade(String identifier, Authentication authentication) {
+        var user = userService.findUserByAuth(authentication);
+        var post = postRepository.findByIdentifier(identifier);
+        return new ValidatorDTO(post.getUpvotes().contains(user));
+    }
+
+    @Override
+    public ValidatorDTO isDownvoteMade(String identifier, Authentication authentication) {
+        var user = userService.findUserByAuth(authentication);
+        var post = postRepository.findByIdentifier(identifier);
+        return new ValidatorDTO(post.getDownvotes().contains(user));
     }
 
     public Timestamp getStartTime() {
@@ -165,5 +242,16 @@ public class PostServiceImpl implements PostService {
     public Timestamp getCurrentTime() {
         var instant = Instant.now();
         return Timestamp.from(instant);
+    }
+
+    private Pageable setPageable(int pageNumber, int pageSize, String sortByValue) {
+        if (pageSize >= 35) {
+            throw new IllegalArgumentException("Page size must be less than 35");
+        }
+        var sortByParts = sortByValue.split(" ");
+        var sortByField = sortByParts[0].replaceAll("\\s+", "");
+
+        return sortByValue.contains("asc") ? PageRequest.of(pageNumber, pageSize, Sort.by(sortByField).ascending()) :
+                PageRequest.of(pageNumber, pageSize, Sort.by(sortByField).descending());
     }
 }

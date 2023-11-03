@@ -42,6 +42,7 @@ public class SSEController {
                     }
                 });
     }
+
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/notifications/complete")
     public void completeConnection(@RequestParam String username) {

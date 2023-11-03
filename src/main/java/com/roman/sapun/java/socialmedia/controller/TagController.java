@@ -19,16 +19,24 @@ public class TagController {
     }
 
     /**
-     * Retrieves all tags.
+     * Retrieves a paginated list of tags.
      *
-     * @param page The page number of the results.
-     * @return A list containing 10 tags.
+     * @param page     The page number of the results.
+     * @param pageSize The number of tags to display per page (default is 5).
+     * @return A list containing a paginated set of tags for the specified page.
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping
-    public List<TagDTO> getTags(@RequestParam int page) {
-        return tagService.getTags(page);
+    @GetMapping()
+    @Cacheable(value = "tagCache", key = "#page + '-' + #pageSize", unless = "#result == null")
+    public List<TagDTO> getTags(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) {
+        return tagService.getTags(page, pageSize);
     }
+    /**
+     * Retrieves a list of tags that match the provided text.
+     *
+     * @param text The text used to search for matching tags.
+     * @return A list of tags containing the provided text, or an empty list if no matches are found.
+     */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{text}")
     @Cacheable(value = "tagCache", key = "#text.toString()", unless = "#result == null")

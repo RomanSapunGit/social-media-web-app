@@ -94,9 +94,13 @@ export class RequestService {
         return this.http.put<void>(`${this.baseUrl}/api/v1/account/${token}`, {password, matchPassword});
     }
 
-    getPosts(page: number, token: string | null) {
+    getPosts(page: number, token: string | null, pageSize?: number, sortByValue?: string) {
         let params = new HttpParams();
         params = params.set('page', page.toString());
+        if(pageSize)
+            params = params.set('pageSize', pageSize.toString());
+        if (sortByValue)
+            params = params.set('sortBy', sortByValue);
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.get(`${this.baseUrl}/api/v1/post/search`, {params, headers});
     }
@@ -118,30 +122,44 @@ export class RequestService {
         return this.http.patch(`${this.baseUrl}/api/v1/comment/${id}`, {...updateData}, {headers})
     }
 
-    getUsers(page: number, token: string | null) {
+    getUsers(page: number, token: string | null, pageSize?: number) {
         let params = new HttpParams();
         params = params.set('page', page.toString());
+        if (pageSize)
+            params = params.set('pageSize', pageSize.toString());
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.get(`${this.baseUrl}/api/v1/user`, {params, headers});
     }
 
-    getTags(page: number, token: string | null) {
+    getTags(page: number, token: string | null, pageSize?: number, sortByValue?: string) {
         let params = new HttpParams();
         params = params.set('page', page.toString());
+        if (pageSize)
+            params = params.set('pageSize', pageSize.toString());
+        if (sortByValue)
+            params = params.set('sortBy', sortByValue);
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.get(`${this.baseUrl}/api/v1/tag`, {params, headers});
     }
 
-    getPostsByTag(page: number, token: string | null, tag: string | null) {
+    getPostsByTag(page: number, token: string | null, tag: string | null, pageSize?: number, sortByValue?: string) {
         let params = new HttpParams();
         params = params.set('page', page.toString());
+        if (pageSize)
+            params = params.set('pageSize', pageSize.toString());
+        if (sortByValue)
+            params = params.set('sortBy', sortByValue);
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.get(`${this.baseUrl}/api/v1/post/tag/${tag}`, {params, headers});
     }
 
-    getPostsByUsername(page: number, token: string | null, username: string | null) {
+    getPostsByUsername(page: number, token: string | null, username: string | null, pageSize?: number, sortByValue?: string) {
         let params = new HttpParams();
         params = params.set('page', page.toString());
+        if(pageSize)
+            params = params.set('pageSize', pageSize.toString());
+        if (sortByValue)
+            params = params.set('sortBy', sortByValue);
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.get(`${this.baseUrl}/api/v1/post/author/${username}`, {params, headers});
     }
@@ -151,11 +169,14 @@ export class RequestService {
         return this.http.get(`${this.baseUrl}/api/v1/user/follower`, {headers})
     }
 
-    getPostsBySubscription(token: string | null, page: number) {
+    getPostsBySubscription(token: string | null, page: number, pageSize?: number, sortByValue?: string) {
         let params = new HttpParams();
         params = params.set('page', page.toString());
+        if (pageSize)
+            params = params.set('pageSize', pageSize.toString());
+        if (sortByValue)
+            params = params.set('sortByValue', sortByValue);
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
         return this.http.get(`${this.baseUrl}/api/v1/post/follower`, {params, headers})
     }
 
@@ -177,11 +198,12 @@ export class RequestService {
         return this.http.put(`${this.baseUrl}/api/v1/post`, postData, {headers})
     }
 
-    searchPostsByText(token: string | null, text: string, page: number) {
+    searchPostsByText(token: string | null, text: string, page: number, pageSize: number, sortBy: string) {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         let params = new HttpParams();
         params = params.set('page', page.toString());
-
+        params = params.set('pageSize', pageSize.toString());
+        params = params.set('sortBy', sortBy);
         return this.http.get(`${this.baseUrl}/api/v1/post/search/${text}`, {params, headers})
     }
 
@@ -194,6 +216,7 @@ export class RequestService {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.post(`${this.baseUrl}/api/v1/notifications/comments`, {commentIdentifier, message}, {headers})
     }
+
     sendNewSubscriptionNotification(token: string | null, username: string, message: string) {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.post(`${this.baseUrl}/api/v1/notifications/subscriptions`, {username, message}, {headers})
@@ -241,10 +264,49 @@ export class RequestService {
         params = params.set('username', username.toString());
         return this.http.delete(`${this.baseUrl}/sse/notifications/complete`, {headers, params})
     }
+
     completePostUpdateSSE(token: string, postId: string) {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         let params = new HttpParams();
         params = params.set('postId', postId);
         return this.http.delete(`${this.baseUrl}/sse/posts/updates/complete`, {headers, params})
+    }
+
+    translateText(text: string, token: string, targetLanguage: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        let params = new HttpParams();
+        params = params.set('text', text);
+        params = params.set('targetLanguage', targetLanguage);
+        return this.http.put(`${this.baseUrl}/api/v1/translations`, {}, {headers, params});
+    }
+
+    addUpvote(token: string | null, identifier: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.post(`${this.baseUrl}/api/v1/post/upvote`, {identifier}, {headers})
+    }
+
+    removeUpvote(token: string | null, identifier: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.delete(`${this.baseUrl}/api/v1/post/upvote/${identifier}`, {headers})
+    }
+
+    addDownvote(token: string | null, identifier: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.post(`${this.baseUrl}/api/v1/post/downvote`, {identifier}, {headers})
+    }
+
+    removeDownvote(token: string | null, identifier: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.delete(`${this.baseUrl}/api/v1/post/downvote/${identifier}`, {headers})
+    }
+
+    isPostUpvoted(token: string | null, identifier: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/post/upvote/${identifier}`, {headers})
+    }
+
+    isPostDownvoted(token: string | null, identifier: string) {
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.baseUrl}/api/v1/post/downvote/${identifier}`, {headers})
     }
 }

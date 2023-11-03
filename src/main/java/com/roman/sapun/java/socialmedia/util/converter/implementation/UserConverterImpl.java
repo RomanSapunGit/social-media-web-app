@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.util.converter.implementation;
 
+import com.roman.sapun.java.socialmedia.dto.user.UserDTO;
 import com.roman.sapun.java.socialmedia.util.converter.UserConverter;
 import com.roman.sapun.java.socialmedia.dto.credentials.SignUpDTO;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;

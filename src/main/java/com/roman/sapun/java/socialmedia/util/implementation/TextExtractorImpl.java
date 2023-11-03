@@ -14,4 +14,10 @@ public class TextExtractorImpl implements TextExtractor {
             JsonNode rootNode = objectMapper.readTree(jsonString);
             return rootNode.path("username").asText();
     }
+    @Override
+    public String extractIdentifierFromJson(String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(jsonString);
+        return rootNode.path("identifier").asText();
+    }
 }

@@ -5,7 +5,7 @@ import {Position} from "../model/position.model";
 @Directive({
   selector: '[appDraggableDirective]'
 })
-export class DraggableDirectiveDirective {
+export class MatDialogDraggableDirective {
   private _subscription: Subscription | undefined;
   private _element: HTMLElement | undefined;
 
@@ -25,7 +25,6 @@ export class DraggableDirectiveDirective {
     this.mouseDelta = { x: 0, y: 0 };
     this.offset = { x: 0, y: 0 };
     this._element = this.container['_elementRef'].nativeElement;
-
   }
 
   ngOnInit() {

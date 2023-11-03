@@ -25,11 +25,12 @@ public class PostConverterImpl implements PostConverter {
 
     @Override
     public PostEntity convertToPostEntity(RequestPostDTO postDTO, Set<TagEntity> tags, UserEntity user,
-                                          PostEntity postEntity) {
+                                          PostEntity postEntity, Set<UserEntity> upvotes) {
         postEntity.setTitle(postDTO.title());
         postEntity.setDescription(postDTO.description());
         postEntity.setCreationTime(Timestamp.from(ZonedDateTime.now().toInstant()));
         postEntity.setIdentifier(identifierGenerator.generateUniqueIdentifier());
+        postEntity.setUpvotes(upvotes);
         postEntity.setTags(tags);
         postEntity.setAuthor(user);
         return postEntity;

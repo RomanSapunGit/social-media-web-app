@@ -1,39 +1,46 @@
 <h1 class="social-post">
-  {{isUserSubscribed.getValue() && !isLoading.getValue() && (hasPostsBySubscription() | async) ? 'Subscription posts' : 'Posts'}}</h1>
+    {{isUserSubscribed.getValue() && !isLoading.getValue() && (hasPostsBySubscription() | async) ?
+    ('SUBSCRIPTION_POSTS' | translate) : ('POSTS' | translate)}}</h1>
 <div class="post" *ngFor="let post of (posts | async)?.entities">
-<div (click)="displaySinglePost(post.identifier)">
-  <div class="social-post">
-    <h2>{{ post.title }}</h2>
-    <div class="items-info">
-      <ng-container *ngIf="post.userImage">
-        <app-image [usernameToDisplay]="post.username.toString()" [image]="post.userImage"></app-image>
-        <span class="username">{{ post.username }}</span>
-        <span class="creation-time">{{ post.creationTime | timestampDate }}</span>
-        <button *ngIf="currentUser === post.username" class="button"
-                (click)="updatePost(post.identifier, post.title, post.description);$event.stopPropagation()">
-          Edit post
-        </button>
-      </ng-container>
+    <div (click)="displaySinglePost(post.identifier)">
+        <div class="social-post">
+            <h2>{{ post.title }}</h2>
+            <div class="items-info">
+                <ng-container *ngIf="post.userImage">
+                    <app-image [usernameToDisplay]="post.username.toString()" [image]="post.userImage"></app-image>
+                    <span class="username">{{ post.username }}</span>
+                    <span class="creation-time">{{ post.creationTime | timestampDate }}</span>
+                    <button *ngIf="currentUser === post.username" class="button"
+                            (click)="updatePost(post.identifier, post.title, post.description);$event.stopPropagation()">
+                        {{'EDIT_POST' | translate}}
+                    </button>
+                </ng-container>
+            </div>
+            <app-image [images]="post.postImages"></app-image>
+            <p class="description">{{ post.description }}</p>
+        </div>
     </div>
-    <app-image [images]="post.postImages"></app-image>
-    <p class="description">{{ post.description }}</p>
-  </div>
-</div>
-</div>
-  <div *ngIf="currentPostPage.getValue() + 1 != (posts | async)?.totalPages">
-  <div infiniteScroll
-       [infiniteScrollDistance]="1"
-       [infiniteScrollThrottle]="1000"
-       (scrolled)="nextPostPage()">
-    <div *ngIf="isLoading.getValue()">
-      <p>Loading...</p>
+    <div (click)="displaySinglePost(post.identifier)">
+        <button><i class="material-icons">arrow_downward</i>
+            {{post.downvotes.length }}</button>
+        <button><i class="material-icons">arrow_upward</i>
+            {{post.upvotes.length }}</button>
     </div>
-  </div>
+</div>
+<div *ngIf="currentPostPage.getValue() + 1 != (posts | async)?.totalPages">
+    <div infiniteScroll
+         [infiniteScrollDistance]="1"
+         [infiniteScrollThrottle]="1000"
+         (scrolled)="nextPostPage()">
+        <div *ngIf="isLoading.getValue()">
+            <p>{{'LOADING' | translate}}</p>
+        </div>
+    </div>
 </div>
 <div *ngIf="(posts | async)?.entities?.length === 0 && !isLoading.getValue() ">
-  <p>{{'Current ' + (username ? 'user: ' + username : 'site') + ' has nothing to show yet'}}</p>
+    <p>{{'Current ' + (username ? 'user: ' + username : 'site') + ('HAS_NOTHING_TO_SHOW' | translate)}}</p>
 </div>
 <div *ngIf="isUserSubscribed.getValue() && currentPostPage.getValue() + 1 === (posts | async)?.totalPages">
-  <h3>That's all regarding your subscription posts</h3>
-  <button class="button" (click)="onPostChange()">Return to regular posts</button>
+    <h3>{{'SUBSCRIPTION_POSTS_END' | translate}}</h3>
+    <button class="button" (click)="onPostChange()">{{'RETURN_TO_REGULAR_POSTS' | translate}}</button>
 </div>

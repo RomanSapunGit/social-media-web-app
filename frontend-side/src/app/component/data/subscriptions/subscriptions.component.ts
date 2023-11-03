@@ -1,9 +1,9 @@
 import {Component, Input} from '@angular/core';
-import {AuthService} from "../../../service/auth.service";
-import {NotificationService} from "../../../service/notification.service";
-import {SubscriptionService} from "../../../service/subscription.service";
+import {AuthService} from "../../../services/auth.service";
+import {NotificationService} from "../../../services/notification.service";
+import {SubscriptionService} from "../../../services/subscription.service";
 import {ValidatorModel} from "../../../model/validator.model";
-import {RequestService} from "../../../service/request.service";
+import {RequestService} from "../../../services/request.service";
 
 @Component({
     selector: 'app-subscriptions',

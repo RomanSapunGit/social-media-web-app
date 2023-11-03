@@ -37,6 +37,19 @@ public class PostEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentEntity> comments;
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ImageEntity> images;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "post_upvotes",
+            joinColumns = {@JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id")},
+            inverseJoinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"))
+    private Set<UserEntity> upvotes;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "post_downvotes",
+            joinColumns = {@JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id")},
+            inverseJoinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"))
+    private Set<UserEntity> downvotes;
 }

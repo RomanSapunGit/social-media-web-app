@@ -1,16 +1,15 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
-import {AuthService} from "../../service/auth.service";
-import {RequestService} from "../../service/request.service";
-import {NotificationService} from "../../service/notification.service";
-import {fromEvent, map, merge, Observable, of, Subscription} from "rxjs";
-import {CommentService} from "../../service/comment.service";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener} from '@angular/core';
+import {AuthService} from "../../services/auth.service";
+import {RequestService} from "../../services/request.service";
+import {NotificationService} from "../../services/notification.service";
+import {BehaviorSubject, fromEvent, map, merge, Observable, of, ReplaySubject, startWith, Subscription} from "rxjs";
+import {CommentService} from "../../services/comment.service";
 import {UserModel} from "../../model/user.model";
 import {TagModel} from "../../model/tag.model";
-import {MatDialogService} from "../../service/mat-dialog.service";
-import {ActivatedRoute} from "@angular/router";
-import {RoutingService} from "../../service/routing.service";
-import {SearchByTextService} from "../../service/search-by-text.service";
-import {ServerSendEventService} from "../../service/server-send-event.service";
+import {MatDialogService} from "../../services/mat-dialog.service";
+import {ActivatedRoute, ActivatedRouteSnapshot} from "@angular/router";
+import {RoutingService} from "../../services/routing.service";
+import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 
 
 @Component({
@@ -23,69 +22,94 @@ import {ServerSendEventService} from "../../service/server-send-event.service";
 
 export class MainPageComponent {
     image = 'assets/image/bg1.jpg';
-    errorMessage: string;
+    errorMessage: BehaviorSubject<string>;
     isErrorMessage: boolean;
-    private page: number;
-    users: Observable<UserModel[]>;
-    tags: Observable<TagModel[]>;
     scrollTimeout: any;
-    networkStatus$: Subscription = Subscription.EMPTY;
+    networkStatus: Subscription;
+    isMobileView: BehaviorSubject<boolean>;
+    isMobileNavOpen: boolean;
+    selectedList: string;
+    private subscriptions: Subscription[];
 
-    constructor(private authService: AuthService, private requestService: RequestService,
-                private notificationService: NotificationService,
-                private commentService: CommentService, private changeDetectorRef: ChangeDetectorRef,
+    constructor(private notificationService: NotificationService,
+                private changeDetectorRef: ChangeDetectorRef,
                 private matDialogService: MatDialogService, private route: ActivatedRoute,
-                private routingService: RoutingService, private searchByTextService: SearchByTextService,) {
-        this.page = 0;
-        this.users = this.getUsers();
-        this.tags = this.getTags();
-        this.errorMessage = '';
+                private routingService: RoutingService,
+                private breakpointObserver: BreakpointObserver) {
+        this.subscriptions = [];
+        this.selectedList = 'posts';
+        this.networkStatus = new Subscription();
+        this.errorMessage = new BehaviorSubject<string>('');
         this.isErrorMessage = false;
+        this.isMobileView = new BehaviorSubject<boolean>(this.breakpointObserver.isMatched(Breakpoints.Handset));
+        this.isMobileNavOpen = false;
     }
 
     ngOnDestroy(): void {
-        this.networkStatus$.unsubscribe();
-
+        this.subscriptions.forEach(subscription => subscription.unsubscribe());
+        this.networkStatus.unsubscribe();
     }
 
     ngOnInit() {
-        this.searchByTextService.textFound$.subscribe({
-            next: (text) => {
-                if (!text) {
-                    this.tags = this.getTags();
-                    this.users = this.getUsers();
-                } else {
-                    this.tags = this.getTagsByText(text);
-                    this.users = this.getUsersByText(text);
-                }
-            }
-        })
+        this.subscriptions.push(
         this.matDialogService.isDialogClosed$.subscribe({
             next: (isDialogClosed) => {
                 if (isDialogClosed) {
-                    this.routingService.clearPathVariable();
+                    this.matDialogService.dialogClosed();
+                    this.route.queryParams.subscribe(params => {
+                       let queryParams = "?pageSize=" + params['pageSize']+ "&sortBy=" + params['sortBy'];
+                        this.routingService.clearPathVariable(queryParams);
+                    })
                 }
             }
-        })
+        }));
+        this.subscriptions.push(
         this.route.paramMap.subscribe(params => {
             let identifier = params.get('id');
+            console.log('check')
             if (identifier) {
                 this.displaySinglePost(identifier);
             }
-        });
+        }));
+        if (this.isMobileView) {
+            const snapshot: ActivatedRouteSnapshot = this.route.snapshot;
+            const url: string = snapshot.url.join('/');
+            switch (url) {
+                case 'main/tags':
+                    this.selectedList = 'tags';
+                    break;
+                case 'main/posts':
+                    this.selectedList = 'posts';
+                    break;
+                case 'main/users':
+                    this.selectedList = 'users';
+                    break;
+                default:
+                    this.selectedList = 'posts';
+            }
+        }
+        this.subscriptions.push(
         this.notificationService.notification$.subscribe({
             next: (message) => {
-                this.errorMessage = message.message;
+                console.log(message)
+                this.errorMessage.next(message.message);
                 this.isErrorMessage = message.isErrorMessage;
                 this.changeDetectorRef.detectChanges();
             }
-        });
+        }));
         this.checkNetworkStatus();
     }
 
+    @HostListener('window:resize', ['$event'])
+    onResize(event: any) {
+        this.isMobileView.next(event.target.innerWidth < 1000);
+    }
+
+
     checkNetworkStatus() {
         let networkStatus = navigator.onLine;
-        this.networkStatus$ = merge(
+        this.subscriptions.push(
+        this.networkStatus = merge(
             of(null),
             fromEvent(window, 'online'),
             fromEvent(window, 'offline')
@@ -94,7 +118,7 @@ export class MainPageComponent {
             .subscribe(status => {
                 console.log('status', status);
                 console.log(networkStatus);
-            });
+            }));
     }
 
     onWindowScroll() {
@@ -110,46 +134,6 @@ export class MainPageComponent {
             }
         }, 500);
     }
-
-    getUsers(): Observable<UserModel[]> {
-        let token = this.authService.getAuthToken();
-        let currentUser = this.authService.getUsername();
-        return this.requestService.getUsers(this.page, token).pipe(
-            map((response: any) => response as UserModel[]),
-            map((users: UserModel[]) => users.filter(user => user.username !== currentUser)));
-    }
-
-    getUsersByText(text: string): Observable<UserModel[]> {
-        let token = this.authService.getAuthToken();
-        let currentUser = this.authService.getUsername();
-        return this.requestService.getUsersByText(token, text, this.page).pipe(
-            map((response: any) => response['entities'] as UserModel[]),
-            map((users: UserModel[]) => users.filter(user => user.username !== currentUser))
-        );
-    }
-
-    getTagsByText(text: string): Observable<TagModel[]> {
-        let token = this.authService.getAuthToken();
-        return this.requestService.getTagsByText(token, text).pipe(
-            map((response: any) => response as TagModel[])
-        );
-    }
-
-    getTags(): Observable<TagModel[]> {
-        let token = this.authService.getAuthToken();
-        return this.requestService.getTags(this.page, token).pipe(
-            map((response: any) => response as TagModel[])
-        );
-    }
-
-    showPostsByTag(tag: string) {
-        this.matDialogService.showPostsByTag(tag);
-    }
-
-    showPostsByUsername(username: string) {
-        this.matDialogService.showPostsByUsername(username);
-    }
-
     displaySinglePost(postIdentifier: string) {
         this.matDialogService.displaySinglePost(postIdentifier);
     }

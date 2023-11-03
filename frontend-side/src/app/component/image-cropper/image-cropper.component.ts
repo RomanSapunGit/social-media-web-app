@@ -1,7 +1,7 @@
 import {Component, Inject, Input, Output, ViewChild} from '@angular/core';
-import {NotificationService} from "../../service/notification.service";
+import {NotificationService} from "../../services/notification.service";
 import {base64ToFile, Dimensions, ImageCroppedEvent, ImageTransform} from "ngx-image-cropper";
-import {ImageCropperService} from "../../service/image-cropper.service";
+import {ImageCropperService} from "../../services/image-cropper.service";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 
 @Component({

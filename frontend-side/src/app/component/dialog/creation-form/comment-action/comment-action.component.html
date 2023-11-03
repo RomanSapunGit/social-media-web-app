@@ -2,28 +2,28 @@
 <h1 class="draggable-container" mat-dialog-title
     appDraggableDirective>
   <button class="close-button" (click)="closeDialog()">&times;</button>
-  <h2>{{ isUpdating ? 'Update comment' : 'Create comment' }}</h2>
+  <h2>{{ isUpdating ? ('UPDATE_COMMENT' | translate) : ('CREATE_COMMENT' | translate) }}</h2>
 </h1>
 
 <form [formGroup]="commentForm" (ngSubmit)="onSubmit()">
   <div class="div-field">
-    <label class="label">Title:</label>
-    <input class="input-field" type="text" formControlName="title" placeholder="Input title">
+    <label class="label">{{'TITLE' | translate}}</label>
+    <input class="input-field" type="text" formControlName="title" placeholder="{{'INPUT_TITLE' | translate}}">
     <div *ngIf="commentForm.get('title')?.errors?.['required'] && commentForm.get('title')?.touched">
-      Title is required.
+      {{'TITLE_REQUIRED' | translate}}
     </div>
   </div>
   <div class="div-field">
-    <label class="label">Description:</label>
-    <textarea class="dynamic-textarea" type="text" formControlName="description" placeholder="Input description">
+    <label class="label">{{'DESCRIPTION' | translate}}</label>
+    <textarea class="dynamic-textarea" type="text" formControlName="description" placeholder="{{'INPUT_DESCRIPTION' | translate}}">
     </textarea>
     <div *ngIf="commentForm.get('description')?.errors?.['required'] && commentForm.get('description')?.touched">
-      Description is required.
+      {{'DESCRIPTION_REQUIRED' | translate}}
     </div>
   </div>
   <div class="flex justify-center">
     <button class="btn-login" [disabled]="commentForm.invalid"  type="submit">
-      {{ isUpdating ? 'Update comment' : 'Create comment' }}
+      {{ isUpdating ? ('UPDATE_COMMENT' | translate) : ('CREATE_COMMENT' | translate) }}
     </button>
   </div>
 </form>

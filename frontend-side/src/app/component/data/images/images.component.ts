@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input, SimpleChanges} from '@angular/core';
 import {Observable} from "rxjs";
 import {FileDTO} from "../../../model/file.model";
-import {ImageService} from "../../../service/image.service";
+import {ImageService} from "../../../services/image.service";
 
 @Component({
   selector: 'app-image',

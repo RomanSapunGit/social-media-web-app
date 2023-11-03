@@ -6,6 +6,7 @@ import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
+import com.roman.sapun.java.socialmedia.service.SubscriptionService;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import com.roman.sapun.java.socialmedia.util.TextExtractor;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, SubscriptionService {
     private final UserRepository userRepository;
     private final PageConverter pageConverter;
     private final ValueConfig valueConfig;
@@ -37,16 +38,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber) {
-        Pageable pageable = PageRequest.of(pageNumber, valueConfig.getPageSize() - 45, Sort.by(Sort.Direction.ASC, "username"));
+    public Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber, int pageSize, String sortByValue) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, sortByValue));
         var matchedUsers = userRepository.getAllByUsernameContaining(username, pageable);
         var postDtoPage = matchedUsers.map(RequestUserDTO::new);
         return pageConverter.convertPageToResponse(postDtoPage);
     }
 
     @Override
-    public List<ResponseUserDTO> getUsers(int page) {
-        var pageable = PageRequest.of(page, valueConfig.getPageSize() - 45);
+    public List<ResponseUserDTO> getUsers(int page, int pageSize) {
+        var pageable = PageRequest.of(page, pageSize);
         var posts = userRepository.findAll(pageable);
         return posts.stream().map(ResponseUserDTO::new).collect(Collectors.toList());
     }

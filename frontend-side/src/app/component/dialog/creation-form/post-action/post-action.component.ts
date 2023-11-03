@@ -1,12 +1,12 @@
 import {Component, Inject} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {RequestService} from "../../../../service/request.service";
-import {AuthService} from "../../../../service/auth.service";
+import {RequestService} from "../../../../services/request.service";
+import {AuthService} from "../../../../services/auth.service";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {PostActionService} from "../../../../service/post-action.service";
+import {PostActionService} from "../../../../services/post-action.service";
 import {PostModel} from "../../../../model/post.model";
-import {MatDialogService} from "../../../../service/mat-dialog.service";
-import {NotificationService} from "../../../../service/notification.service";
+import {MatDialogService} from "../../../../services/mat-dialog.service";
+import {NotificationService} from "../../../../services/notification.service";
 
 @Component({
   selector: 'app-post-action',
@@ -140,6 +140,7 @@ export class PostActionComponent {
     }
   }
   closeDialog() {
+    this.matDialogService.dialogClosed();
     this.dialogRef.close();
   }
 }

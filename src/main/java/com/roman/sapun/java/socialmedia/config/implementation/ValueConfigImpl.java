@@ -15,17 +15,20 @@ public class ValueConfigImpl implements ValueConfig {
     private static final int PAGE_SIZE = 50;
     private static final int TWELVE_HOURS = 43200;
     private final String slackWebhookUrl;
+    private final String libreTranslateUrl;
 
     public ValueConfigImpl(@Value("${BASE64_CODE}") String base64Code,
                            @Value("${MAIL_USERNAME}") String emailSubject,
                            @Value("${FRONTEND_URL}") String url,
                            @Value("${CLIENT_ID}") String clientId,
-                           @Value("${SLACK_WEBHOOK_URL}") String slackWebhookUrl) {
+                           @Value("${SLACK_WEBHOOK_URL}") String slackWebhookUrl,
+                           @Value("${LIBRETRANSLATE_URL}") String libreTranslateUrl) {
         this.base64Code = base64Code;
         this.emailSubject = emailSubject;
         this.url = url;
         this.clientId = clientId;
         this.slackWebhookUrl = slackWebhookUrl;
+        this.libreTranslateUrl = libreTranslateUrl;
     }
 
     @Override
@@ -37,8 +40,14 @@ public class ValueConfigImpl implements ValueConfig {
     public int getTwelveHours() {
         return TWELVE_HOURS;
     }
+
     @Override
     public String getSlackWebhookUrl() {
         return slackWebhookUrl;
+    }
+
+    @Override
+    public String getLibreTranslateUrl() {
+        return libreTranslateUrl;
     }
 }

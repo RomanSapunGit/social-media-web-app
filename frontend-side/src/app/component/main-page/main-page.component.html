@@ -1,30 +1,33 @@
-<app-error *ngIf="errorMessage"
-           [message]="errorMessage"
-           [isError] = "isErrorMessage"
-           (resetError)="errorMessage = ''"></app-error>
+<app-error *ngIf="(errorMessage | async) as message"
+           [message]="message"
+           [isError]="isErrorMessage"
+           (resetError)="errorMessage.next('')"></app-error>
 <app-navigation-bar></app-navigation-bar>
 
-<div class="container">
-  <div class="user-list" (window:scroll)="onWindowScroll()">
-    <h2>Posts related to users</h2>
-    <div class="table-type-border" *ngFor="let user of users | async">
-      <a (click)="showPostsByUsername(user.username);$event.stopPropagation()">
-        <p>{{ user.name }}</p>
-        <p class="username">{{ user.username }}</p>
-      </a>
+<div *ngIf="!(isMobileView | async)" class="desktop-container">
+    <div class="user-list">
+        <app-users></app-users>
     </div>
-  </div>
-
-  <div class="tag-list" (window:scroll)="onWindowScroll()">
-    <h2>Posts related to tags</h2>
-    <div class="table-type-border" *ngFor="let tag of tags | async">
-      <a (click)="showPostsByTag(tag.name);$event.stopPropagation()">
-        <p class="username">{{tag.name}}</p>
-      </a>
+    <div (window:scroll)="onWindowScroll()" class="post-list">
+        <app-post></app-post>
     </div>
-  </div>
-
-  <div (window:scroll)="onWindowScroll()" class="post-list">
-    <app-post></app-post>
-  </div>
+    <div class="tag-list">
+        <app-tags></app-tags>
+    </div>
+</div>
+<div *ngIf="isMobileView | async" class="container">
+    <ul>
+        <li><a routerLink="/main/users">Users</a></li>
+        <li><a routerLink="/main/posts">Posts</a></li>
+        <li><a routerLink="/main/tags">Tags</a></li>
+    </ul>
+    <div *ngIf="selectedList === 'users'" class="user-list">
+        <app-users></app-users>
+    </div>
+    <div *ngIf="selectedList === 'posts'" class="post-list">
+        <app-post></app-post>
+    </div>
+    <div *ngIf="selectedList === 'tags'" class="tag-list">
+        <app-tags></app-tags>
+    </div>
 </div>

@@ -10,7 +10,7 @@
 
 <div *ngIf="imagesToDisplay | async">
   <div>
-    <p class="carousel-info">Current image:{{ currentImageIndex + 1 }}/{{(imagesToDisplay | async)?.length}}</p>
+    <p class="carousel-info">{{'CURRENT_IMAGE' | translate}}:{{ currentImageIndex + 1 }}/{{(imagesToDisplay | async)?.length}}</p>
   </div>
   <div class="carousel-container">
   <ngx-slick-carousel class="carousel" [config]="slideConfig"

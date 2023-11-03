@@ -36,49 +36,62 @@ public interface PostService {
      * Retrieves a paginated list of posts.
      *
      * @param pageNumber The page number to retrieve.
-     * @return map containing 50 posts, overall number of comments, current comment page and overall number of pages.
+     * @param pageSize   The number of posts to include on each page.
+     * @param sortByValue The field by which to sort the posts.
+     * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPosts(int pageNumber);
+    Map<String, Object> getPosts(int pageNumber, int pageSize, String sortByValue);
 
     /**
      * Retrieves a paginated list of posts filtered by a specific tag.
      *
-     * @param tagName The name of the tag to filter by.
-     * @param page    The page number to retrieve.
-     * @return map containing 50 posts, overall number of comments, current comment page and overall number of pages.
+     * @param tagName   The name of the tag to filter by.
+     * @param page      The page number to retrieve.
+     * @param pageSize  The number of posts to include on each page.
+     * @param sortByValue The field by which to sort the posts.
+     * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPostsByTag(String tagName, int page);
+    Map<String, Object> getPostsByTag(String tagName, int page, int pageSize, String sortByValue);
+
     /**
      * Retrieves a paginated list of posts created by a specific user.
      *
-     * @param username The username of the user.
-     * @param page The page number to retrieve.
-     * @return map containing 50 posts, overall number of comments, current comment page and overall number of pages.
+     * @param username  The username of the user.
+     * @param page      The page number to retrieve.
+     * @param pageSize  The number of posts to include on each page.
+     * @param sortByValue The field by which to sort the posts.
+     * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPostsByUsername(String username, int page);
+    Map<String, Object> getPostsByUsername(String username, int page, int pageSize, String sortByValue);
+
     /**
      * Retrieves a paginated list of posts created by users that the authenticated user is following.
      *
      * @param authentication The authentication object for the current user.
-     * @param pageNumber The page number to retrieve.
-     * @return map containing 50 posts, overall number of comments, current comment page and overall number of pages.
+     * @param pageNumber     The page number to retrieve.
+     * @param pageSize       The number of posts to include on each page.
+     * @param sortByValue The field by which to sort the posts.
+     * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      * @throws IllegalArgumentException If the user is not found.
      */
-    Map<String, Object> getPostsByUserFollowing(Authentication authentication, int pageNumber);
+    Map<String, Object> getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue);
+
     /**
      * Retrieves a paginated list of posts that contain the specified text in their title.
      *
-     * @param title The text to search for in the post titles.
+     * @param title      The text to search for in the post titles.
      * @param pageNumber The page number to retrieve.
-     * @return map containing 50 posts, overall number of comments, current comment page and overall number of pages.
+     * @param pageSize  The number of posts to include on each page.
+     * @param sortByValue The field by which to sort the posts.
+     * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> findPostsByTextContaining(String title, int pageNumber);
+    Map<String, Object> findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue);
+
     /**
      * Retrieves a post by its identifier.
      *
      * @param identifier The identifier of the post.
      * @return The DTO representing the post.
      */
-    @SuppressWarnings("unchecked")
     ResponsePostDTO getPostById(String identifier);
 }

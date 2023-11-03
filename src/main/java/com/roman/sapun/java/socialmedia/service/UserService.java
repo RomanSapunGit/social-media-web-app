@@ -14,19 +14,25 @@ public interface UserService {
     /**
      * Retrieves a paginated list of users whose usernames contain the specified text.
      *
-     * @param username   The text to search for in usernames.
-     * @param pageNumber The page number to retrieve.
-     * @return map containing 50 Users, overall number of comments, current comment page and overall number of pages.
+     * @param username    The text to search for within usernames.
+     * @param pageNumber  The page number for pagination.
+     * @param pageSize    The number of users to display per page.
+     * @param sortByValue The criteria for sorting the user results (e.g., by username).
+     *
+     * @return A map containing a paginated list of users matching the search criteria, along with
+     *         information about the overall number of users, the current page, and the total number of pages.
      */
-    Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber);
+    Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber, int pageSize, String sortByValue);
 
     /**
      * Retrieves a paginated list of all users.
      *
-     * @param page The page number to retrieve.
-     * @return list containing 10 Users.
+     * @param page     The page number for pagination.
+     * @param pageSize The number of users to display per page.
+     *
+     * @return A list containing users on the specified page, typically up to the specified page size.
      */
-    List<ResponseUserDTO> getUsers(int page);
+    List<ResponseUserDTO> getUsers(int page, int pageSize);
 
     /**
      * Updates the details of the current user.
@@ -53,41 +59,6 @@ public interface UserService {
      */
     ResponseUserDTO unlockUser(String username);
 
-    /**
-     * Adds a user to the following list of the current user.
-     *
-     * @param authentication The authentication object of the current user.
-     * @param username       The username of the user to follow.
-     * @return The details of the user being followed.
-     */
-    ResponseUserDTO addFollowing(Authentication authentication, String username) throws JsonProcessingException;
-
-    /**
-     * Retrieves information about a user's following relationship with another user identified by their username.
-     *
-     * @param authentication The authentication object representing the currently authenticated user.
-     * @param username       The username of the user for whom the following relationship is to be checked.
-     * @return A ValidatorDTO containing information about the following relationship:
-     * - {@code valid}: Indicates whether the following relationship exists (true) or not (false).
-     */
-    ValidatorDTO findFollowingByUsername(Authentication authentication, String username);
-
-    /**
-     * Checks if the current user has any subscriptions (followings).
-     *
-     * @param authentication The authentication object of the current user.
-     * @return A validator object indicating if the user has subscriptions.
-     */
-    ValidatorDTO hasSubscriptions(Authentication authentication);
-
-    /**
-     * Removes a user from the following list of the current user.
-     *
-     * @param authentication The authentication object of the current user.
-     * @param username       The username of the user to unfollow.
-     * @return The details of the user being unfollowed.
-     */
-    ResponseUserDTO removeFollowing(Authentication authentication, String username);
 
     /**
      * Finds the user entity based on the authentication object.
@@ -96,5 +67,4 @@ public interface UserService {
      * @return The user entity.
      */
     UserEntity findUserByAuth(Authentication authentication);
-
 }

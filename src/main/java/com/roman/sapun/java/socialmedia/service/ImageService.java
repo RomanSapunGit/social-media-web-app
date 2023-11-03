@@ -36,8 +36,7 @@ public interface ImageService {
      * @param images         to update.
      * @param postId         post's generated unique identifier.
      * @param authentication for searching currently logged-in user.
-     * @return
-     * @throws PostNotFoundException if post is not found or author and current user doesn't match.
+     * @return updated list of images.
      */
 
     List<FileDTO> updateImagesForPost(List<MultipartFile> images, String postId, Authentication authentication);

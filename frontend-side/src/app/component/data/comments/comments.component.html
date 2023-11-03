@@ -10,28 +10,28 @@
     <div>
       <button *ngIf="currentUser === comment.username" class="button"
               (click)="updateComment(comment.identifier, comment.title, comment.description)">
-        Edit
+        {{'EDIT_COMMENT' | translate}}
       </button>
     </div>
   </div>
 
   <div>
     <button class="button" (click)="createComment(postIdentifier)">
-      Create comment
+      {{'CREATE_COMMENT' | translate}}
     </button>
   </div>
 
 <ng-container *ngIf="isCommentPaginationVisible$ | async" class="pagination">
   <p>
-    Page {{ (currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined && currentCommentPage[postIdentifier] !== 0) ? currentCommentPage[postIdentifier] + 1 : 1 }}
-    of {{ (postComments | async)?.totalPages }}</p>
+     {{('PAGE' | translate) (currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined && currentCommentPage[postIdentifier] !== 0) ? currentCommentPage[postIdentifier] + 1 : 1 }}
+     {{('OF' | translate) (postComments | async)?.totalPages }}</p>
   <button (click)="previousCommentPage(postIdentifier)"
           [disabled]="(currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined && currentCommentPage[postIdentifier] !== 0) && currentCommentPage[postIdentifier] + 1 === 1">
-    Previous
+    {{'PREVIOUS' | translate}}
   </button>
   <button (click)="nextCommentPage(postIdentifier)"
           [disabled]="(currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined) &&
-      currentCommentPage[postIdentifier] + 1 === ((postComments | async)?.totalPages || 0)">Next
+      currentCommentPage[postIdentifier] + 1 === ((postComments | async)?.totalPages || 0)">{{'NEXT' | translate}}
   </button>
 </ng-container>
 </div>

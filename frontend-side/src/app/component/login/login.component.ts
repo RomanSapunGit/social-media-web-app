@@ -1,11 +1,11 @@
 import {ChangeDetectorRef, Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {RequestService} from "../../service/request.service";
-import {NotificationService} from "../../service/notification.service";
+import {RequestService} from "../../services/request.service";
+import {NotificationService} from "../../services/notification.service";
 import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
-import {AuthService} from "../../service/auth.service";
+import {AuthService} from "../../services/auth.service";
 import {Subscription} from "rxjs";
-import {ServerSendEventService} from "../../service/server-send-event.service";
+import {ServerSendEventService} from "../../services/server-send-event.service";
 import {Router} from "@angular/router";
 
 @Component({

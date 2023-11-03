@@ -5,4 +5,5 @@ import com.roman.sapun.java.socialmedia.entity.UserEntity;
 
 public interface UserConverter {
     UserEntity convertToUserEntity(SignUpDTO signUpDTO, UserEntity entity);
+
 }

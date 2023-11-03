@@ -6,11 +6,11 @@ import {
     take, tap
 } from "rxjs";
 import {Page} from "../../../model/page.model";
-import {CommentService} from "../../../service/comment.service";
-import {MatDialogService} from "../../../service/mat-dialog.service";
-import {AuthService} from "../../../service/auth.service";
-import {RequestService} from "../../../service/request.service";
-import {NotificationService} from "../../../service/notification.service";
+import {CommentService} from "../../../services/comment.service";
+import {MatDialogService} from "../../../services/mat-dialog.service";
+import {AuthService} from "../../../services/auth.service";
+import {RequestService} from "../../../services/request.service";
+import {NotificationService} from "../../../services/notification.service";
 
 @Component({
     selector: 'app-comment',
@@ -91,11 +91,11 @@ export class CommentsComponent {
     }
 
     createComment(id: string) {
-        this.matDialogService.createComment(id);
+            this.matDialogService.createComment(id);
     }
 
     updateComment(commentId: string, commentTitle: string, commentDescription: string) {
-        this.matDialogService.updateComment(commentId, commentTitle, commentDescription);
+            this.matDialogService.updateComment(commentId, commentTitle, commentDescription);
     }
 
     isCommentPaginationVisible(postComments: Observable<Page>): Observable<boolean> {

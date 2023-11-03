@@ -27,13 +27,7 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    /**
-     * Creates a new comment.
-     *
-     * @param requestCommentDTO The DTO containing the details of the comment to be created.
-     * @param authentication    The authentication object representing the current user.
-     * @return The DTO representing the created comment.
-     */
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public CommentDTO createComment(@RequestBody RequestCommentDTO requestCommentDTO, Authentication authentication) {

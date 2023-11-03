@@ -1,14 +1,14 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {RequestService} from "../../service/request.service";
-import {NotificationService} from "../../service/notification.service";
+import {RequestService} from "../../services/request.service";
+import {NotificationService} from "../../services/notification.service";
 import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
 import {Subscription} from "rxjs";
-import {MatDialogService} from "../../service/mat-dialog.service";
-import {ImageCropperService} from "../../service/image-cropper.service";
-import {ServerSendEventService} from "../../service/server-send-event.service";
+import {MatDialogService} from "../../services/mat-dialog.service";
+import {ImageCropperService} from "../../services/image-cropper.service";
+import {ServerSendEventService} from "../../services/server-send-event.service";
 import {environment} from "../../../environments/environment";
-import {AuthService} from "../../service/auth.service";
+import {AuthService} from "../../services/auth.service";
 import {Router} from "@angular/router";
 
 @Component({

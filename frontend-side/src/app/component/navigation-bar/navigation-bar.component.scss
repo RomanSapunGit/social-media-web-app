@@ -1,16 +1,49 @@
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+
+.mobile-dropdown-outer {
+  position: absolute;
+  top: 50px; /* Adjust the top position as needed */
+  right: 10px; /* Adjust the right position as needed */
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 9999; /* Ensure the menu is above other elements */
+}
+
+.mobile-dropdown-outer.show {
+  display: block;
 }
 
 .circular-image {
+
   user-select: none;
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   overflow: hidden;
   margin-left: auto;
-  margin-right: 35px;
+  margin-right: 55px;
+}
+.user-notification {
+  padding-right: 20px;
+}
+.nav-container {
+  display: flex;
+  align-items: center; /* if you want to align items vertically */
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+
+
+.mobile-circular-image {
+  user-select: none;
+  width: 70px;
+  height: 70px;
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 10px;
 }
 
 .profile-menu-window {
@@ -21,4 +54,18 @@
   border: 1px solid #ccc;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   padding: 10px;
+
 }
+
+.navigation-bar {
+  position: fixed;
+  width: 100%;
+  z-index: 9996;
+}
+
+.reorder {
+  font-size: 32px;
+}
+
+
+

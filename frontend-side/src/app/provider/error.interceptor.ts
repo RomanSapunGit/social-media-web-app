@@ -1,15 +1,16 @@
 import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from "@angular/common/http";
 import {catchError, EMPTY, Observable, throwError} from "rxjs";
 import {Injectable} from "@angular/core";
-import {NotificationService} from "../service/notification.service";
-import {RequestService} from "../service/request.service";
-import {AuthService} from "../service/auth.service";
+import {NotificationService} from "../services/notification.service";
+import {RequestService} from "../services/request.service";
+import {AuthService} from "../services/auth.service";
+import {TranslateService} from "@ngx-translate/core";
 
 @Injectable()
 export class ServerErrorInterceptor implements HttpInterceptor {
 
     constructor(private snackBarService: NotificationService, private requestService: RequestService,
-                private authService: AuthService) {
+                private authService: AuthService, private translateService: TranslateService) {
     }
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -25,9 +26,11 @@ export class ServerErrorInterceptor implements HttpInterceptor {
                             const username = this.authService.getUsername();
                             this.requestService.refreshToken(token, username);
                         } else {
-                            const notificationMessage = errorMessage.endsWith('because "userEntity" is null')
-                                ? 'Bad credentials: Wrong username'
-                                : errorMessage;
+                            let notificationMessage = '';
+                            errorMessage.startsWith('Bad credentials')
+                                ? this.translateService.get('BAD_CREDENTIALS').subscribe((translation: string) => {
+                                    notificationMessage = translation;
+                                }) : notificationMessage = errorMessage;
                             this.snackBarService.showNotification(notificationMessage, true);
                             console.log(errorMessage, errorCausedBy, timestamp)
                             this.snackBarService.sendErrorNotificationToSlack(errorMessage, errorCausedBy, timestamp);
@@ -36,6 +39,7 @@ export class ServerErrorInterceptor implements HttpInterceptor {
                     case 500:
                         this.snackBarService.showNotification(errorMessage, true);
                         console.log(errorMessage, errorCausedBy, timestamp)
+                        this.snackBarService.showNotification(errorMessage, true);
                         this.snackBarService.sendErrorNotificationToSlack(errorMessage, errorCausedBy, timestamp);
                         break;
                     case 404:
@@ -44,6 +48,7 @@ export class ServerErrorInterceptor implements HttpInterceptor {
                     default:
                         this.snackBarService.showNotification(errorMessage, true);
                         console.log(error.status)
+                        this.snackBarService.showNotification(errorMessage, true);
                         this.snackBarService.sendErrorNotificationToSlack(errorMessage + error.status, errorCausedBy, timestamp);
                         return EMPTY;
                 }

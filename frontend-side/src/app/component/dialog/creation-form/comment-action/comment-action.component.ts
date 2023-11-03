@@ -1,12 +1,12 @@
 import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {RequestService} from "../../../../service/request.service";
-import {AuthService} from "../../../../service/auth.service";
-import {NotificationService} from "../../../../service/notification.service";
+import {RequestService} from "../../../../services/request.service";
+import {AuthService} from "../../../../services/auth.service";
+import {NotificationService} from "../../../../services/notification.service";
 import {CommentModel} from "../../../../model/comment.model";
-import {CommentService} from "../../../../service/comment.service";
-import {MatDialogService} from "../../../../service/mat-dialog.service";
+import {CommentService} from "../../../../services/comment.service";
+import {MatDialogService} from "../../../../services/mat-dialog.service";
 
 @Component({
   selector: 'app-creation-form',
@@ -41,6 +41,7 @@ export class CommentActionComponent {
   }
 
   closeDialog() {
+    this.matDialogService.dialogClosed();
     this.dialogRef.close();
   }
 

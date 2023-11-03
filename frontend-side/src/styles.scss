@@ -5,13 +5,14 @@
 
 @import "tailwindcss/utilities";
 @import '~bootstrap/dist/css/bootstrap.min.css';
+
 .custom-snackbar {
   z-index: 9999;
   position: revert;
 }
 
 
-$my-typography: mat.define-typography-config($font-family: 'Times New Roman, sans-serif' );
+$my-typography: mat.define-typography-config($font-family: 'Times New Roman, sans-serif');
 
 @include mat.typography-hierarchy($my-typography);
 
@@ -23,12 +24,12 @@ $my-app-warn: mat.define-palette(mat.$red-palette);
 @include mat.typography-hierarchy($my-typography);
 
 $my-app-theme: mat.define-light-theme((
-  color: (
-    primary: $my-app-primary,
-    accent: $my-app-accent,
-    warn: $my-app-warn,
-  ),
-  typography: $my-typography
+        color: (
+                primary: $my-app-primary,
+                accent: $my-app-accent,
+                warn: $my-app-warn,
+        ),
+        typography: $my-typography
 ));
 
 .error-dialog-window {
@@ -82,33 +83,46 @@ $my-app-theme: mat.define-light-theme((
   align-items: center;
   width: 20rem;
 }
-.div-field img{
+
+.div-field img {
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
 }
+
 .image-container {
   background-size: cover;
   width: 100vw;
   height: 100vh;
 }
+
 .label {
   text-align: center;
   margin-bottom: 0.5rem;
 }
+
 .input-field {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 0.25rem;
 }
+
 .input-search-field {
   user-select: none;
-  margin-right: 20px;
+  margin-right: 0;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 0.25rem;
 }
+
+.input-search-field-mobile {
+  user-select: none;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+}
+
 .draggable-container {
   position: fixed;
   cursor: move;
@@ -118,6 +132,7 @@ $my-app-theme: mat.define-light-theme((
   height: 20%;
   width: 100%;
 }
+
 .post {
   padding: 10px;
   border-top: 1px solid #ccc;
@@ -163,16 +178,21 @@ $my-app-theme: mat.define-light-theme((
   flex-direction: column;
   gap: 20px;
 }
+
 .social-post {
   flex: 1 1 auto;
-  padding: 10px;
   margin-bottom: 20px;
-  display: flex;
   flex-direction: column;
-  margin-left: auto;
-  margin-right: auto;
   align-items: center;
+  box-sizing: border-box;
 }
+
+@media (max-width: 768px) {
+  .social-post {
+    margin-left: 10%;
+  }
+}
+
 .post {
   flex: 1 1 auto;
   padding: 10px;
@@ -188,15 +208,25 @@ $my-app-theme: mat.define-light-theme((
   color: #fff;
   padding: 0.5rem 1rem;
 }
+
+@media (max-width: 768px) {
+  .button {
+    width: 50%;
+    height: 50%;
+  }
+}
+
 .content {
   position: relative;
 }
+
 .draggable-style {
   position: sticky;
   height: 100px;
   top: 0;
   z-index: 1;
 }
+
 .comments-container {
   max-width: 500px;
   word-break: break-word;
@@ -204,6 +234,7 @@ $my-app-theme: mat.define-light-theme((
   height: 300px;
   overflow: auto;
 }
+
 .dynamic-textarea {
   resize: vertical;
   min-height: 60px;
@@ -213,6 +244,7 @@ $my-app-theme: mat.define-light-theme((
   border: 1px solid #ccc;
   border-radius: 0.25rem;
 }
+
 .register-image-container {
   cursor: pointer;
   width: 100px;
@@ -233,16 +265,19 @@ $my-app-theme: mat.define-light-theme((
   padding: 10px;
   z-index: 9999;
 }
+
 .profile-menu-options a {
   position: relative;
   display: block;
   padding: 8px;
   border-bottom: 1px solid #ccc;
 }
+
 .profile-menu-options a:hover {
   background-color: #f0f0f0;
   color: #007bff;
 }
+
 .dropdown-window {
   position: absolute;
   background-color: #fff;
@@ -254,6 +289,7 @@ $my-app-theme: mat.define-light-theme((
 .no-select {
   user-select: none;
 }
+
 .confirmation-dialog {
   position: fixed;
   top: 50%;
@@ -268,11 +304,13 @@ $my-app-theme: mat.define-light-theme((
   width: 100%;
   text-align: center;
 }
+
 .confirmation-dialog .message {
   margin-bottom: 20px;
   font-size: 18px;
   color: #333333;
 }
+
 .confirmation-dialog button {
   padding: 10px 20px;
   border-radius: 4px;
@@ -300,4 +338,33 @@ $my-app-theme: mat.define-light-theme((
   position: absolute;
   top: 10px;
   right: 10px;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table-type-border {
+  border: 1px solid #ccc;
+}
+
+.user-list {
+  position: sticky;
+  user-select: none;
+  top: 35px;
+  padding: 10px;
+  width: 200px;
+}
+
+@media (max-width: 1000px) {
+  .user-list {
+    margin-top: 35px;
+    user-select: none;
+  }
+}
+
+.user-list a {
+  cursor: pointer;
 }

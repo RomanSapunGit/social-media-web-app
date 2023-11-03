@@ -1,5 +1,6 @@
 package com.roman.sapun.java.socialmedia.security.filter;
 
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.security.UserDetailsServiceImpl;
 import com.roman.sapun.java.socialmedia.service.ExternalJwtTokenAuthService;
 import com.roman.sapun.java.socialmedia.service.JwtAuthService;
@@ -52,14 +53,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String username = null;
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 token = authHeader.substring(7);
-                String usernameToMatch = externalJwtTokenAuthService.validateAndGetUsername(token);
+                var usernameToMatch = externalJwtTokenAuthService.validateAndGetUsername(token);
                 username = usernameToMatch == null ?
                         jwtAuthService.extractUsername(token) :
                         usernameToMatch;
-            }
-            if (username != null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (!externalJwtTokenAuthService.isJwtTokenAGoogle(token)) {
+            } if (username != null) {
+                var userDetails = userDetailsService.loadUserByUsername(username);
+                if (!externalJwtTokenAuthService.isGoogleJwtToken(token)) {
                     if (jwtAuthService.validateToken(token, userDetails.getUsername()) &&
                             SecurityContextHolder.getContext().getAuthentication() == null) {
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
@@ -70,7 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException | GeneralSecurityException | DisabledException | UnsupportedJwtException |
-                 UsernameNotFoundException e) {
+                 UsernameNotFoundException | UserNotFoundException e) {
             resolver.resolveException(request, response, null, e);
         }
     }

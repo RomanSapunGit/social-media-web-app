@@ -4,4 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public interface TextExtractor {
     String extractUsernameFromJson(String jsonString) throws JsonProcessingException;
+
+    String extractIdentifierFromJson(String jsonString) throws JsonProcessingException;
 }

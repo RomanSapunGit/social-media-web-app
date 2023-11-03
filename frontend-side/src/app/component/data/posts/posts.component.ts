@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {Page} from "../../../model/page.model";
-import {tap} from "rxjs"
+import {of, tap} from "rxjs"
 import {
     BehaviorSubject, concatMap,
     distinctUntilChanged,
@@ -9,13 +9,16 @@ import {
     switchMap,
     take,
 } from "rxjs";
-import {PostService} from "../../../service/post.service";
-import {MatDialogService} from "../../../service/mat-dialog.service";
-import {AuthService} from "../../../service/auth.service";
-import {PostActionService} from "../../../service/post-action.service";
+import {PostService} from "../../../services/post.service";
+import {MatDialogService} from "../../../services/mat-dialog.service";
+import {AuthService} from "../../../services/auth.service";
+import {PostActionService} from "../../../services/post-action.service";
 import {PostModel} from "../../../model/post.model";
-import {RoutingService} from "../../../service/routing.service";
-import {SearchByTextService} from "../../../service/search-by-text.service";
+import {RoutingService} from "../../../services/routing.service";
+import {SearchByTextService} from "../../../services/search-by-text.service";
+import {TagModel} from "../../../model/tag.model";
+import {ActivatedRoute} from "@angular/router";
+import {UserModel} from "../../../model/user.model";
 
 @Component({
     selector: 'app-post',
@@ -35,10 +38,14 @@ export class PostsComponent {
     @Input() username: string | null;
     loadedPosts: PostModel[] = [];
     totalPages: BehaviorSubject<number>;
+    pageSize!: number;
+    sortBy!: string;
+    searchText: string;
 
     constructor(private postService: PostService, private matDialogService: MatDialogService,
                 private authService: AuthService, private postActionService: PostActionService,
-                private routingService: RoutingService, private searchByTextService: SearchByTextService) {
+                private routingService: RoutingService, private searchByTextService: SearchByTextService,
+                private route: ActivatedRoute) {
         this.totalPages = new BehaviorSubject(0);
         this.posts = new ReplaySubject<Page>(1);
         this.currentPostPage = new BehaviorSubject<number>(0);
@@ -50,50 +57,79 @@ export class PostsComponent {
         this.subscriptions = new Subscription();
         this.currentUser = this.authService.getUsername();
         this.errorMessage = '';
+        this.searchText = '';
     }
 
+
     ngOnInit() {
+        this.route.queryParams.subscribe(params => {
+            if (this.pageSize && this.sortBy) {
+                this.pageSize = params['pageSize'] || 20;
+                this.sortBy = params['sortBy'] || 'creationTime';
+                this.currentPostPage.next(0);
+                this.fetchPosts().pipe(
+                    shareReplay(1),
+                    take(1),
+                    tap(page => this.posts.next(page))
+                ).subscribe();
+            }
+            this.pageSize = params['pageSize'] || 20;
+            this.sortBy = params['sortBy'] || 'creationTime';
+        })
         this.postActionService.postCreated$.subscribe({
             next: (post: PostModel) => {
                 this.updatePostView(post);
             }
         });
-        if(!(this.username || this.tagName)) {
+        if (!(this.username || this.tagName)) {
             this.searchByTextService.textFound$.subscribe({
                 next: (text) => {
                     this.isLoading.next(true);
+                    this.currentPostPage.next(0);
                     if (!text) {
+                        this.searchText = '';
                         this.fetchPosts().pipe(
                             tap((page) => {
                                 this.posts.next(page);
                             })
                         ).subscribe();
                     } else {
-                        this.postService.searchPostsByText(text, 0).pipe(
+                        this.searchText = text;
+                        this.postService.searchPostsByText(text, 0, this.pageSize, this.sortBy).pipe(
                             tap((page) => {
                                 this.loadedPosts = page.entities;
                                 this.posts.next(page);
                             })
                         ).subscribe();
-                        this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
-                        this.isLoading.next(false);
                     }
+                    this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
+                    this.isLoading.next(false);
                 }
             })
         }
         const subscription = this.postService.isUserHasSubscriptions().pipe(
+            take(1),
             concatMap((isUserHasSubscriptions: boolean) => {
                 this.isUserSubscribed.next(!this.username && !this.tagName ? isUserHasSubscriptions : false);
-                return this.fetchPosts();
-            })).subscribe({
+                return this.route.data.pipe(
+                    concatMap((data) => {
+                        if (data['postData'] && this.currentPostPage.getValue() == 0) {
+                            console.log('check');
+                            return of(data['postData'] as Page);
+                        } else {
+                            return this.fetchPosts();
+                        }
+                    })
+                );
+            })
+        ).subscribe({
             next: (page) => {
                 this.loadedPosts = [...this.loadedPosts, ...page.entities];
                 const pageData = new Page(this.loadedPosts, page.total, page.currentPage, page.totalPages);
                 this.posts.next(pageData);
-                console.log(this.loadedPosts)
                 this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
                 this.isLoading.next(false);
-                shareReplay(1)
+                shareReplay(1);
             },
             error: (error: any) => {
                 this.errorMessage = 'Something went wrong:' + error.error.message
@@ -147,13 +183,22 @@ export class PostsComponent {
     }
 
     fetchPosts(): Observable<Page> {
-        return this.currentPostPage.pipe(
-            take(1),
-            distinctUntilChanged(),
-            switchMap((currentPage) =>
-                this.isUserSubscribed.getValue()
-                    ? this.postService.fetchPostsBySubscription(currentPage)
-                    : this.postService.fetchPostsByPage(currentPage, this.tagName, this.username)))
+        if (this.searchText) {
+            return this.currentPostPage.pipe(
+                take(1),
+                distinctUntilChanged(),
+                switchMap((currentPage) =>
+                    this.postService.searchPostsByText(this.searchText, currentPage, this.pageSize, this.sortBy))
+            );
+        } else {
+            return this.currentPostPage.pipe(
+                take(1),
+                distinctUntilChanged(),
+                switchMap((currentPage) =>
+                    this.isUserSubscribed.getValue()
+                        ? this.postService.fetchPostsBySubscription(currentPage, this.pageSize)
+                        : this.postService.fetchPostsByPage(currentPage, this.tagName, this.username, this.pageSize, this.sortBy)))
+        }
     }
 
     updatePost(postIdentifier: string, title: string, description: string) {
@@ -177,7 +222,11 @@ export class PostsComponent {
     }
 
     displaySinglePost(postIdentifier: string) {
-        this.routingService.setPathVariable(postIdentifier);
+        const queryParamsString = "pageSize=" + this.pageSize + "&sortBy=" + this.sortBy;
+
+        const redirectUrl = "post/" + postIdentifier + "?" + queryParamsString;
+
+        this.routingService.setPathVariable(redirectUrl);
         return this.matDialogService.displaySinglePost(postIdentifier);
     }
 

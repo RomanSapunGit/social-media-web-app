@@ -1,15 +1,16 @@
 import {catchError, map, Observable, of} from "rxjs";
 import {Router, UrlTree} from "@angular/router";
-import {AuthService} from "../service/auth.service";
+import {AuthService} from "../services/auth.service";
 import {Injectable} from "@angular/core";
-import {RequestService} from "../service/request.service";
-import {MatDialogService} from "../service/mat-dialog.service";
+import {RequestService} from "../services/request.service";
+import {MatDialogService} from "../services/mat-dialog.service";
+import {TranslateService} from "@ngx-translate/core";
 
 @Injectable()
 export class AuthGuard {
 errorMessage: string
   constructor(private requestService: RequestService, private authService: AuthService,
-              private router: Router, private matDialogService: MatDialogService) {
+              private router: Router, private matDialogService: MatDialogService, private translateService: TranslateService) {
 this.errorMessage = '';
   }
 
@@ -24,7 +25,9 @@ this.errorMessage = '';
           }),
           catchError((error: any) => {
             if (error && error.error && error.error.message && error.error.message.startsWith("JWT expired")) {
-              this.matDialogService.displayError('Your session expired, please log in');
+              this.translateService.get('EXPIRED_SESSION').subscribe((translation: string) => {
+                this.matDialogService.displayError(translation as string);
+              });
               return of(this.router.createUrlTree(['/login']));
             } else {
               return of(false);

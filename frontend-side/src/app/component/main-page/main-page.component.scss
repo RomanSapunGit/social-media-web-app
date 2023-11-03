@@ -3,16 +3,7 @@
   width: 100vw;
   height: 100vh;
 }
-.social-post {
-  flex: 1 1 auto;
-  padding: 10px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  margin-left: auto;
-  margin-right: auto;
-  align-items: center;
-}
+
 .post {
   flex: 1 1 auto;
   padding: 10px;
@@ -47,66 +38,86 @@
   border-bottom: 1px solid #ccc;
 }
 
-.social-post {
+.post-list {
+  margin-top: 70px;
+  flex: 2 2 auto;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  max-width: 50%;
+  order: 2;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+
+.sticky-button-container {
+  position: fixed;
+  top: 45%;
+  left: 90%;
+  transform: translate(-50%, -50%);
+  align-items: center;
   padding: 10px;
-  border-top: none;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
+  z-index: 9999;
 }
 
-.social-post:first-child {
-  border-top: 1px solid #ccc;
+.container {
+  display: grid;
+  align-items: flex-start;
+  grid-template-columns: 200px 1fr; /* Adjust column widths as needed */
+  grid-gap: 10px;
 }
-
-.social-post-container {
-
-  flex-direction: column;
-  gap: 20px;
-}
-
-.button {
-  border-radius: 9999px;
-  background-color: cornflowerblue;
-  color: #fff;
-  padding: 0.5rem 1rem;
-}
-
-.user-list {
-  user-select: none;
-  position: sticky;
-  padding: 10px;
-  flex: 1 1 auto;
-  top: 50px;
-  width: 200px;
-}
-.user-list a {
-  cursor: pointer;
-}
-
 .tag-list {
-  user-select: none;
-  position: sticky;
   top: 50px;
+  position: sticky;
+  user-select: none;
   padding: 10px;
   width: 200px;
   order: 3;
 }
 
-.tag-list a {
-  cursor: pointer;
+@media (max-width: 1000px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+  .tag-list {
+    margin-top: 85px;
+    user-select: none;
+    order: unset;
+  }
+  .post-list {
+      order: unset;
+  }
 }
 
-.table-type-border {
-  border: 1px solid #ccc;
+.container ul {
+  z-index: 9997;
+  margin-top: 40px;
+  list-style-type: none;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  width: 100%;
+  position: fixed;
+  left: 0;
+  right: 0;
 }
 
-.container {
+.container li {
+  float: left;
+}
+
+.container li a {
+  display: flex;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+.desktop-container {
   display: flex;
   align-items: flex-start;
 }
-
-.post-list {
-  flex: 2 2 auto;
-  width: 40%
+low-z-index {
+  z-index: -1
 }

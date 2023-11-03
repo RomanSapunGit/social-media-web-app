@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS notifications
 (
     id            BIGINT NOT NULL AUTO_INCREMENT,
     message       VARCHAR(255),
-    Creation_Date TIMESTAMP,
+    creation_date TIMESTAMP,
     user_id       BIGINT,
     post_id       BIGINT,
     PRIMARY KEY (id),
@@ -82,6 +82,22 @@ CREATE TABLE IF NOT EXISTS post_tags
     PRIMARY KEY (post_id, tag_id),
     CONSTRAINT FK_post_tags_posts FOREIGN KEY (post_id) REFERENCES posts (id),
     CONSTRAINT FK_post_tags_tags FOREIGN KEY (tag_id) REFERENCES tags (id)
+) ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS post_upvotes
+(
+    post_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    PRIMARY KEY (post_id, user_id),
+    CONSTRAINT FK_post_likes_posts FOREIGN KEY (post_id) REFERENCES posts (id),
+    CONSTRAINT FK_post_likes_users FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS post_downvotes
+(
+    post_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    PRIMARY KEY (post_id, user_id),
+    CONSTRAINT FK_post_dislikes_posts FOREIGN KEY (post_id) REFERENCES posts (id),
+    CONSTRAINT FK_post_dislikes_users FOREIGN KEY (user_id) REFERENCES users (id)
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS comments

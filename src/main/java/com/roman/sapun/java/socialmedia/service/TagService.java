@@ -13,8 +13,8 @@ public interface TagService {
      *
      * @param page The page number to retrieve.
      * @return map containing 10 tags, overall number of comments, current comment page and overall number of pages.
-     */
-    List<TagDTO> getTags(int page);
+     */ //TODO rewrite the documentation
+    List<TagDTO> getTags(int page, int pageSize);
 
     List<TagDTO> getTagsByText(String text);
 

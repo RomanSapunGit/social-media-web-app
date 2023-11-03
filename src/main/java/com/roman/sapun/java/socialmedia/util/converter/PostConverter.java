@@ -12,5 +12,5 @@ import java.util.Set;
 
 public interface PostConverter {
     PostEntity convertToPostEntity(RequestPostDTO postDTO, Set<TagEntity> tags, UserEntity user,
-                                   PostEntity postEntity);
+                                   PostEntity postEntity, Set<UserEntity> upvotes);
 }

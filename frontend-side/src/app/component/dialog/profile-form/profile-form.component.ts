@@ -1,5 +1,6 @@
 import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatDialogService} from "../../../services/mat-dialog.service";
 
 @Component({
   selector: 'profile-view-form',
@@ -12,8 +13,8 @@ export class ProfileFormComponent {
   tagName: string | null;
   username: string | null;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any, private matDialogRef: MatDialogRef<ProfileFormComponent>
-  ) {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any, private matDialogRef: MatDialogRef<ProfileFormComponent>,
+  private matDialogService: MatDialogService) {
     this.currentPostPage = 0;
     this.currentCommentPage = {};
     this.tagName = '';
@@ -27,6 +28,7 @@ export class ProfileFormComponent {
   }
 
   closeDialog(): void {
+    this.matDialogService.dialogClosed();
     this.matDialogRef.close();
   }
 }
