@@ -35,13 +35,14 @@ export class MainPageComponent {
                 private changeDetectorRef: ChangeDetectorRef,
                 private matDialogService: MatDialogService, private route: ActivatedRoute,
                 private routingService: RoutingService,
-                private breakpointObserver: BreakpointObserver) {
+               ) {
         this.subscriptions = [];
         this.selectedList = 'posts';
         this.networkStatus = new Subscription();
         this.errorMessage = new BehaviorSubject<string>('');
         this.isErrorMessage = false;
-        this.isMobileView = new BehaviorSubject<boolean>(this.breakpointObserver.isMatched(Breakpoints.Handset));
+        this.isMobileView = new BehaviorSubject<boolean>(JSON.parse(localStorage.getItem('isMobileView') || 'false'));
+        localStorage.setItem('isMobileView', JSON.stringify(this.isMobileView.value));
         this.isMobileNavOpen = false;
     }
 
@@ -57,8 +58,12 @@ export class MainPageComponent {
                 if (isDialogClosed) {
                     this.matDialogService.dialogClosed();
                     this.route.queryParams.subscribe(params => {
-                       let queryParams = "?pageSize=" + params['pageSize']+ "&sortBy=" + params['sortBy'];
-                        this.routingService.clearPathVariable(queryParams);
+                        if(params['pageSize'] && params['sortBy']) {
+                            let queryParams = "?pageSize=" + params['pageSize'] + "&sortBy=" + params['sortBy'];
+                            this.routingService.clearPathVariable(queryParams);
+                        } else {
+                            this.routingService.clearPathVariable();
+                        }
                     })
                 }
             }
@@ -103,6 +108,7 @@ export class MainPageComponent {
     @HostListener('window:resize', ['$event'])
     onResize(event: any) {
         this.isMobileView.next(event.target.innerWidth < 1000);
+        localStorage.setItem('isMobileView', JSON.stringify(this.isMobileView.value));
     }
 
 

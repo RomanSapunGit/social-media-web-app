@@ -5,6 +5,7 @@ import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.service.CommentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class CommentController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public CommentDTO createComment(@RequestBody RequestCommentDTO requestCommentDTO, Authentication authentication) {
+    public CommentDTO createComment(@RequestBody RequestCommentDTO requestCommentDTO, Authentication authentication) throws UserNotFoundException, CommentNotFoundException {
         return commentService.createComment(requestCommentDTO, authentication);
     }
 
@@ -44,7 +45,7 @@ public class CommentController {
      */
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{id}")
-    public ResponseCommentDTO deleteComment(@PathVariable String id, Authentication authentication) throws CommentNotFoundException {
+    public ResponseCommentDTO deleteComment(@PathVariable String id, Authentication authentication) throws CommentNotFoundException, UserNotFoundException {
         return commentService.deleteComment(id, authentication);
     }
 
@@ -58,7 +59,7 @@ public class CommentController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
     @Cacheable(value = "commentCache", key = "#id.toString() + '-' + #page", unless = "#result.get('total') == 0")
-    public Map<String, Object> getCommentsByPostIdentifier(@PathVariable String id, @RequestParam int page) {
+    public Map<String, Object> getCommentsByPostIdentifier(@PathVariable String id, @RequestParam int page) throws CommentNotFoundException {
         return commentService.getCommentsByPostIdentifier(id, page);
     }
 
@@ -74,7 +75,7 @@ public class CommentController {
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/{id}")
     public ResponseCommentDTO updateCommentById(@RequestBody RequestCommentDTO requestCommentDTO, @PathVariable String id,
-                                                Authentication authentication) throws CommentNotFoundException {
+                                                Authentication authentication) throws CommentNotFoundException, UserNotFoundException {
         return commentService.updateCommentById(requestCommentDTO, id, authentication);
     }
 }

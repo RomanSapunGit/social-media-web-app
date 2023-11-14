@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {environment} from "../../../environments/environment";
 import {BehaviorSubject, Observable, ReplaySubject, shareReplay, switchMap, take, tap} from "rxjs";
 import {ServerSendEventService} from "../../services/server-send-event.service";
@@ -17,7 +17,7 @@ export class UserNotificationComponent {
     notificationCount: BehaviorSubject<number> = new BehaviorSubject<number>(0);
     private subscription: any;
     notifications: ReplaySubject<UserNotificationModel[]>
-    isNotificationsOpened: BehaviorSubject<boolean>;
+    @Input() isNotificationsOpened: BehaviorSubject<boolean>;
 
     constructor(private sseService: ServerSendEventService, private authService: AuthService) {
         this.notifications = new ReplaySubject<UserNotificationModel[]>();
@@ -51,10 +51,7 @@ export class UserNotificationComponent {
         if (this.subscription) {
             this.subscription.unsubscribe();
         }
-        let token = this.authService.getAuthToken();
         let username = this.authService.getUsername();
-        if(token && username) {
-            this.sseService.completeSSENotificationConnection(token, username);
-        }
+            this.sseService.completeSSENotificationConnection( username);
     }
 }

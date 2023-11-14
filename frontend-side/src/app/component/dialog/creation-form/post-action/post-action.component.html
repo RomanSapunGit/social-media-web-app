@@ -1,9 +1,10 @@
-  <h1 class="draggable-container" mat-dialog-title
+  <div class="draggable-container" mat-dialog-title
       appDraggableDirective>
     <button class="close-button" (click)="closeDialog()">&times;</button>
-    <h2>{{ isUpdating ? ('UPDATE_POST' | translate) : ('CREATE_POST' | translate) }}</h2>
-  </h1>
+  </div>
+
   <form [formGroup]="postForm" (ngSubmit)="onSubmit()">
+
     <div class="div-field">
       <label class="label">{{'TITLE' | translate}}</label>
       <input class="input-field" type="text" formControlName="title" placeholder="{{'INPUT_TITLE' | translate}}">
@@ -11,6 +12,7 @@
         {{'TITLE_REQUIRED' | translate}}
       </div>
     </div>
+
     <div class="div-field">
       <label class="label">{{'DESCRIPTION' | translate}}</label>
       <textarea class="dynamic-textarea" type="text" formControlName="description" placeholder="{{'INPUT_DESCRIPTION' | translate}}">
@@ -19,8 +21,9 @@
         {{'DESCRIPTION_REQUIRED' | translate}}
       </div>
     </div>
-    <label for="files">{{'UPLOAD_IMAGES' | translate}}</label>
-    <input type="file" id="files" (change)="onImageSelected($event)" accept=".img,.png, .jpg" multiple>
+
+    <label for="files" class="custom-file-button">{{'UPLOAD_IMAGES' | translate}}</label>
+    <input class="input-files" type="file" id="files" (change)="onImageSelected($event)" accept=".img,.png, .jpg" multiple>
     <div class="carousel-wrapper">
       <ngx-slick-carousel class="carousel" [config]="{slidesToShow: 3, slidesToScroll: 3}">
         <div ngxSlickItem *ngFor="let url of imageURLS; let i = index" class="slide">
@@ -33,9 +36,19 @@
         </div>
       </ngx-slick-carousel>
     </div>
+
     <div class="flex justify-center">
       <button class="btn-login" [disabled]="postForm.invalid" type="submit">
         {{ isUpdating ? ('UPDATE_POST' | translate) : ('CREATE_POST' | translate) }}
       </button>
     </div>
   </form>
+
+  <div *ngIf="isUpdating">
+    <button class="button" type="button" (click)="onConfirmPostDeletion()">Delete post</button>
+  </div>
+  <div class="confirmation-dialog" *ngIf="isPostDeletionSubmitted">
+    <div class="message">{{'POST_DELETION_CONFIRMATION' | translate}}</div>
+    <button type="button" (click)="onConfirm()">{{'YES' | translate}}</button>
+    <button  type="button" (click)="onCancel()">{{'NO' | translate}}</button>
+  </div>

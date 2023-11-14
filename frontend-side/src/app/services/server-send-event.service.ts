@@ -14,15 +14,14 @@ export class ServerSendEventService {
     private baseUrl = environment.backendUrl;
     private eventSources: Map<string, EventSource>;
 
-    constructor(private authService: AuthService, private requestService: RequestService,
+    constructor( private requestService: RequestService,
                 private notificationService: NotificationService) {
         this.eventSources = new Map<string, EventSource>();
     }
 
     getNotificationsFromServer(): Observable<MessageEvent> {
-        let username = this.authService.getUsername();
-        let token = this.authService.getAuthToken();
-        if (username && token) {
+        let username = localStorage.getItem("username");
+        if (username) {
             this.eventSources.set('notifications', new EventSource(`${this.baseUrl}/sse/notifications?username=${username}`));
             return new Observable(observer => {
                 const notificationEventSource = this.eventSources.get('notifications');
@@ -42,7 +41,7 @@ export class ServerSendEventService {
                     };
                     window.addEventListener('beforeunload', () => {
                         if (this.eventSources.has('notifications')) {
-                            this.completeSSENotificationConnection(token, username);
+                            this.completeSSENotificationConnection( username);
                         }
                     });
                     return () => {
@@ -60,26 +59,28 @@ export class ServerSendEventService {
         return new Observable();
     }
 
-    completeSSENotificationConnection(token: string | null, username: string | null) {
-        if (token && username) {
-            this.requestService.completeNotificationSSE(token, username).pipe(take(1)).subscribe();
+    completeSSENotificationConnection(username: string | null) {
+        if ( username) {
+            this.requestService.completeNotificationSSE(username).pipe(take(1)).subscribe();
             this.eventSources.get('notifications')?.close();
+        } else {
+            console.log('Username is null');
         }
+
     }
 
-    completeSSEPostUpdateConnection(token: string | null, postId: string | null) {
-        if (token && postId) {
-            this.requestService.completePostUpdateSSE(token, postId).pipe(take(1)).subscribe();
+    completeSSEPostUpdateConnection(postId: string | null) {
+        if ( postId) {
+            this.requestService.completePostUpdateSSE(postId).pipe(take(1)).subscribe();
             this.eventSources.get('postUpdates')?.close()
             console.log('check')
         }
     }
 
     getNotifications(): Observable<UserNotificationModel[]> {
-        let token = this.authService.getAuthToken();
-        let username = this.authService.getUsername();
-        if (token && username) {
-            return this.requestService.getNotifications(token, username).pipe(
+        let username = localStorage.getItem('username');
+        if (username) {
+            return this.requestService.getNotifications(username).pipe(
                 map((response: any) => {
                     return response as UserNotificationModel[];
                 })
@@ -89,9 +90,8 @@ export class ServerSendEventService {
     }
 
     getPostUpdateFromServer(postId: string): Observable<PostViewModel> {
-        let username = this.authService.getUsername();
-        let token = this.authService.getAuthToken();
-        if (username && token) {
+        let username = localStorage.getItem('username');
+        if (username) {
             this.eventSources.set('postUpdates', new EventSource(`${this.baseUrl}/sse/posts/updates?postId=${postId}`));
             return new Observable<PostViewModel>(observer => {
                 const postUpdateEventSource = this.eventSources.get('postUpdates');

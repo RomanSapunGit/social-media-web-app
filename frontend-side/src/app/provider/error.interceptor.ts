@@ -16,7 +16,7 @@ export class ServerErrorInterceptor implements HttpInterceptor {
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
-                const errorMessage = error.error.message;
+                const errorMessage = error.error.message || 'unknown error';
                 const errorCausedBy = error.error.causedBy;
                 const timestamp = error.error.timestamp;
                 switch (error.status) {
@@ -47,7 +47,6 @@ export class ServerErrorInterceptor implements HttpInterceptor {
                         break;
                     default:
                         this.snackBarService.showNotification(errorMessage, true);
-                        console.log(error.status)
                         this.snackBarService.showNotification(errorMessage, true);
                         this.snackBarService.sendErrorNotificationToSlack(errorMessage + error.status, errorCausedBy, timestamp);
                         return EMPTY;

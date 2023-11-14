@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input, SimpleChanges} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
 import {Observable} from "rxjs";
 import {FileDTO} from "../../../model/file.model";
 import {ImageService} from "../../../services/image.service";
@@ -17,6 +17,7 @@ export class ImagesComponent {
   isClicked: boolean;
   currentImageIndex: number = 0;
   @Input() usernameToDisplay: string;
+  @Input() isUserImage: boolean;
 
   public slideConfig = {
     slidesToShow: 1,
@@ -25,10 +26,10 @@ export class ImagesComponent {
     adaptiveHeight: true,
     lazyLoad: 'ondemand',
     arrows: false,
-
   };
 
   constructor(private imageService: ImageService) {
+    this.isUserImage = false;
     this.images = [];
     this.image = new FileDTO();
     this.imagesToDisplay = new Observable<string[]>();
@@ -37,6 +38,18 @@ export class ImagesComponent {
     this.isClicked = false;
     this.usernameToDisplay = '';
   }
+
+  ngAfterViewInit() {
+    if (this.isUserImage) {
+      const registerImageContainers = document.querySelectorAll('.register-image-container');
+      registerImageContainers.forEach((container: Element) => {
+        const element = container as HTMLElement;
+        element.style.width = '35px';
+        element.style.height = '35px';
+      });
+    }
+  }
+
 
   onAfterChange(event: any) {
     this.currentImageIndex = event.currentSlide;
@@ -69,6 +82,11 @@ export class ImagesComponent {
     event.stopPropagation();
     this.showMenu = !this.showMenu;
   }
+
+  openUserPostsWindow() {
+
+  }
+
 
   adjustImageSize(event: MouseEvent) {
     const imageElement = event.target as HTMLImageElement;

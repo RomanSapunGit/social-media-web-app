@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Page} from "../model/page.model";
-import {map, Observable, ReplaySubject} from "rxjs";
+import {map, Observable, of, ReplaySubject} from "rxjs";
 import {RequestService} from "./request.service";
 import {AuthService} from "./auth.service";
 import {PostModel} from "../model/post.model";
@@ -36,6 +36,11 @@ export class PostService {
         );
     }
 
+    deletePost(postId: string): Observable<any> {
+        let token = this.authService.getAuthToken();
+        return this.requestService.deletePost(token, postId);
+    }
+
     fetchPostsBySubscription(page: number, pageSize?: number, sortByValue?: string): Observable<Page> {
         const token = this.authService.getAuthToken();
         return this.requestService.getPostsBySubscription(token, page, pageSize, sortByValue).pipe(
@@ -43,9 +48,11 @@ export class PostService {
         );
     }
 
-    isUserHasSubscriptions(): Observable<boolean> {
-        let token = this.authService.getAuthToken();
-        return this.requestService.isUserHasSubscriptions(token).pipe(map((response: any) => {
+    isUserHasSubscriptions(username: string | null, tag: string | null): Observable<boolean> {
+        if(username || tag) {
+            return of(false);
+        }
+        return this.requestService.isUserHasSubscriptions().pipe(map((response: any) => {
             return response.valid;
         }));
     }

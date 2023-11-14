@@ -2,12 +2,16 @@ package com.roman.sapun.java.socialmedia.service;
 
 import com.roman.sapun.java.socialmedia.dto.FileDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
+import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface ImageService {
 
@@ -18,7 +22,7 @@ public interface ImageService {
      * @return DTO object that contains image data.
      * @throws IOException if image compressing is failed.
      */
-    FileDTO uploadImageForUser(MultipartFile image, String username) throws IOException;
+    FileDTO uploadImageForUser(MultipartFile image, String username) throws IOException, UserNotFoundException;
 
     /**
      * <p>Saves images to database and bounds it to specific post.</p>
@@ -39,7 +43,6 @@ public interface ImageService {
      * @return updated list of images.
      */
 
-    List<FileDTO> updateImagesForPost(List<MultipartFile> images, String postId, Authentication authentication);
 
     /**
      * <p>Retrieve images by specific post.</p>
@@ -54,7 +57,10 @@ public interface ImageService {
      * @return image.
      */
 
-    FileDTO getImageByUser(Authentication authentication);
+    FileDTO getImageByUser(Authentication authentication) throws UserNotFoundException;
+
+    Map<String, FileDTO> getImagesByUsers(Set<UserEntity> userEntities) throws UserNotFoundException;
+
 
     /**
      * <p>Get image by User's username.</p>

@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS posts
     description   VARCHAR(2550) NOT NULL,
     creation_time TIMESTAMP     NOT NULL,
     identifier    VARCHAR(255)  NOT NULL UNIQUE,
-    user_id       BIGINT        NOT NULL,
+    author       BIGINT        NOT NULL,
     PRIMARY KEY (id),
-    CONSTRAINT FK_posts_users FOREIGN KEY (user_id) REFERENCES users (id)
+    CONSTRAINT FK_posts_users FOREIGN KEY (author) REFERENCES users (id)
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS notifications

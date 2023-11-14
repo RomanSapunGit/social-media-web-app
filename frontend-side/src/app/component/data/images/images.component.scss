@@ -4,14 +4,23 @@
 }
 .carousel-image {
   margin-bottom: 15px;
-  width: auto;
-  height: auto;
+  width: fit-content;
+  height: fit-content;
   z-index: 0;
 }
-@media (max-width: 768px) {
-  .carousel-image {
-    width: 90%;
-    height: 90%;
+@media (max-width: 1000px) {
+  .carousel-container {
+    max-width: 160px;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+    display: inline-block;
+  }
+  .carousel-info {
+    display-inside: ruby-base;
+    display: inline-block;
+    max-height: 85%;
+    max-width: 160px;
   }
 }
 .carousel-container {
@@ -29,9 +38,9 @@
   max-height: 100%;
 }
 .carousel-info {
-  z-index: 1;
   margin-bottom: 15px;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
-  padding: 10px;
+  padding: 5px;
+  text-align: center;
 }

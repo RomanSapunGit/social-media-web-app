@@ -1,6 +1,7 @@
 package com.roman.sapun.java.socialmedia.controller;
 
 import com.roman.sapun.java.socialmedia.dto.FileDTO;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.service.ImageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +20,7 @@ public class ImageController {
     public ImageController(ImageService imageService) {
         this.imageService = imageService;
     }
+
     /**
      * Uploads an image for a user.
      *
@@ -30,9 +32,10 @@ public class ImageController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public FileDTO uploadImageForUser(@RequestPart("image") MultipartFile file,
-                                           @RequestPart("username") String username) throws IOException {
+                                      @RequestPart("username") String username) throws IOException, UserNotFoundException {
         return imageService.uploadImageForUser(file, username);
     }
+
     /**
      * Uploads multiple images for a post.
      *
@@ -44,9 +47,10 @@ public class ImageController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}")
     public List<FileDTO> uploadImagesForPost(@PathVariable("id") String postId,
-                                            @RequestPart("image") List<MultipartFile> files, Authentication authentication){
+                                             @RequestPart("image") List<MultipartFile> files, Authentication authentication) {
         return imageService.uploadImagesForPost(files, postId, authentication);
     }
+
     /**
      * Retrieves the image for the authenticated user.
      *
@@ -55,7 +59,7 @@ public class ImageController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
-    public FileDTO getImageByUser(Authentication authentication) {
+    public FileDTO getImageByUser(Authentication authentication) throws UserNotFoundException {
         return imageService.getImageByUser(authentication);
     }
 }

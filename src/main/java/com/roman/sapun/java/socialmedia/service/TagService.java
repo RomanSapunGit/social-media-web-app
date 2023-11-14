@@ -14,9 +14,9 @@ public interface TagService {
      * @param page The page number to retrieve.
      * @return map containing 10 tags, overall number of comments, current comment page and overall number of pages.
      */ //TODO rewrite the documentation
-    List<TagDTO> getTags(int page, int pageSize);
+    Map<String, Object> getTags(int page, int pageSize);
 
-    List<TagDTO> getTagsByText(String text);
+
 
     /**
      * Extracts existing tags from the given text.
@@ -25,6 +25,9 @@ public interface TagService {
      * @return A set of existing in database tag entities found in the text.
      */
     Set<TagEntity> getExistingTagsFromText(String text);
+
+    Map<String, Object> getExistingTagsFromText(String text, int pageSize, int page);
+
     /**
      * Extracts non-existing tags from the given text and saves them in the database.
      *

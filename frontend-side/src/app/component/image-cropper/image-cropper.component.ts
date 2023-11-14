@@ -168,4 +168,7 @@ export class ImageCropperComponent {
       rotate: this.rotation
     };
   }
+  closeDialog() {
+    this.matDialogRef.close();
+  }
 }

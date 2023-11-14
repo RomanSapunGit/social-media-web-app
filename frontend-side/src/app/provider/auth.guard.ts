@@ -15,26 +15,29 @@ this.errorMessage = '';
   }
 
   canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    let token = this.authService.getAuthToken();
-    let username = this.authService.getUsername();
-    if (token && username) {
-      return this.requestService.validateToken(token, username)
-        .pipe(
+
+      return this.requestService.validateSession().pipe(
           map((isValid: boolean) => {
-              return isValid
+            console.log(isValid);
+            return isValid;
           }),
           catchError((error: any) => {
             if (error && error.error && error.error.message && error.error.message.startsWith("JWT expired")) {
-              this.translateService.get('EXPIRED_SESSION').subscribe((translation: string) => {
-                this.matDialogService.displayError(translation as string);
-              });
-              return of(this.router.createUrlTree(['/login']));
+              return this.handleExpiredSessionError();
             } else {
               return of(false);
             }
           })
-        );
-    }
-    return of(this.router.createUrlTree(['/login']));
+      );
+  }
+
+  private handleExpiredSessionError(): Observable<UrlTree> {
+    return new Observable<UrlTree>((observer) => {
+      this.translateService.get('EXPIRED_SESSION').subscribe((translation: string) => {
+        this.matDialogService.displayError(translation as string);
+        observer.next(this.router.createUrlTree(['/login']));
+        observer.complete();
+      });
+    });
   }
 }

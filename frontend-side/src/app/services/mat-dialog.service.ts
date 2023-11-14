@@ -25,7 +25,7 @@ export class MatDialogService {
                 private notificationService: NotificationService) {
 
         if (this.breakpointObserver.isMatched(Breakpoints.Handset)) {
-            this.dialogWidth = '100%';
+            this.dialogWidth = '120%';
             this.dialogHeight = '60%';
         } else {
             this.dialogWidth = '40%';
@@ -114,6 +114,7 @@ export class MatDialogService {
             let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, this.dialogHeight,
                 false, tag);
             this.openDialogs++;
+            console.log(this.dialogWidth, this.dialogHeight)
             this.dialog.open(ProfileFormComponent, dialogConfig);
         } else {
             this.notificationService.showNotification
@@ -157,7 +158,7 @@ export class MatDialogService {
     }
 
     displayCropper(selectedImage: File) {
-        let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, '80%',
+        let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, this.dialogHeight,
             false, {selectedImage: selectedImage});
         this.dialog.open(ImageCropperComponent, dialogConfig);
     }

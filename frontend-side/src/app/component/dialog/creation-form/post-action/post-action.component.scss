@@ -41,3 +41,26 @@
 .slide:hover .overlay-text {
   opacity: 1;
 }
+
+.confirmation-dialog .message {
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #333333;
+}
+.input-files {
+  width: 40%;
+  display: none;
+}
+.custom-file-button {
+  display: flex;
+  justify-content: center;
+  background-color: gray; /* Change the background color */
+  color: #fff; /* Change the text color */
+  padding: 10px 20px; /* Adjust padding as needed */
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+label[for="files"] + .custom-file-button {
+  display: inline-block;
+}

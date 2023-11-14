@@ -11,4 +11,6 @@ public interface PageConverter {
     <T> Map<String, Object> convertPageToResponse(final Page<?> pagePersons);
 
     <T> Map<String, Object> convertPageToResponse(Page<?> pageEntities, List<?> content);
+
+    <T> Map<String, Object> convertPageToResponse(Page<?> pageEntities, List<?> content, int total);
 }

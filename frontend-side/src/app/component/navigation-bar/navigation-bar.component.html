@@ -17,11 +17,11 @@
             </div>
         </div>
         <div *ngIf="!isMobileView" class="nav-container">
-            <app-user-notification class="user-notification"></app-user-notification>
             <button (click)="openFilterDialog()"><span class="material-icons">filter_alt</span></button>
             <input class="input-search-field" type="text" [(ngModel)]="searchQuery"
                    placeholder="{{'SEARCH_PLACEHOLDER' | translate}}"
                    (ngModelChange)="searchPosts()">
+            <app-user-notification class="user-notification"></app-user-notification>
             <img class="circular-image" [src]="userImage | async" alt="User avatar" (click)="toggleProfileMenu($event)">
             <div [ngClass]="{'profile-menu-window': showProfileMenu}" *ngIf="showProfileMenu"
                  (appClickOutside)="closeDropDown()">
@@ -34,13 +34,15 @@
 </div>
 
 <div *ngIf="isMobileView && isMenuOpen" class="mobile-dropdown-outer">
-    <img class="circular-image" [src]="userImage | async" alt="User avatar" (click)="displayPostWindow(username); $event.stopPropagation()">
-    <div>
+    <div class="circular-image-container">
+        <img class="circular-image" [src]="userImage | async" alt="User avatar"
+             (click)="displayPostWindow(username); $event.stopPropagation()">
+    </div>
+    <div class="options-container">
         <input class="input-search-field-mobile" type="text" [(ngModel)]="searchQuery"
                placeholder="{{ 'SEARCH_PLACEHOLDER' | translate }}"
                (ngModelChange)="searchPosts()">
-        <button (click)="openFilterDialog()"><span class="material-icons">filter_alt</span></button>
+        <button class="filter-button" (click)="openFilterDialog()"><span class="material-icons">filter_alt</span></button>
+    <app-drop-down-menu [isMenuOpen]="isMenuOpen" (isMenuClose)="isMenuOpen = false"></app-drop-down-menu>
     </div>
-    <app-drop-down-menu [isMenuOpen]="isMenuOpen"
-    (isMenuClose)="isMenuOpen = false"></app-drop-down-menu>
 </div>

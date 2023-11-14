@@ -6,10 +6,9 @@ import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
 import {Subscription} from "rxjs";
 import {MatDialogService} from "../../services/mat-dialog.service";
 import {ImageCropperService} from "../../services/image-cropper.service";
-import {ServerSendEventService} from "../../services/server-send-event.service";
-import {environment} from "../../../environments/environment";
 import {AuthService} from "../../services/auth.service";
 import {Router} from "@angular/router";
+import {CredentialsService} from "../../services/credentials.service";
 
 @Component({
   selector: 'app-register',
@@ -28,10 +27,11 @@ export class RegisterComponent implements OnInit {
   isErrorMessage: boolean
   isImageChosen: boolean;
 
-  constructor(private requestService: RequestService, private formBuilder: FormBuilder,
+  constructor(private formBuilder: FormBuilder,
               private notificationService: NotificationService, private socialAuthService: SocialAuthService,
               private changeDetectorRef: ChangeDetectorRef, private imageCropperService: ImageCropperService,
-              private matDialogService: MatDialogService, private authService: AuthService, private router: Router) {
+              private matDialogService: MatDialogService, private authService: AuthService, private router: Router,
+              private credentialsService: CredentialsService) {
     this.isImageChosen = false;
     this.message = '';
     this.isErrorMessage = false;
@@ -87,24 +87,27 @@ export class RegisterComponent implements OnInit {
   }
 
   async register() {
-    this.registerData = {...this.registerForm.value};
-    let formData = new FormData();
-    formData.append('name', this.registerData.name);
-    formData.append('username', this.registerData.username);
-    formData.append('email', this.registerData.email);
-    formData.append('password', this.registerData.password);
+    const { name, username, email, password } = this.registerForm.value;
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('password', password);
 
-    const imageToUpload = this.selectedImage || await this.imageUrlToBlob(this.imageUrl);
+    const imageToUpload = this.selectedImage || await this.getCircularImage(this.imageUrl);
     if (imageToUpload) {
       formData.append('image', imageToUpload);
     }
 
-    this.requestService.register(formData).subscribe({
-      next: () => {
-        this.requestService.loginAndRedirect(this.registerData);
-        this.notificationService.showNotification('User registered successfully', false);
-      }
-    });
+    this.credentialsService.registerAndRedirect(formData)
+  }
+
+  async getCircularImage(imageUrl: string): Promise<Blob | null> {
+    if (!this.selectedImage) {
+      const defaultImageBlob = await this.imageUrlToBlob(imageUrl);
+      return defaultImageBlob ? await this.createCircularImage(defaultImageBlob) : null;
+    }
+    return null;
   }
 
   onFileSelected(event: Event) {
@@ -126,6 +129,40 @@ export class RegisterComponent implements OnInit {
   clearFileInput() {
     const inputElement = document.getElementById('file') as HTMLInputElement;
     inputElement.value = '';
+  }
+
+  async createCircularImage(blob: Blob): Promise<Blob | null> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.src = URL.createObjectURL(blob);
+
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        if (!context) {
+          reject(new Error('Canvas 2D context is not available.'));
+          return;
+        }
+
+        const size = Math.min(image.width, image.height);
+        canvas.width = size;
+        canvas.height = size;
+
+        context.beginPath();
+        context.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI);
+        context.closePath();
+        context.clip();
+
+        context.drawImage(image, (image.width - size) / 2, (image.height - size) / 2, size, size, 0, 0, size, size);
+
+        canvas.toBlob(resolve, 'image/png');
+      };
+
+      image.onerror = () => {
+        reject(new Error('Failed to load the image.'));
+      };
+    });
   }
 
   async imageUrlToBlob(url: string): Promise<Blob | null> {

@@ -18,7 +18,7 @@ export class SubscriptionsComponent {
     showConfirmation: boolean;
     confirmed: boolean;
 
-    constructor(private authService: AuthService, private notificationService: NotificationService,
+    constructor( private notificationService: NotificationService,
                 private subscriptionService: SubscriptionService, private requestService: RequestService) {
         this.username = '';
         this.isSubscribed = false;
@@ -29,13 +29,13 @@ export class SubscriptionsComponent {
     }
 
     ngOnInit() {
-        if (this.authService.getUsername() && this.authService.getAuthToken()) {
-            this.currentUser = this.authService.getUsername();
-            this.token = this.authService.getAuthToken();
-        } else {
-            this.notificationService.sendErrorNotificationToSlack("Username not found as a cookie", "in SubscriptionsComponent", new Date());
+        this.currentUser = localStorage.getItem('username');
+        console.log(this.currentUser)
+        if(!this.currentUser) {
+            this.notificationService.sendErrorNotificationToSlack("Username not found in a local storage", "in SubscriptionsComponent", new Date());
+        }else if (this.currentUser !== this.username) {
+            this.findFollowingByUsername();
         }
-        this.findFollowingByUsername();
     }
 
     findFollowingByUsername() {

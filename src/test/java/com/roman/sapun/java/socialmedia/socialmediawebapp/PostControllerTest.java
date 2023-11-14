@@ -47,8 +47,8 @@ public class PostControllerTest {
         PostEntity postEntity = new PostEntity();
         postEntity.setAuthor(author);
 
-        Mockito.when(userService.findUserByAuth(Mockito.any())).thenReturn(postOwner);
-        Mockito.when(postRepository.findByIdentifier(Mockito.anyString())).thenReturn(postEntity);
+        Mockito.when(userService.findUserByAuth(Mockito.any()).orElseThrow()).thenReturn(postOwner);
+        Mockito.when(postRepository.findByIdentifier(Mockito.anyString()).orElseThrow()).thenReturn(postEntity);
 
         Assertions.assertThrows(PostNotFoundException.class, () ->
                 postServiceImpl.updatePost(requestPostDTO, images, authentication));

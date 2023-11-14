@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {ChangeDetectorRef, Component, Input} from '@angular/core';
 import {Page} from "../../../model/page.model";
 import {of, tap} from "rxjs"
 import {
@@ -16,9 +16,8 @@ import {PostActionService} from "../../../services/post-action.service";
 import {PostModel} from "../../../model/post.model";
 import {RoutingService} from "../../../services/routing.service";
 import {SearchByTextService} from "../../../services/search-by-text.service";
-import {TagModel} from "../../../model/tag.model";
 import {ActivatedRoute} from "@angular/router";
-import {UserModel} from "../../../model/user.model";
+import {Breakpoints} from "@angular/cdk/layout";
 
 @Component({
     selector: 'app-post',
@@ -41,11 +40,13 @@ export class PostsComponent {
     pageSize!: number;
     sortBy!: string;
     searchText: string;
+    isDownVoteMade: boolean;
+    isUpvoteMade: boolean;
 
     constructor(private postService: PostService, private matDialogService: MatDialogService,
                 private authService: AuthService, private postActionService: PostActionService,
                 private routingService: RoutingService, private searchByTextService: SearchByTextService,
-                private route: ActivatedRoute) {
+                private route: ActivatedRoute, private changeDetectorRef: ChangeDetectorRef) {
         this.totalPages = new BehaviorSubject(0);
         this.posts = new ReplaySubject<Page>(1);
         this.currentPostPage = new BehaviorSubject<number>(0);
@@ -55,13 +56,19 @@ export class PostsComponent {
         this.isUserSubscribed = new BehaviorSubject<boolean>(false);
         this.isLoading = new BehaviorSubject<boolean>(true);
         this.subscriptions = new Subscription();
-        this.currentUser = this.authService.getUsername();
+        this.currentUser = localStorage.getItem('username');
         this.errorMessage = '';
         this.searchText = '';
+        this.isDownVoteMade = false;
+        this.isUpvoteMade = false;
     }
 
 
     ngOnInit() {
+        this.postActionService.deletePost$()
+            .subscribe(post => {
+                this.updatePostViewAfterDeletion(post);
+            });
         this.route.queryParams.subscribe(params => {
             if (this.pageSize && this.sortBy) {
                 this.pageSize = params['pageSize'] || 20;
@@ -81,6 +88,7 @@ export class PostsComponent {
                 this.updatePostView(post);
             }
         });
+
         if (!(this.username || this.tagName)) {
             this.searchByTextService.textFound$.subscribe({
                 next: (text) => {
@@ -107,10 +115,11 @@ export class PostsComponent {
                 }
             })
         }
-        const subscription = this.postService.isUserHasSubscriptions().pipe(
+
+        const subscription = this.postService.isUserHasSubscriptions(this.username, this.tagName).pipe(
             take(1),
             concatMap((isUserHasSubscriptions: boolean) => {
-                this.isUserSubscribed.next(!this.username && !this.tagName ? isUserHasSubscriptions : false);
+                this.isUserSubscribed.next(isUserHasSubscriptions);
                 return this.route.data.pipe(
                     concatMap((data) => {
                         if (data['postData'] && this.currentPostPage.getValue() == 0) {
@@ -121,10 +130,10 @@ export class PostsComponent {
                         }
                     })
                 );
-            })
-        ).subscribe({
+            })).subscribe({
             next: (page) => {
                 this.loadedPosts = [...this.loadedPosts, ...page.entities];
+                this.totalPages.next(page.totalPages);
                 const pageData = new Page(this.loadedPosts, page.total, page.currentPage, page.totalPages);
                 this.posts.next(pageData);
                 this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
@@ -138,17 +147,82 @@ export class PostsComponent {
         this.subscriptions.add(subscription);
     }
 
-    hasPostsBySubscription(): Observable<boolean> {
-        return this.posts.pipe(
-            take(1),
-            map(postsData => {
-                if (postsData.entities.length == 0 && this.isUserSubscribed.getValue()) {
-                    this.onPostChange();
-                    return false;
-                }
-                return true;
+    addUpvote(identifier: string) {
+        this.postService.addUpvote(identifier).pipe(
+            tap(upvotes => {
+                this.posts.pipe(
+                    take(1),
+                    tap(posts => {
+                        posts.entities.forEach(post => {
+                            if (post.identifier === identifier) {
+                                this.isUpvoteMade = true;
+                                post.upvotes = upvotes;
+                                this.changeDetectorRef.detectChanges()
+                            }
+                        });
+                    })
+                ).subscribe();
             })
-        );
+        ).subscribe();
+    }
+
+    removeUpvote(identifier: string) {
+        this.postService.removeUpvote(identifier).pipe(
+            tap(upvotes => {
+                this.posts.pipe(
+                    take(1),
+                    tap(posts => {
+                        posts.entities.forEach(post => {
+                            if (post.identifier === identifier) {
+                                this.isUpvoteMade = false;
+                                post.upvotes = upvotes;
+                                this.changeDetectorRef.detectChanges()
+                            }
+                        });
+                    })
+                ).subscribe();
+            })
+        ).subscribe();
+    }
+
+    addDownvote(identifier: string) {
+        this.postService.addDownvote(identifier).pipe(
+            tap(downvotes => {
+                this.posts.pipe(
+                    take(1),
+                    tap(posts => {
+                        posts.entities.forEach(post => {
+                            if (post.identifier === identifier) {
+                                this.isDownVoteMade = true;
+                                post.downvotes = downvotes;
+                                console.log(post.downvotes)
+                                this.changeDetectorRef.detectChanges()
+                            }
+                        });
+                    })
+                ).subscribe();
+            })
+        ).subscribe();
+    }
+
+    removeDownvote(identifier: string) {
+        this.postService.removeDownvote(identifier).pipe(
+            tap(downvotes => {
+                this.posts.pipe(
+                    take(1),
+                    tap(posts => {
+                        posts.entities.forEach(post => {
+                            if (post.identifier === identifier) {
+                                this.isDownVoteMade = false;
+                                post.downvotes = downvotes;
+                                console.log(post.downvotes)
+                                this.changeDetectorRef.detectChanges()
+                            }
+                        });
+                    })
+                ).subscribe();
+            })
+        ).subscribe();
     }
 
     nextPostPage() {
@@ -210,6 +284,18 @@ export class PostsComponent {
             const postIndex = this.loadedPosts.findIndex((post) => post.identifier === updatedPost.identifier);
             if (postIndex !== -1) {
                 this.loadedPosts[postIndex] = updatedPost;
+            }
+            const updatedPageData = new Page([...this.loadedPosts], this.totalPages.getValue(),
+                this.currentPostPage.getValue(), this.totalPages.getValue());
+            this.posts.next(updatedPageData);
+        }
+    }
+
+    updatePostViewAfterDeletion(identifier: string) {
+        if (identifier) {
+            const postIndex = this.loadedPosts.findIndex((post) => post.identifier === identifier);
+            if (postIndex !== -1) {
+                this.loadedPosts.splice(postIndex, 1);
             }
             const updatedPageData = new Page([...this.loadedPosts], this.totalPages.getValue(),
                 this.currentPostPage.getValue(), this.totalPages.getValue());

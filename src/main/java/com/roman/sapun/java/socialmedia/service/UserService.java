@@ -1,14 +1,13 @@
 package com.roman.sapun.java.socialmedia.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface UserService {
     /**
@@ -29,10 +28,9 @@ public interface UserService {
      *
      * @param page     The page number for pagination.
      * @param pageSize The number of users to display per page.
-     *
      * @return A list containing users on the specified page, typically up to the specified page size.
      */
-    List<ResponseUserDTO> getUsers(int page, int pageSize);
+    Map<String, Object> getUsers(int page, int pageSize);
 
     /**
      * Updates the details of the current user.
@@ -41,7 +39,7 @@ public interface UserService {
      * @param authentication The authentication object of the current user.
      * @return The updated user details.
      */
-    RequestUserDTO updateUser(RequestUserDTO requestUserDTO, Authentication authentication);
+    RequestUserDTO updateUser(RequestUserDTO requestUserDTO, Authentication authentication) throws UserNotFoundException;
 
     /**
      * Blocks a user with the specified username.
@@ -49,7 +47,7 @@ public interface UserService {
      * @param username The username of the user to block.
      * @return The blocked user details.
      */
-    ResponseUserDTO blockUser(String username);
+    ResponseUserDTO blockUser(String username) throws UserNotFoundException;
 
     /**
      * Unlocks a user with the specified username.
@@ -57,7 +55,7 @@ public interface UserService {
      * @param username The username of the user to unlock.
      * @return The unlocked user details.
      */
-    ResponseUserDTO unlockUser(String username);
+    ResponseUserDTO unlockUser(String username) throws UserNotFoundException;
 
 
     /**
@@ -66,5 +64,5 @@ public interface UserService {
      * @param authentication The authentication object of the user.
      * @return The user entity.
      */
-    UserEntity findUserByAuth(Authentication authentication);
+    UserEntity findUserByAuth(Authentication authentication) throws UserNotFoundException;
 }

@@ -18,7 +18,7 @@ import {PageNotFoundComponent} from './component/page-not-found/pagenotfound.com
 import {ResetPasswordComponent} from './component/reset-password/reset-password.component';
 import {MatButtonModule} from "@angular/material/button";
 import {GoogleLoginProvider, GoogleSigninButtonModule, SocialAuthServiceConfig} from "@abacritt/angularx-social-login";
-import {CommonModule} from "@angular/common";
+import {CommonModule, NgOptimizedImage} from "@angular/common";
 import {CommentActionComponent} from './component/dialog/creation-form/comment-action/comment-action.component';
 import {MatDialogModule} from "@angular/material/dialog";
 import {ProfileFormComponent} from './component/dialog/profile-form/profile-form.component';
@@ -53,10 +53,8 @@ import {TranslateHttpLoader} from "@ngx-translate/http-loader";
 import {TranslateLoader, TranslateModule} from "@ngx-translate/core";
 import {TagsComponent} from './component/data/tags/tags.component';
 import {UsersComponent} from './component/data/users/users.component';
-import {PostsDataResolver} from "./resolver/posts-data-resolver";
-import {UsersDataResolver} from "./resolver/user-data-resolver";
-import {TagsDataResolver} from "./resolver/tags-data-resolver";
 import { FilterComponent } from './component/dialog/filter/filter.component';
+import { AboutPageComponent } from './component/about-page/about-page.component';
 
 export function httpTranslateLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, './assets/translations/', '.json');
@@ -90,6 +88,7 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
         TagsComponent,
         UsersComponent,
         FilterComponent,
+        AboutPageComponent,
     ],
     imports: [
         BrowserModule,
@@ -122,11 +121,9 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
                 deps: [HttpClient]
             }
         }),
+        NgOptimizedImage,
     ],
     providers: [
-        TagsDataResolver,
-        UsersDataResolver,
-        PostsDataResolver,
         {provide: CONTENT_TOKEN, useValue: []},
         {provide: TOTAL_TOKEN, useValue: 0},
         {provide: CURRENT_PAGE, useValue: 0},

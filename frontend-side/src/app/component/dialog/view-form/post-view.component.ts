@@ -12,6 +12,7 @@ import {TranslatorService} from "../../../services/translator.service";
 import * as confetti from 'canvas-confetti';
 import {TranslateService} from "@ngx-translate/core";
 import {MatDialogService} from "../../../services/mat-dialog.service";
+import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 
 @Component({
     selector: 'app-view-form',
@@ -28,12 +29,14 @@ export class PostViewComponent {
     previousPostView: ReplaySubject<PostViewModel>;
     isUpvoteMade!: boolean;
     isDownvoteMade!: boolean;
+    isMobileView: boolean;
 
     constructor(private matDialogRef: MatDialogRef<PostViewComponent>, private postService: PostService,
                 @Inject(MAT_DIALOG_DATA) public data: any,
                 private sseService: ServerSendEventService, private commentService: CommentService,
                 private authService: AuthService, private translatorService: TranslatorService,
-                private translateService: TranslateService, private matDialogService: MatDialogService) {
+                private translateService: TranslateService, private matDialogService: MatDialogService,
+                private breakpointObserver: BreakpointObserver) {
         this.subscription = new Subscription();
         this.commentVisibility = {};
         this.identifier = data.identifier;
@@ -44,7 +47,7 @@ export class PostViewComponent {
         this.postService.isUpvoteMade(this.identifier).subscribe(isUpvoteMade => {
             this.isUpvoteMade = isUpvoteMade;
         });
-
+        this.isMobileView = this.breakpointObserver.isMatched(Breakpoints.Handset)
         this.postService.isDownvoteMade(this.identifier).subscribe(isDownvoteMade => {
             this.isDownvoteMade = isDownvoteMade;
         });
@@ -192,7 +195,6 @@ export class PostViewComponent {
         const resultData = {isDialogClosed: true};
         this.matDialogRef.close(resultData);
         this.subscription.unsubscribe();
-        let token = this.authService.getAuthToken();
-        this.sseService.completeSSEPostUpdateConnection(token, this.identifier);
+        this.sseService.completeSSEPostUpdateConnection(this.identifier);
     }
 }

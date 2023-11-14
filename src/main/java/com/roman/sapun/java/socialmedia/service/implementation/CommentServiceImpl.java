@@ -6,6 +6,7 @@ import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.entity.CommentEntity;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.repository.CommentRepository;
 import com.roman.sapun.java.socialmedia.repository.PostRepository;
 import com.roman.sapun.java.socialmedia.service.CommentService;
@@ -13,7 +14,6 @@ import com.roman.sapun.java.socialmedia.service.ImageService;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import com.roman.sapun.java.socialmedia.util.converter.CommentConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
-import jakarta.persistence.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -45,16 +45,16 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication) {
+    public CommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication) throws CommentNotFoundException, UserNotFoundException {
         var commentOwner = userService.findUserByAuth(authentication);
-        var postEntity = postRepository.findByIdentifier(requestCommentDTO.postIdentifier());
+        var postEntity = postRepository.findByIdentifier(requestCommentDTO.postIdentifier()).orElseThrow(CommentNotFoundException::new);
         var commentEntity = commentConverter.convertToCommentEntity(requestCommentDTO, new CommentEntity(), commentOwner, postEntity);
         commentRepository.save(commentEntity);
         return new CommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
     }
     @Override
-    public Map<String, Object> getCommentsByPostIdentifier(String identifier, int pageNumber) {
-        var postEntity = postRepository.findByIdentifier(identifier);
+    public Map<String, Object> getCommentsByPostIdentifier(String identifier, int pageNumber) throws CommentNotFoundException {
+        var postEntity = postRepository.findByIdentifier(identifier).orElseThrow(CommentNotFoundException::new);
         var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize() - 47);
         var commentPage = commentRepository.findCommentEntitiesByPost(postEntity, pageable);
         return pageConverter.convertPageToResponse(commentPage.map(comment ->
@@ -62,9 +62,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public ResponseCommentDTO deleteComment(String identifier, Authentication authentication) throws CommentNotFoundException {
+    public ResponseCommentDTO deleteComment(String identifier, Authentication authentication) throws CommentNotFoundException, UserNotFoundException {
         var commentOwner = userService.findUserByAuth(authentication);
-        var commentEntity = commentRepository.findByIdentifier(identifier);
+        var commentEntity = commentRepository.findByIdentifier(identifier).orElseThrow(CommentNotFoundException::new);
         if (!commentEntity.getAuthor().equals(commentOwner)) {
             throw new CommentNotFoundException();
         }
@@ -73,9 +73,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public ResponseCommentDTO updateCommentById(RequestCommentDTO requestCommentDTO, String identifier, Authentication authentication) throws CommentNotFoundException {
+    public ResponseCommentDTO updateCommentById(RequestCommentDTO requestCommentDTO, String identifier, Authentication authentication) throws CommentNotFoundException, UserNotFoundException {
         var commentOwner = userService.findUserByAuth(authentication);
-        var commentEntity = commentRepository.findByIdentifier(identifier);
+        var commentEntity = commentRepository.findByIdentifier(identifier).orElseThrow(CommentNotFoundException::new);
         if (!commentEntity.getAuthor().equals(commentOwner)) {
             throw new CommentNotFoundException();
         }

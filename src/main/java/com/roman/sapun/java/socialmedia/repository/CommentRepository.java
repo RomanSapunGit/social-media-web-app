@@ -7,8 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
-CommentEntity findByIdentifier(String identifier);
+Optional<CommentEntity> findByIdentifier(String identifier);
 Page<CommentEntity> findCommentEntitiesByPost(PostEntity post, Pageable pageable);
 }

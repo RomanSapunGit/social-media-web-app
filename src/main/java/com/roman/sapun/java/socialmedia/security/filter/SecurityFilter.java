@@ -1,19 +1,20 @@
 package com.roman.sapun.java.socialmedia.security.filter;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 
 @Configuration
@@ -21,35 +22,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityFilter {
 
-    private final JwtAuthFilter authFilter;
-
-    @Lazy
-    @Autowired
-    public SecurityFilter(JwtAuthFilter authFilter) {
-        this.authFilter = authFilter;
-    }
-
-    @Order(2)
+    @Order(1)
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .cors().and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.cors()
                 .and()
-                .securityMatcher("/api/**")
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api/v1/account/**", "/api/v1/token/**", "/api/v1/notifications/slack/**").permitAll()
+                        .requestMatchers("/api/v1/account/**", "/sse/**", "/api/v1/notifications/slack/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/csrf/token").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().hasAnyRole("USER", "ADMIN"))
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .maximumSessions(1))
                 .exceptionHandling()
-                .authenticationEntryPoint(customAuthenticationEntryPoint());
+                .authenticationEntryPoint(customAuthenticationEntryPoint())
+                .and()
+
+                .csrf(Customizer.withDefaults());
         return http.build();
     }
 
     @Bean
     public AuthenticationEntryPoint customAuthenticationEntryPoint() {
-        return (request, response, authException) ->
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Bad credentials");
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write("Some error occured");
+        };
     }
 }

@@ -6,9 +6,7 @@ import {AuthGuard} from "./provider/auth.guard";
 import {MainPageComponent} from "./component/main-page/main-page.component";
 import {PageNotFoundComponent} from "./component/page-not-found/pagenotfound.component";
 import {ResetPasswordComponent} from "./component/reset-password/reset-password.component";
-import {UsersDataResolver} from "./resolver/user-data-resolver";
-import {PostsDataResolver} from "./resolver/posts-data-resolver";
-import {TagsDataResolver} from "./resolver/tags-data-resolver";
+import {AboutPageComponent} from "./component/about-page/about-page.component";
 
 const routes: Routes = [
     {path: '', component: RegisterComponent},
@@ -17,39 +15,27 @@ const routes: Routes = [
     {
         path: 'main/users',
         component: MainPageComponent,
-        canActivate: [AuthGuard],
-        resolve: {
-            userData: UsersDataResolver
-        }
+        canActivate: [AuthGuard]
     },
     {
         path: 'main/posts',
         component: MainPageComponent,
-        canActivate: [AuthGuard],
-        resolve: {
-            postData: PostsDataResolver
-        }
+        canActivate: [AuthGuard]
     },
     {
         path: 'main/tags',
         component: MainPageComponent,
-        canActivate: [AuthGuard],
-        resolve: {
-            tagsData: TagsDataResolver
-        }
+        canActivate: [AuthGuard]
     },
     {path: 'main/post/:id', component: MainPageComponent, canActivate: [AuthGuard]},
     {
         path: 'main',
         component: MainPageComponent,
-        canActivate: [AuthGuard], resolve: {
-            postData: PostsDataResolver,
-            tagsData: TagsDataResolver,
-            userData: UsersDataResolver
-        }
+        canActivate: [AuthGuard]
     },
     {path: 'reset-password', component: ResetPasswordComponent},
     {path: '?token', component: ResetPasswordComponent},
+    {path: 'about', component: AboutPageComponent},
     {path: '**', component: PageNotFoundComponent},
 ];
 

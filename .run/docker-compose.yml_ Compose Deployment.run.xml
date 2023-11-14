@@ -1,0 +1,59 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="docker-compose.yml: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="envFilePath" value="" />
+        <option name="envVars">
+          <list>
+            <DockerEnvVarImpl>
+              <option name="name" value="BASE64_CODE" />
+              <option name="value" value="5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="CLIENT_ID" />
+              <option name="value" value="973660462549-isbq8itomqfkjbt7m2rrnht9jv7rt3tn.apps.googleusercontent.com" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="DB_PASSWORD" />
+              <option name="value" value="555908767" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="DB_USERNAME" />
+              <option name="value" value="Roman" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="FRONTEND_URL" />
+              <option name="value" value="http://localhost:4200" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="INIT_MODE" />
+              <option name="value" value="always" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="LOG_CONFIGURATION" />
+              <option name="value" value="TRACE" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="MAIL_PASSWORD" />
+              <option name="value" value="mmcpcqwqvnyckuos " />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="MAIL_USERNAME" />
+              <option name="value" value="teg481275@gmail.com" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="SLACK_WEBHOOK_URL" />
+              <option name="value" value="https://hooks.slack.com/services/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" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="DB_ENDPOINT" />
+              <option name="value" value="blog.ciqwmadez1ln.eu-north-1.rds.amazonaws.com" />
+            </DockerEnvVarImpl>
+          </list>
+        </option>
+        <option name="sourceFilePath" value="docker-compose.yml" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

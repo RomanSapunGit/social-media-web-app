@@ -1,4 +1,3 @@
-<div [ngStyle]="{backgroundImage: 'url(' + image + ')'}" class="image-container">
   <app-error *ngIf="message" [message]="message" (resetError)="message = ''"></app-error>
   <h2 class="text-center">{{'REGISTER_TITLE' | translate}}</h2>
   <form [formGroup]="registerForm" (ngSubmit)="register()">
@@ -10,7 +9,7 @@
       <input type="file" id="file" (change)="onFileSelected($event)" accept=".img,.png,.jpg" style="display: none;">
       <label for="file">
         <div class="register-image-container">
-          <img  *ngIf="imageUrl" [src]="imageUrl" alt="User image" />
+          <img  *ngIf="imageUrl" [src]="imageUrl" alt="User image" class="circle-image"/>
           <div class="image-overlay"></div>
         </div>
       </label>
@@ -48,7 +47,6 @@
       <button class="btn-login" [disabled]="registerForm.invalid" type="submit">{{'REGISTER_BUTTON' | translate}}</button>
     </div>
     <p class="text-center mt-4">
-      {{'ALREADY_HAVE_ACCOUNT' | translate}} <a href="/login">{{'LOGIN' | translate}}</a> | <a href="/reset-password">{{'RESET_PASSWORD_LINK' | translate}}</a>
+      {{'ALREADY_HAVE_ACCOUNT' | translate}} <a routerLink="/login">{{'LOGIN' | translate}}</a> | <a routerLink="/reset-password">{{'RESET_PASSWORD_LINK' | translate}}</a>
     </p>
   </form>
-</div>

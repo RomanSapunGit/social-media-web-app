@@ -1,6 +1,9 @@
 import {Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from '@angular/core';
 import {MatDialogService} from "../../services/mat-dialog.service";
 import {AuthService} from "../../services/auth.service";
+import {RequestService} from "../../services/request.service";
+import {Router} from "@angular/router";
+import {ServerSendEventService} from "../../services/server-send-event.service";
 
 @Component({
     selector: 'app-drop-down-menu',
@@ -16,11 +19,13 @@ export class DropDownMenuComponent {
     @Input() isMenuOpen: boolean;
     @Output() isMenuClose = new EventEmitter<boolean>();
 
-    constructor(private matDialogService: MatDialogService, private authService: AuthService) {
+    constructor(private matDialogService: MatDialogService, private authService: AuthService,
+                private requestService: RequestService, private router: Router,
+                private sseService: ServerSendEventService) {
         this.isProfileMenu = false;
         this.showConfirmation = false;
         this.confirmed = false;
-        this.username = authService.getUsername();
+        this.username = localStorage.getItem('username');
         this.usernameToDisplay = '';
         this.isMenuOpen = false;
     }
@@ -53,6 +58,14 @@ export class DropDownMenuComponent {
 
     logout(): void {
         this.authService.logout();
+        this.sseService.completeSSENotificationConnection(this.username);
+        this.requestService.logout().subscribe({
+            next: () => {
+                this.requestService.getCsrf();
+                this.router.navigate(["/login"]);
+            },
+            error: (error: any) => console.log(error.error.message)
+        });
     }
 
 }

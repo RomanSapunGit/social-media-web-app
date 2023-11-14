@@ -7,6 +7,7 @@ import {AuthService} from "../../services/auth.service";
 import {Subscription} from "rxjs";
 import {ServerSendEventService} from "../../services/server-send-event.service";
 import {Router} from "@angular/router";
+import {CredentialsService} from "../../services/credentials.service";
 
 @Component({
   selector: 'app-login',
@@ -22,10 +23,10 @@ export class LoginComponent {
   isErrorMessage: boolean;
   socialUser!: SocialUser;
 
-  constructor(private requestService: RequestService, private formBuilder: FormBuilder,
+  constructor(private formBuilder: FormBuilder,
               private notificationService: NotificationService, private socialAuthService: SocialAuthService,
               private authService: AuthService, private changeDetectorRef: ChangeDetectorRef,
-              private router: Router) {
+              private router: Router, private credentialsService: CredentialsService) {
     this.errorMessage = '';
     this.isErrorMessage = false;
     this.loginForm = this.formBuilder.group({
@@ -36,7 +37,7 @@ export class LoginComponent {
 
  async login() {
     this.loginData = {...this.loginForm.value};
-    this.requestService.loginAndRedirect(this.loginData)
+    this.credentialsService.loginAndRedirect(this.loginData)
   }
 
  async ngOnInit() {
@@ -51,7 +52,7 @@ export class LoginComponent {
     this.authSubscription = this.socialAuthService.authState.subscribe(async (user) => {
       this.socialUser = user;
       if (this.socialUser && this.socialUser.idToken) {
-        this.requestService.loginViaGoogleAndRedirect(this.socialUser.idToken);
+        this.credentialsService.loginViaGoogleAndRedirect(this.socialUser.idToken);
         this.authService.setIsGoogleAccount();
       }
     });

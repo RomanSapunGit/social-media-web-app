@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.service.SubscriptionService;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class UserController {
      */
     @ResponseStatus(HttpStatus.OK)
     @PutMapping()
-    public RequestUserDTO updateUser(@RequestBody RequestUserDTO requestUserDTO, Authentication authentication) {
+    public RequestUserDTO updateUser(@RequestBody RequestUserDTO requestUserDTO, Authentication authentication) throws UserNotFoundException {
         return userService.updateUser(requestUserDTO, authentication);
     }
 
@@ -70,7 +71,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
     @Cacheable(value = "userCache", key = "#page + #page + '-' + #pageSize", unless = "#result == null")
-    public List<ResponseUserDTO> getUsers(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) {
+    public Map<String, Object> getUsers(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) {
         return userService.getUsers(page, pageSize);
     }
 
@@ -83,7 +84,7 @@ public class UserController {
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/follower")
-    public ResponseUserDTO addFollowing(@RequestBody String username, Authentication authentication) throws JsonProcessingException {
+    public ResponseUserDTO addFollowing(@RequestBody String username, Authentication authentication) throws JsonProcessingException, UserNotFoundException {
         return subscriptionService.addFollowing(authentication, username);
     }
 
@@ -95,13 +96,13 @@ public class UserController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/follower")
-    public ValidatorDTO hasSubscriptions(Authentication authentication) {
+    public ValidatorDTO hasSubscriptions(Authentication authentication) throws UserNotFoundException {
         return subscriptionService.hasSubscriptions(authentication);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/follower/{username}")
-    public ValidatorDTO findFollowingByUsername(Authentication authentication, @PathVariable String username) {
+    public ValidatorDTO findFollowingByUsername(Authentication authentication, @PathVariable String username) throws UserNotFoundException {
         return subscriptionService.findFollowingByUsername(authentication, username);
     }
 
@@ -114,7 +115,7 @@ public class UserController {
      */
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/follower/{username}")
-    public ResponseUserDTO removeFollowing(@PathVariable String username, Authentication authentication) {
+    public ResponseUserDTO removeFollowing(@PathVariable String username, Authentication authentication) throws UserNotFoundException {
         return subscriptionService.removeFollowing(authentication, username);
     }
 
@@ -127,7 +128,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{username}")
-    public ResponseUserDTO blockUser(@PathVariable String username) {
+    public ResponseUserDTO blockUser(@PathVariable String username) throws UserNotFoundException {
         return userService.blockUser(username);
     }
 
@@ -140,7 +141,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/{username}")
-    public ResponseUserDTO unlockUser(@PathVariable String username) {
+    public ResponseUserDTO unlockUser(@PathVariable String username) throws UserNotFoundException {
         return userService.unlockUser(username);
     }
 }

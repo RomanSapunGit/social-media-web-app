@@ -6,3 +6,14 @@
   height:100%;
   pointer-events:none;
 }
+.social-post {
+  max-width: 80%;
+  transform: none
+}
+@media (max-width: 500px) {
+  .description {
+    max-height: 200px; /* Set a fixed height for the element */
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+}

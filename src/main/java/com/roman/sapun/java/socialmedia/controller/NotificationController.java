@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.dto.ResponseExceptionDTO;
 import com.roman.sapun.java.socialmedia.dto.notification.CommentNotificationDTO;
 import com.roman.sapun.java.socialmedia.dto.notification.NotificationDTO;
+import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.service.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +24,7 @@ public class NotificationController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/subscriptions")
-    public void createFollowNotification(@RequestBody NotificationDTO notificationDTO) {
+    public void createFollowNotification(@RequestBody NotificationDTO notificationDTO) throws UserNotFoundException {
         notificationService.createFollowNotification(notificationDTO.message(), notificationDTO.username());
     }
 
@@ -33,7 +36,7 @@ public class NotificationController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/comments")
-    public void createCommentNotification(@RequestBody CommentNotificationDTO commentNotificationDTO) {
+    public void createCommentNotification(@RequestBody CommentNotificationDTO commentNotificationDTO) throws PostNotFoundException, CommentNotFoundException {
         notificationService.createCommentNotification(commentNotificationDTO.commentIdentifier(), commentNotificationDTO.message());
     }
 
@@ -59,7 +62,7 @@ public class NotificationController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{username}")
-    public List<NotificationDTO> getNotifications(@PathVariable String username) {
+    public List<NotificationDTO> getNotifications(@PathVariable String username) throws UserNotFoundException {
         return notificationService.getNotifications(username);
     }
 }

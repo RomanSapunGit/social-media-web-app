@@ -1,9 +1,11 @@
 package com.roman.sapun.java.socialmedia.service;
 
-import com.roman.sapun.java.socialmedia.dto.post.PostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
+import com.roman.sapun.java.socialmedia.exception.InvalidPageSizeException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.TagNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,7 +21,7 @@ public interface PostService {
      * @param authentication The authentication object for the current user.
      * @return The DTO representing the created post.
      */
-    ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication);
+    ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws UserNotFoundException;
 
     /**
      * Updates an existing post with the given request data, images, and authentication.
@@ -30,7 +32,7 @@ public interface PostService {
      * @return The DTO representing the updated post.
      * @throws PostNotFoundException If the post with the given identifier is not found or Authors and User's data does not match.
      */
-    ResponsePostDTO updatePost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws PostNotFoundException;
+    ResponsePostDTO updatePost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws PostNotFoundException, UserNotFoundException;
 
     /**
      * Retrieves a paginated list of posts.
@@ -40,7 +42,7 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPosts(int pageNumber, int pageSize, String sortByValue);
+    Map<String, Object> getPosts(int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
 
     /**
      * Retrieves a paginated list of posts filtered by a specific tag.
@@ -51,7 +53,7 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPostsByTag(String tagName, int page, int pageSize, String sortByValue);
+    Map<String, Object> getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException;
 
     /**
      * Retrieves a paginated list of posts created by a specific user.
@@ -62,7 +64,7 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPostsByUsername(String username, int page, int pageSize, String sortByValue);
+    Map<String, Object> getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException;
 
     /**
      * Retrieves a paginated list of posts created by users that the authenticated user is following.
@@ -74,7 +76,7 @@ public interface PostService {
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      * @throws IllegalArgumentException If the user is not found.
      */
-    Map<String, Object> getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue);
+    Map<String, Object> getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException;
 
     /**
      * Retrieves a paginated list of posts that contain the specified text in their title.
@@ -85,7 +87,7 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue);
+    Map<String, Object> findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
 
     /**
      * Retrieves a post by its identifier.
@@ -93,5 +95,7 @@ public interface PostService {
      * @param identifier The identifier of the post.
      * @return The DTO representing the post.
      */
-    ResponsePostDTO getPostById(String identifier);
+    ResponsePostDTO getPostById(String identifier) throws PostNotFoundException, UserNotFoundException;
+
+    ResponsePostDTO deletePostByIdentifier(String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException;
 }

@@ -1,7 +1,7 @@
 import {Component, HostListener, Input} from '@angular/core';
 import {AuthService} from "../../services/auth.service";
 import {ImageService} from "../../services/image.service";
-import {Observable} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import {RequestService} from "../../services/request.service";
 import {PostService} from "../../services/post.service";
 import {MatDialogService} from "../../services/mat-dialog.service";
@@ -21,9 +21,8 @@ export class NavigationBarComponent {
     isMobileView: boolean | null;
     isMobileNavOpen: boolean;
     isMenuOpen: boolean;
-    showConfirmation = false;
-    confirmed = false;
     username: string | null;
+    isNotificationsOpened: BehaviorSubject<boolean>;
 
     constructor(private matDialogService: MatDialogService, private imageService: ImageService, private searchByTextService: SearchByTextService,
                 private breakpointObserver: BreakpointObserver, private authService: AuthService) {
@@ -33,7 +32,8 @@ export class NavigationBarComponent {
         this.isMobileView = this.breakpointObserver.isMatched(Breakpoints.Handset);
         this.isMobileNavOpen = false;
         this.isMenuOpen = false;
-        this.username = authService.getUsername();
+        this.username = localStorage.getItem('username');
+        this.isNotificationsOpened = new BehaviorSubject<boolean>(false);
     }
 
     @HostListener('window:resize', ['$event'])

@@ -1,18 +1,20 @@
+<button class="close-button" (click)="closeDialog()">&times;</button>
+
 <br/>
 <br/>
-<button (click)="rotateLeft()">{{ 'ROTATE_LEFT' | translate }}</button>
-<button (click)="rotateRight()">{{ 'ROTATE_RIGHT' | translate }}</button>
-<button (click)="flipHorizontal()">{{ 'FLIP_HORIZONTAL' | translate }}</button>
-<button (click)="flipVertical()">{{ 'FLIP_VERTICAL' | translate }}</button>
+<button class="button" (click)="rotateLeft()">{{ 'ROTATE_LEFT' | translate }}</button>
+<button class="button" (click)="rotateRight()">{{ 'ROTATE_RIGHT' | translate }}</button>
+<button class="button" (click)="flipHorizontal()">{{ 'FLIP_HORIZONTAL' | translate }}</button>
+<button class="button" (click)="flipVertical()">{{ 'FLIP_VERTICAL' | translate }}</button>
 <br/>
 <br/>
-<button (click)="toggleContainWithinAspectRatio()">{{ containWithinAspectRatio ? ('FILL_ASPECT_RATIO' | translate) : ('CONTAIN_ASPECT_RATIO' | translate) }}</button>
-<button (click)="resetImage()">{{ 'RESET_IMAGE' | translate }}</button>
+<button class="button" (click)="toggleContainWithinAspectRatio()">{{ containWithinAspectRatio ? ('FILL_ASPECT_RATIO' | translate) : ('CONTAIN_ASPECT_RATIO' | translate) }}</button>
+<button class="button" (click)="resetImage()">{{ 'RESET_IMAGE' | translate }}</button>
 <br/>
 <br/>
-<input [(ngModel)]="rotation" placeholder="{{ 'ROTATION' | translate }}" type="number" (keyup)="updateRotation()"/>
-<button (click)="zoomOut()">{{ 'ZOOM_OUT' | translate }}</button>
-<button (click)="zoomIn()">{{ 'ZOOM_IN' | translate }}</button>
+<input [(ngModel)]="rotation" placeholder="{{ 'ROTATION' | translate }}" type="number" (keyup)="updateRotation()" class="input"/>
+<button class="button" (click)="zoomOut()">{{ 'ZOOM_OUT' | translate }}</button>
+<button class="button" (click)="zoomIn()">{{ 'ZOOM_IN' | translate }}</button>
 
 <div>
   <image-cropper

@@ -1,40 +1,43 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
+import com.roman.sapun.java.socialmedia.service.ImageService;
 import com.roman.sapun.java.socialmedia.service.SubscriptionService;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import com.roman.sapun.java.socialmedia.util.TextExtractor;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class UserServiceImpl implements UserService, SubscriptionService {
     private final UserRepository userRepository;
     private final PageConverter pageConverter;
-    private final ValueConfig valueConfig;
     private final TextExtractor textExtractor;
+    private final ImageService imageService;
 
-    public UserServiceImpl(UserRepository userRepository, PageConverter pageConverter, ValueConfig valueConfig, TextExtractor textExtractor) {
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository, PageConverter pageConverter, ImageService imageService, TextExtractor textExtractor) {
         this.userRepository = userRepository;
         this.pageConverter = pageConverter;
-        this.valueConfig = valueConfig;
         this.textExtractor = textExtractor;
+        this.imageService = imageService;
     }
 
     @Override
@@ -46,14 +49,18 @@ public class UserServiceImpl implements UserService, SubscriptionService {
     }
 
     @Override
-    public List<ResponseUserDTO> getUsers(int page, int pageSize) {
+    public Map<String, Object> getUsers(int page, int pageSize) {
         var pageable = PageRequest.of(page, pageSize);
-        var posts = userRepository.findAll(pageable);
-        return posts.stream().map(ResponseUserDTO::new).collect(Collectors.toList());
+        var users = userRepository.findAll(pageable);
+        var content = users.stream().map(userEntity ->
+                        new ResponseUserDTO(userEntity, imageService.getImageByUser(userEntity.getUsername())))
+                .filter(responseUserDTO -> responseUserDTO.userImage() != null)
+                .toList();
+        return pageConverter.convertPageToResponse(users, content, content.size());
     }
 
     @Override
-    public RequestUserDTO updateUser(RequestUserDTO requestUserDTO, Authentication authentication) {
+    public RequestUserDTO updateUser(RequestUserDTO requestUserDTO, Authentication authentication) throws UserNotFoundException {
         var currentUser = findUserByAuth(authentication);
 
         currentUser.setName(requestUserDTO.name() != null ? requestUserDTO.name() : currentUser.getName());
@@ -66,56 +73,60 @@ public class UserServiceImpl implements UserService, SubscriptionService {
         return new RequestUserDTO(updatedUser);
     }
 
+
     @Override
-    public ResponseUserDTO blockUser(String username) {
-        var user = userRepository.findByUsername(username);
+    public ResponseUserDTO blockUser(String username) throws UserNotFoundException {
+        var user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         user.setNotBlocked("false");
         userRepository.save(user);
-        return new ResponseUserDTO(user);
+        return new ResponseUserDTO(user, imageService.getImageByUser(user.getUsername()));
     }
 
     @Override
-    public ResponseUserDTO unlockUser(String username) {
-        var user = userRepository.findByUsername(username);
+    public ResponseUserDTO unlockUser(String username) throws UserNotFoundException {
+        var user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         user.setNotBlocked("true");
         userRepository.save(user);
-        return new ResponseUserDTO(user);
+        return new ResponseUserDTO(user, imageService.getImageByUser(user.getUsername()));
     }
 
     @Override
-    public ResponseUserDTO addFollowing(Authentication authentication, String username) throws JsonProcessingException {
+    public ResponseUserDTO addFollowing(Authentication authentication, String username) throws JsonProcessingException, UserNotFoundException {
         var user = findUserByAuth(authentication);
         var usernameAsValue = textExtractor.extractUsernameFromJson(username);
-        var userToFollow = userRepository.findByUsername(usernameAsValue);
+        var userToFollow = userRepository.findByUsername(usernameAsValue).orElseThrow(UserNotFoundException::new);
         user.getFollowing().add(userToFollow);
         userRepository.save(user);
-        return new ResponseUserDTO(userToFollow);
+        return new ResponseUserDTO(userToFollow, imageService.getImageByUser(userToFollow.getUsername()));
     }
 
     @Override
-    public ValidatorDTO findFollowingByUsername(Authentication authentication, String username) {
+    public ValidatorDTO findFollowingByUsername(Authentication authentication, String username) throws UserNotFoundException {
         var user = findUserByAuth(authentication);
-        return new ValidatorDTO(user.getFollowing().contains(userRepository.findByUsername(username)));
+        return new ValidatorDTO(user.getFollowing().contains(userRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new)));
     }
 
     @Override
-    public ValidatorDTO hasSubscriptions(Authentication authentication) {
+    public ValidatorDTO hasSubscriptions(Authentication authentication) throws UserNotFoundException {
         var user = findUserByAuth(authentication);
-        return new ValidatorDTO(user.getFollowing().size() > 0);
+        return new ValidatorDTO(!user.getFollowing().isEmpty());
     }
 
     @Override
-    public ResponseUserDTO removeFollowing(Authentication authentication, String username) {
+    public ResponseUserDTO removeFollowing(Authentication authentication, String username) throws UserNotFoundException {
         var user = findUserByAuth(authentication);
-        var userToFollow = userRepository.findByUsername(username);
+        var userToFollow = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         user.getFollowing().remove(userToFollow);
         userRepository.save(user);
-        return new ResponseUserDTO(userToFollow);
+        return new ResponseUserDTO(userToFollow, imageService.getImageByUser(userToFollow.getUsername()));
     }
 
     @Override
-    public UserEntity findUserByAuth(Authentication authentication) {
-        var principal = authentication.getPrincipal();
-        return userRepository.findByUsername(principal.toString());
+    public UserEntity findUserByAuth(Authentication authentication) throws UserNotFoundException {
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
+            return userRepository.findByUsername(userDetails.getUsername()).orElseThrow(UserNotFoundException::new);
+        }
+        throw new AuthenticationCredentialsNotFoundException("User not found");
     }
 }

@@ -1,6 +1,7 @@
 
 .mobile-dropdown-outer {
-  position: absolute;
+
+  position: sticky;
   top: 50px; /* Adjust the top position as needed */
   right: 10px; /* Adjust the right position as needed */
   background-color: white;
@@ -16,7 +17,6 @@
 }
 
 .circular-image {
-
   user-select: none;
   width: 35px;
   height: 35px;
@@ -24,9 +24,11 @@
   margin-left: auto;
   margin-right: 55px;
 }
+
 .user-notification {
   padding-right: 20px;
 }
+
 .nav-container {
   display: flex;
   align-items: center; /* if you want to align items vertically */
@@ -34,16 +36,30 @@
   justify-content: flex-end;
 }
 
+.circular-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
+@media (max-width: 1000px) {
+  .circular-image {
+    display: flex;
+    justify-content: center;
+    margin-right: auto;
+  }
+}
+.options-container {
+  display: flex;
+  flex-direction: column;
+}
 
-.mobile-circular-image {
-  user-select: none;
-  width: 70px;
-  height: 70px;
-  overflow: hidden;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 10px;
+.filter-button {
+  padding-top: 8px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .profile-menu-window {
@@ -66,6 +82,7 @@
 .reorder {
   font-size: 32px;
 }
-
-
+.filter-button .material-icons {
+  font-size: 18px;
+}
 

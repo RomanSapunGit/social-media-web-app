@@ -5,7 +5,10 @@ import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
+import com.roman.sapun.java.socialmedia.exception.InvalidPageSizeException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.TagNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import com.roman.sapun.java.socialmedia.service.VoteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +47,7 @@ public class PostController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public ResponsePostDTO createPost(@ModelAttribute RequestPostDTO requestPostDTO,
-                                      @RequestPart("images") List<MultipartFile> images, Authentication authentication) {
+                                      @RequestPart("images") List<MultipartFile> images, Authentication authentication) throws UserNotFoundException {
         return postService.createPost(requestPostDTO, images, authentication);
     }
 
@@ -60,7 +63,7 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     @PutMapping()
     public ResponsePostDTO updatePost(@ModelAttribute RequestPostDTO requestPostDTO, @RequestPart("images") List<MultipartFile> images,
-                                      Authentication authentication) throws PostNotFoundException {
+                                      Authentication authentication) throws PostNotFoundException, UserNotFoundException {
         return postService.updatePost(requestPostDTO, images, authentication);
     }
 
@@ -79,7 +82,7 @@ public class PostController {
             unless = "#result.get('total') == 0")
     public Map<String, Object> getPostsByTextContaining(@PathVariable String title, @RequestParam int page,
                                                         @RequestParam(defaultValue = "20") int pageSize,
-                                                        @RequestParam(defaultValue = "creationTime") String sortBy) {
+                                                        @RequestParam(defaultValue = "creationTime") String sortBy) throws InvalidPageSizeException {
         return postService.findPostsByTextContaining(title, page, pageSize, sortBy);
     }
 
@@ -94,7 +97,7 @@ public class PostController {
     @GetMapping("/tag/{tag}")
     public Map<String, Object> getPostsByTag(@PathVariable String tag, @RequestParam int page,
                                              @RequestParam(defaultValue = "5") int pageSize,
-                                             @RequestParam(defaultValue = "creationTime") String sortBy) {
+                                             @RequestParam(defaultValue = "creationTime") String sortBy) throws InvalidPageSizeException, TagNotFoundException {
         return postService.getPostsByTag(tag, page, pageSize, sortBy);
     }
 
@@ -111,7 +114,7 @@ public class PostController {
     @GetMapping("/author/{username}")
     public Map<String, Object> getPostsByUsername(@PathVariable String username, @RequestParam int page,
                                                   @RequestParam(defaultValue = "5") int pageSize,
-                                                  @RequestParam(defaultValue = "creationTime") String sortBy) {
+                                                  @RequestParam(defaultValue = "creationTime") String sortBy) throws InvalidPageSizeException, UserNotFoundException {
         return postService.getPostsByUsername(username, page, pageSize, sortBy);
     }
 
@@ -128,7 +131,7 @@ public class PostController {
     @GetMapping("/follower")
     public Map<String, Object> getPostsBySubscription(Authentication authentication, @RequestParam int page,
                                                       @RequestParam(defaultValue = "50") int pageSize,
-                                                      @RequestParam(defaultValue = "creationTime") String sortBy) {
+                                                      @RequestParam(defaultValue = "creationTime") String sortBy) throws UserNotFoundException, InvalidPageSizeException {
         return postService.getPostsByUserFollowing(authentication, page, pageSize, sortBy);
     }
 
@@ -144,7 +147,7 @@ public class PostController {
     @GetMapping("/search")
     @Cacheable(value = "postCache", key = "#page.toString() + '-' + #pageSize.toString() + '-' + #sortBy.toString()", unless = "#result.get('total') == 0")
     public Map<String, Object> getPosts(@RequestParam int page, @RequestParam(defaultValue = "15") int pageSize,
-                                        @RequestParam(defaultValue = "creationTime") String sortBy) {
+                                        @RequestParam(defaultValue = "creationTime") String sortBy) throws InvalidPageSizeException {
         return postService.getPosts(page, pageSize, sortBy);
     }
 
@@ -156,10 +159,14 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{identifier}")
-    public ResponsePostDTO getPostById(@PathVariable String identifier) {
+    public ResponsePostDTO getPostById(@PathVariable String identifier) throws PostNotFoundException, UserNotFoundException {
         return postService.getPostById(identifier);
     }
-
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/{identifier}")
+    public ResponsePostDTO deletePost(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
+       return postService.deletePostByIdentifier(identifier, authentication);
+    }
     /**
      * Adds an upvote to the specified post and returns the users who upvoted the post.
      *
@@ -169,10 +176,9 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/upvote")
-    public Set<ResponseUserDTO> upvotePost(@RequestBody String identifier, Authentication authentication) throws JsonProcessingException {
+    public Set<ResponseUserDTO> upvotePost(@RequestBody String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException {
         return voteService.addUpvote(identifier, authentication);
     }
-
     /**
      * Adds a downvote to the specified post and returns the users who downvoted the post.
      *
@@ -182,7 +188,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/downvote")
-    public Set<ResponseUserDTO> downvotePost(@RequestBody @NonNull String identifier, Authentication authentication) throws JsonProcessingException {
+    public Set<ResponseUserDTO> downvotePost(@RequestBody @NonNull String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException {
         return voteService.addDownvote(identifier, authentication);
     }
 
@@ -195,7 +201,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/upvote/{identifier}")
-    public Set<ResponseUserDTO> removeUpvote(@PathVariable @NonNull String identifier, Authentication authentication) {
+    public Set<ResponseUserDTO> removeUpvote(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return voteService.removeUpvote(identifier, authentication);
     }
 
@@ -208,7 +214,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/downvote/{identifier}")
-    public Set<ResponseUserDTO> removeDownvote(@PathVariable @NonNull String identifier, Authentication authentication) {
+    public Set<ResponseUserDTO> removeDownvote(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return voteService.removeDownvote(identifier, authentication);
     }
 
@@ -221,7 +227,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/upvote/{identifier}")
-    public ValidatorDTO isPostUpvoted(@PathVariable @NonNull String identifier, Authentication authentication) {
+    public ValidatorDTO isPostUpvoted(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return voteService.isUpvoteMade(identifier, authentication);
     }
 
@@ -234,7 +240,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/downvote/{identifier}")
-    public ValidatorDTO isPostDownvoted(@PathVariable @NonNull String identifier, Authentication authentication) {
+    public ValidatorDTO isPostDownvoted(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return voteService.isDownvoteMade(identifier, authentication);
     }
 }

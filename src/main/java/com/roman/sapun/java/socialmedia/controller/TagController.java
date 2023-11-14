@@ -1,12 +1,10 @@
 package com.roman.sapun.java.socialmedia.controller;
 
-import com.roman.sapun.java.socialmedia.dto.tag.TagDTO;
 import com.roman.sapun.java.socialmedia.service.TagService;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RequestMapping("/api/v1/tag")
@@ -28,9 +26,10 @@ public class TagController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
     @Cacheable(value = "tagCache", key = "#page + '-' + #pageSize", unless = "#result == null")
-    public List<TagDTO> getTags(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) {
+    public Map<String, Object> getTags(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) {
         return tagService.getTags(page, pageSize);
     }
+
     /**
      * Retrieves a list of tags that match the provided text.
      *
@@ -39,8 +38,10 @@ public class TagController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{text}")
-    @Cacheable(value = "tagCache", key = "#text.toString()", unless = "#result == null")
-    public List<TagDTO> getTagsByText(@PathVariable String text) {
-        return tagService.getTagsByText(text);
+    @Cacheable(value = "tagCache", key = "#text.toString() + '-' + #page + '-' + #pageSize", unless = "#result == null")
+    public Map<String, Object> getTagsByText(@PathVariable String text,
+                                             @RequestParam(defaultValue = "5") int pageSize,
+                                             @RequestParam int page) {
+        return tagService.getExistingTagsFromText(text, page, pageSize);
     }
 }

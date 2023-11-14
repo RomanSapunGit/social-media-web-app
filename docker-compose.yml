@@ -1,0 +1,57 @@
+version: "3"
+services:
+  account_app:
+    image: backend-image:latest
+    build: ./src
+    container_name: backendApp
+    environment:
+      - DB_PASSWORD
+      - DB_USERNAME
+      - MAIL_USERNAME
+      - MAIL_PASSWORD
+      - LOG_CONFIGURATION
+      - INIT_MODE
+      - CLIENT_ID
+      - BASE64_CODE
+      - FRONTEND_URL
+      - SLACK_WEBHOOK_URL
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql_database
+
+  frontend:
+    image: frontend-image:latest
+    container_name: frontendApp
+    build:
+      context: ./frontend-side
+    ports:
+      - "4200:80"
+    depends_on:
+      - account_app
+
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - LT_LOAD_ONLY=pl,en,uk
+    command: [ "--debug" ]
+
+  mysql_database:
+      image: 'mysql:8.1.0'
+      container_name: blog
+      environment:
+        - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+        - MYSQL_DATABASE=blog
+        - MYSQL_USER=${DB_USERNAME}
+        - MYSQL_PASSWORD=${DB_PASSWORD}
+      ports:
+        - "3306:3306"
+      volumes:
+        - mysql-data:/var/lib/mineSql
+        - ./privileges.sql:/docker-entrypoint-initdb.d/privileges.sql
+        - ./init.sql:/data/application/init.sql
+      restart: unless-stopped
+volumes:
+  mysql-data:

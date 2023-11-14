@@ -26,7 +26,7 @@ public class PostEntity {
     @Column(unique = true, nullable = false)
     private String identifier;
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "author", nullable = false)
     private UserEntity author;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)

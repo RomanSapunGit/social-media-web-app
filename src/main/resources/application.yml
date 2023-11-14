@@ -40,3 +40,8 @@ logging:
     org:
       springframework:
         web: ${LOG_CONFIGURATION}
+        security: DEBUG
+server:
+  servlet:
+    session:
+      timeout: 60m

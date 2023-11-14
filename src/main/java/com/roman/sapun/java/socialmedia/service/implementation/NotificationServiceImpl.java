@@ -7,6 +7,9 @@ import com.roman.sapun.java.socialmedia.controller.SSEController;
 import com.roman.sapun.java.socialmedia.dto.notification.NotificationDTO;
 import com.roman.sapun.java.socialmedia.entity.NotificationEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
+import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.repository.CommentRepository;
 import com.roman.sapun.java.socialmedia.repository.NotificationRepository;
 import com.roman.sapun.java.socialmedia.repository.PostRepository;
@@ -48,8 +51,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void createFollowNotification(String message, String username) {
-        var user = userRepository.findByUsername(username);
+    public void createFollowNotification(String message, String username) throws UserNotFoundException {
+        var user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         NotificationEntity notification = new NotificationEntity();
         notification.setMessage(message);
         notification.setUser(user);
@@ -59,9 +62,9 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void createCommentNotification(String commentIdentifier, String message) {
-        var comment = commentRepository.findByIdentifier(commentIdentifier);
-        var post = postRepository.findPostEntityByCommentsContaining(comment);
+    public void createCommentNotification(String commentIdentifier, String message) throws CommentNotFoundException, PostNotFoundException {
+        var comment = commentRepository.findByIdentifier(commentIdentifier).orElseThrow(CommentNotFoundException::new);
+        var post = postRepository.findPostEntityByCommentsContaining(comment).orElseThrow(PostNotFoundException::new);
         if (post.getAuthor().getUsername().equals(comment.getAuthor().getUsername())) {
             throw new IllegalArgumentException("Cannot notify on own post");
         }
@@ -75,8 +78,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<NotificationDTO> getNotifications(String username) {
-        var user = userRepository.findByUsername(username);
+    public List<NotificationDTO> getNotifications(String username) throws UserNotFoundException {
+        var user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         deleteOldNotifications(user.getNotifications(), user);
         var notifications = notificationRepository.findByUserOrderByNotificationCreationDateDesc(user);
 
