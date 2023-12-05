@@ -38,7 +38,7 @@ import java.util.*;
 
 
 @Service
-public class CredentialsServiceImpl implements AuthenticationService {
+public class AuthenticationServiceImpl implements AuthenticationService {
 
     private static final int TOKEN_EXPIRATION_HOURS = 24;
     private final UserConverter userConverter;
@@ -55,11 +55,11 @@ public class CredentialsServiceImpl implements AuthenticationService {
 
 
     @Autowired
-    public CredentialsServiceImpl(UserConverter userConverter, RoleRepository roleRepository, UserRepository userRepository,
-                                  PasswordEncoder passwordEncoder, URLBuilder urlBuilder,
-                                  MailSender mailSender, AuthenticationManager authenticationManager,
-                                  ImageService imageService, UserDetailsServiceImpl userDetailsService,
-                                  SecurityContextRepository securityContextRepository, GoogleTokenService tokenService) {
+    public AuthenticationServiceImpl(UserConverter userConverter, RoleRepository roleRepository, UserRepository userRepository,
+                                     PasswordEncoder passwordEncoder, URLBuilder urlBuilder,
+                                     MailSender mailSender, AuthenticationManager authenticationManager,
+                                     ImageService imageService, UserDetailsServiceImpl userDetailsService,
+                                     SecurityContextRepository securityContextRepository, GoogleTokenService tokenService) {
         this.userConverter = userConverter;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -160,6 +160,13 @@ public class CredentialsServiceImpl implements AuthenticationService {
         var authentication = authenticationManager.authenticate
                 (new UsernamePasswordAuthenticationToken(username, password));
         return authentication.isAuthenticated();
+    }
+    @Override
+    public void logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
     }
 
     private boolean isTokenExpired(final LocalDateTime tokenCreationDate) {

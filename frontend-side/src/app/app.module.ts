@@ -24,7 +24,6 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {ProfileFormComponent} from './component/dialog/profile-form/profile-form.component';
 import {CdkDrag, CdkDragHandle} from "@angular/cdk/drag-drop";
 import {MatDialogDraggableDirective} from './directive/mat-dialog-draggable.directive';
-import {CONTENT_TOKEN, CURRENT_PAGE, Page, PAGES, TOTAL_TOKEN} from "./model/page.model";
 import {PostsComponent} from './component/data/posts/posts.component';
 import {CommentsComponent} from './component/data/comments/comments.component';
 import {ImagesComponent} from './component/data/images/images.component';
@@ -55,6 +54,7 @@ import {TagsComponent} from './component/data/tags/tags.component';
 import {UsersComponent} from './component/data/users/users.component';
 import { FilterComponent } from './component/dialog/filter/filter.component';
 import { AboutPageComponent } from './component/about-page/about-page.component';
+import { ScrollToTopComponent } from './component/scroll-to-top/scroll-to-top.component';
 
 export function httpTranslateLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, './assets/translations/', '.json');
@@ -89,6 +89,7 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
         UsersComponent,
         FilterComponent,
         AboutPageComponent,
+        ScrollToTopComponent,
     ],
     imports: [
         BrowserModule,
@@ -124,10 +125,6 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
         NgOptimizedImage,
     ],
     providers: [
-        {provide: CONTENT_TOKEN, useValue: []},
-        {provide: TOTAL_TOKEN, useValue: 0},
-        {provide: CURRENT_PAGE, useValue: 0},
-        {provide: PAGES, useValue: 0},
         {
             provide: HTTP_INTERCEPTORS,
             useClass: ServerErrorInterceptor,
@@ -135,7 +132,6 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
         },
         AuthGuard,
         CookieService,
-        Page,
         {
             provide: 'SocialAuthServiceConfig',
             useValue: {

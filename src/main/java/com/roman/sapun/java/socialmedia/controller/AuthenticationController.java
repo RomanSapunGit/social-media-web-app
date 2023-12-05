@@ -10,6 +10,7 @@ import com.roman.sapun.java.socialmedia.exception.TokenExpiredException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.ValuesAreNotEqualException;
 import com.roman.sapun.java.socialmedia.service.AuthenticationService;
+import io.micrometer.core.annotation.Timed;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -81,22 +82,20 @@ public class AuthenticationController {
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/logout")
     public void logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
+        authenticationService.logout(request);
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @Timed(value = "login.time")
     @PostMapping("/login")
     public AuthRequestDTO login(@RequestBody AuthRequestDTO authRequestDTO, HttpServletRequest request, HttpServletResponse response) throws InvalidValueException {
-        return this.authenticationService.loginUser(authRequestDTO, request, response);
+        return authenticationService.loginUser(authRequestDTO, request, response);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/google/login")
     public TokenDTO googleLogin(@RequestHeader("Authorization") String token, HttpServletRequest request, HttpServletResponse response) throws UserNotFoundException, GeneralSecurityException, IOException, InvalidValueException {
-        return this.authenticationService.loginUser(token, request, response);
+        return authenticationService.loginUser(token, request, response);
     }
 
     @ResponseStatus(HttpStatus.OK)

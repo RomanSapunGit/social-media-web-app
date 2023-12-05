@@ -61,4 +61,5 @@ public interface AuthenticationService {
      */
     boolean checkUserByCredentials(String username, String password);
 
+    void logout(HttpServletRequest request);
 }

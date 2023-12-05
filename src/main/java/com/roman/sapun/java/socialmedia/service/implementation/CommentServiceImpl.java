@@ -4,6 +4,7 @@ import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.dto.comment.CommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
+import com.roman.sapun.java.socialmedia.dto.page.CommentPageDTO;
 import com.roman.sapun.java.socialmedia.entity.CommentEntity;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
@@ -18,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -52,13 +51,13 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(commentEntity);
         return new CommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
     }
+
     @Override
-    public Map<String, Object> getCommentsByPostIdentifier(String identifier, int pageNumber) throws CommentNotFoundException {
+    public CommentPageDTO getCommentsByPostIdentifier(String identifier, int pageNumber) throws CommentNotFoundException {
         var postEntity = postRepository.findByIdentifier(identifier).orElseThrow(CommentNotFoundException::new);
         var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize() - 47);
         var commentPage = commentRepository.findCommentEntitiesByPost(postEntity, pageable);
-        return pageConverter.convertPageToResponse(commentPage.map(comment ->
-                new ResponseCommentDTO(comment, imageService.getImageByUser(comment.getAuthor().getUsername()))));
+        return pageConverter.convertPageToCommentPageDTO(commentPage);
     }
 
     @Override

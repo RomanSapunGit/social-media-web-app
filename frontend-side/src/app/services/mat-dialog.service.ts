@@ -10,6 +10,7 @@ import {ImageCropperComponent} from "../component/image-cropper/image-cropper.co
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {NotificationService} from "./notification.service";
 import {FilterComponent} from "../component/dialog/filter/filter.component";
+import {FileDTO} from "../model/file.model";
 
 @Injectable({
     providedIn: 'root'
@@ -26,10 +27,10 @@ export class MatDialogService {
 
         if (this.breakpointObserver.isMatched(Breakpoints.Handset)) {
             this.dialogWidth = '120%';
-            this.dialogHeight = '60%';
+            this.dialogHeight = '70%';
         } else {
             this.dialogWidth = '40%';
-            this.dialogHeight = '60%';
+            this.dialogHeight = '80%';
         }
     }
 
@@ -96,11 +97,11 @@ export class MatDialogService {
         }
     }
 
-    updatePost(postIdentifier: string, title: string, description: string) {
+    updatePost(postIdentifier: string, title: string, description: string, images: FileDTO) {
         if (this.canOpenDialog()) {
             let dialogConfig = this.setDialogConfigWithData(true, true, this.dialogWidth, this.dialogHeight,
                 false,
-                {isUpdating: true, postIdentifier: postIdentifier, title, description});
+                {isUpdating: true, postIdentifier: postIdentifier, title, description, images});
             this.openDialogs++;
             this.dialog.open(PostActionComponent, dialogConfig);
         } else {

@@ -1,10 +1,11 @@
 package com.roman.sapun.java.socialmedia.controller;
 
 import com.roman.sapun.java.socialmedia.dto.FileDTO;
+import com.roman.sapun.java.socialmedia.dto.image.ResponseImageDTO;
+import com.roman.sapun.java.socialmedia.exception.InvalidImageNumberException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.service.ImageService;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,8 +32,8 @@ public class ImageController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
-    public FileDTO uploadImageForUser(@RequestPart("image") MultipartFile file,
-                                      @RequestPart("username") String username) throws IOException, UserNotFoundException {
+    public ResponseImageDTO uploadImageForUser(@RequestPart("image") MultipartFile file,
+                                               @RequestPart("username") String username) throws IOException, UserNotFoundException {
         return imageService.uploadImageForUser(file, username);
     }
 
@@ -46,8 +47,8 @@ public class ImageController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}")
-    public List<FileDTO> uploadImagesForPost(@PathVariable("id") String postId,
-                                             @RequestPart("image") List<MultipartFile> files, Authentication authentication) {
+    public List<ResponseImageDTO> uploadImagesForPost(@PathVariable("id") String postId,
+                                                      @RequestPart("image") List<MultipartFile> files, Authentication authentication) throws InvalidImageNumberException {
         return imageService.uploadImagesForPost(files, postId, authentication);
     }
 

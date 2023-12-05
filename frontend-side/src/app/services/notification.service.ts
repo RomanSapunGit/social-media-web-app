@@ -24,6 +24,7 @@ export class NotificationService {
   }
 
   sendErrorNotificationToSlack(message: string, causedBy:string, timestamp: Date): void {
+    console.log(message)
      this.subscription = this.requestService.sendNotificationToSlack(message, causedBy, timestamp).subscribe();
      this.subscription.unsubscribe();
   }

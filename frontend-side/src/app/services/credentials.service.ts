@@ -3,6 +3,7 @@ import {RequestService} from "./request.service";
 import {Router} from "@angular/router";
 import {NotificationService} from "./notification.service";
 import {TokenModel} from "../model/token.model";
+import {delay} from "rxjs";
 
 @Injectable({
     providedIn: 'root'
@@ -43,22 +44,16 @@ export class CredentialsService {
                     } else {
                         this.notificationService.showNotification('Wrong username or password', true);
                     }
-                },
-                error: (error: any) =>
-                    console.log('Error during login ' + error.error.message),
+                }
             })
     }
 
     loginViaGoogleAndRedirect(token: string): void {
-        this.requestService.loginViaGoogle(token).subscribe(
+        this.requestService.loginViaGoogle(token).pipe(delay(1000)).subscribe(
             {
                 next: (response: any) => {
-                    if (response.token) {
                         localStorage.setItem("username", response.username);
                         this.router.navigate(['/main'])
-                    } else {
-                        this.notificationService.showNotification('Something went wrong with your google auth', true);
-                    }
                 },
                 error: (error: any) =>
                     console.log('Error during login ' + error.error.message)

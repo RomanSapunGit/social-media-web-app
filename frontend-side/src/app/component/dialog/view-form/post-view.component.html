@@ -18,17 +18,18 @@
         </div>
         <app-image [images]="post.postImages"></app-image>
         <p class="description">{{ post.description }}</p>
-    </div>
-    <div>
-        <button (click)="isDownvoteMade ? removeDownvote() : addDownvote()"><i
-                class="material-icons">arrow_downward</i>
-            {{post.downvotes.length }}</button>
-        <button (click)="isUpvoteMade  ? removeUpvote() : addUpvote()"><i class="material-icons">arrow_upward</i>
-            {{post.upvotes.length }}</button>
+        <div>
+            <button (click)="isDownvoteMade ? removeDownvote() : addDownvote()"><i
+                    class="material-icons">arrow_downward</i>
+                {{post.downvotes }}</button>
+            <button (click)="isUpvoteMade  ? removeUpvote() : addUpvote()"><i class="material-icons">arrow_upward</i>
+                {{post.upvotes }}</button>
+        </div>
     </div>
     <button (click)="isTranslated ? reverseTranslatePost() : translatePost()">{{'TRANSLATE_TO' | translate}}</button>
     <div>
-        <button class="button" (click)="toggleCommentsVisibility(post.identifier.toString())">
+        <p class="comments-number">{{('COMMENTS_NUMBER' | translate)}}{{ (postComments | async)?.total || 0}}</p>
+        <button class="button comments-button" (click)="toggleCommentsVisibility(post.identifier.toString())">
             {{ commentVisibility[post.identifier] ? ('HIDE_COMMENTS' | translate) : ('SHOW_COMMENTS' | translate) }}
         </button>
     </div>
@@ -63,29 +64,29 @@
     <div>
         <button (click)="isDownvoteMade ? removeDownvote() : addDownvote()"><i
                 class="material-icons">arrow_downward</i>
-            {{mobileViewPost.downvotes.length }}</button>
+            {{mobileViewPost.downvotes }}</button>
         <button (click)="isUpvoteMade  ? removeUpvote() : addUpvote()"><i class="material-icons">arrow_upward</i>
-            {{mobileViewPost.upvotes.length }}</button>
+            {{mobileViewPost.upvotes }}</button>
     </div>
     <button (click)="isTranslated ? reverseTranslatePost() : translatePost()">{{'TRANSLATE_TO' | translate}}</button>
-    <div>
+
+    <div class="comments-section">
+        <p class="comments-number">{{('COMMENTS_NUMBER' | translate)}}{{ (postComments | async)?.total || 0}}</p>
         <button class="button" (click)="toggleCommentsVisibility(mobileViewPost.identifier.toString())">
             {{ commentVisibility[mobileViewPost.identifier] ? ('HIDE_COMMENTS' | translate) : ('SHOW_COMMENTS' | translate) }}
         </button>
+        <ng-container *ngIf="commentVisibility[mobileViewPost.identifier]; else notLoaded">
+            <ng-container *ngTemplateOutlet="lazyLoad"></ng-container>
+        </ng-container>
+
+        <ng-template #notLoaded></ng-template>
+
+        <ng-template #lazyLoad>
+            <app-comment [postIdentifier]="mobileViewPost.identifier.toString()"
+                         [commentVisibility]="commentVisibility[mobileViewPost.identifier]"
+                         [postComments]="postComments"
+            ></app-comment>
+        </ng-template>
     </div>
-
-
-    <ng-container *ngIf="commentVisibility[mobileViewPost.identifier]; else notLoaded">
-        <ng-container *ngTemplateOutlet="lazyLoad"></ng-container>
-    </ng-container>
-
-    <ng-template #notLoaded></ng-template>
-
-    <ng-template #lazyLoad>
-        <app-comment [postIdentifier]="mobileViewPost.identifier.toString()"
-                     [commentVisibility]="commentVisibility[mobileViewPost.identifier]"
-                     [postComments]="postComments"
-        ></app-comment>
-    </ng-template>
 </div>
 <canvas id="canvas" class="confetti-element"></canvas>

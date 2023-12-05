@@ -63,6 +63,7 @@ export class RegisterComponent implements OnInit {
       this.changeDetectorRef.detectChanges();
     });
     this.authSubscription = this.socialAuthService.authState.subscribe((user) => {
+      console.log('check')
       this.socialUser = user;
       if (this.socialUser && this.socialUser.email) {
         this.registerForm.controls['email'].setValue(user.email);
@@ -78,12 +79,15 @@ export class RegisterComponent implements OnInit {
       error: (err) => console.log(err.error.message)
     });
   }
-
-
+  googleSignin(googleUser: any) {
+    if (googleUser.credential)
+      this.credentialsService.loginViaGoogleAndRedirect(googleUser.credential);
+  }
   ngOnDestroy() {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
+    this.socialAuthService.signOut();
   }
 
   async register() {

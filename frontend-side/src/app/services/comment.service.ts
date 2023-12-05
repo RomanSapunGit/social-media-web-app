@@ -25,9 +25,7 @@ export class CommentService {
     }
 
     constructor(private authService: AuthService,
-                private requestService: RequestService,
-                private page: Page
-    ) {
+                private requestService: RequestService) {
         this.currentCommentPage = 0;
     }
 
@@ -36,7 +34,7 @@ export class CommentService {
         let token = this.authService.getAuthToken();
         return this.requestService.getCommentsByPost(postId, token, currentPage).pipe(
             map((response: any) => {
-                return this.page.create(response['entities'], response['total-items'], response['current-page'], response['totalPages']);
+                return new Page(response.entities, response.total, response.currentPage, response.totalPages);
             }),
             catchError(() => {
                 return of(undefined);

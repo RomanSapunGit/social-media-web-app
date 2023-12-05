@@ -38,6 +38,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final SSEController sseController;
     private final UserRepository userRepository;
     private final ValueConfig valueConfig;
+
     @Autowired
     public NotificationServiceImpl(NotificationRepository notificationRepository,
                                    PostRepository postRepository, CommentRepository commentRepository, SSEController sseController,

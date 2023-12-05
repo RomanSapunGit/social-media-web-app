@@ -56,8 +56,10 @@ export class PostViewComponent {
     ngOnInit() {
         this.commentService.getComments(this.identifier, 0).pipe(
             take(1),
-            tap(commentPage =>
-                this.postComments.next(commentPage)
+            tap(commentPage => {
+                    console.log(commentPage as Page)
+                    this.postComments.next(commentPage)
+                }
             )).subscribe();
         this.subscription = this.sseService.getPostUpdateFromServer(this.identifier).subscribe(post => {
             shareReplay(1);
@@ -85,7 +87,7 @@ export class PostViewComponent {
                 ).subscribe(post => {
                     post.upvotes = upvotes;
                     this.isUpvoteMade = true;
-                    console.log(post.upvotes.length);
+                    console.log(post.upvotes);
                 });
             })
         ).subscribe();
@@ -163,10 +165,13 @@ export class PostViewComponent {
     }
 
     translatePost() {
+        console.log('check')
         const targetLanguage = localStorage.getItem("Language");
         if (!targetLanguage) return;
         this.subscription = this.postView.pipe(
+            take(1),
             switchMap(post => {
+                console.log('check')
                 const translatedTitle$ = this.translatorService.translateText(post.title);
                 const translatedDescription$ = this.translatorService.translateText(post.description);
                 return combineLatest([translatedTitle$, translatedDescription$]).pipe(

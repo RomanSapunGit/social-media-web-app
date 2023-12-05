@@ -10,6 +10,7 @@
     </div>
     <div (window:scroll)="onWindowScroll()" class="post-list">
         <app-post></app-post>
+        <app-scroll-to-top></app-scroll-to-top>
     </div>
     <div class="tag-list">
         <app-tags></app-tags>
@@ -23,11 +24,14 @@
     </ul>
     <div *ngIf="selectedList === 'users'" class="user-list">
         <app-users></app-users>
+        <app-scroll-to-top></app-scroll-to-top>
     </div>
     <div *ngIf="selectedList === 'posts'" class="post-list">
         <app-post></app-post>
+        <app-scroll-to-top></app-scroll-to-top>
     </div>
     <div *ngIf="selectedList === 'tags'" class="tag-list">
         <app-tags></app-tags>
+        <app-scroll-to-top></app-scroll-to-top>
     </div>
 </div>

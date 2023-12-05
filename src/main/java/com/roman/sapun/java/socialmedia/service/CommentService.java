@@ -3,12 +3,10 @@ package com.roman.sapun.java.socialmedia.service;
 import com.roman.sapun.java.socialmedia.dto.comment.CommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
+import com.roman.sapun.java.socialmedia.dto.page.CommentPageDTO;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
-import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
-
-import java.util.Map;
 
 
 public interface CommentService {
@@ -37,7 +35,7 @@ public interface CommentService {
      * @param pageNumber page that we want to return.
      * @return map that includes 50 comments, overall number of comments, current comment page and overall number of pages.
      */
-    Map<String, Object> getCommentsByPostIdentifier(String identifier, int pageNumber) throws CommentNotFoundException;
+    CommentPageDTO getCommentsByPostIdentifier(String identifier, int pageNumber) throws CommentNotFoundException;
 
     /**
      * <p>Updates comment by identifier.</p>

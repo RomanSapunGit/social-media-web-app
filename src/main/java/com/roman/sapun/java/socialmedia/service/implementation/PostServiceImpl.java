@@ -1,26 +1,22 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import com.roman.sapun.java.socialmedia.controller.SSEController;
-import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
+import com.roman.sapun.java.socialmedia.dto.image.RequestImageDTO;
+import com.roman.sapun.java.socialmedia.dto.page.PostPageDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
-import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
-import com.roman.sapun.java.socialmedia.exception.InvalidPageSizeException;
-import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
-import com.roman.sapun.java.socialmedia.exception.TagNotFoundException;
-import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.*;
 import com.roman.sapun.java.socialmedia.repository.PostRepository;
 import com.roman.sapun.java.socialmedia.repository.TagRepository;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.*;
-import com.roman.sapun.java.socialmedia.util.TextExtractor;
+import com.roman.sapun.java.socialmedia.util.converter.ImageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
-import org.springframework.data.domain.Page;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -47,13 +42,14 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final ImageService imageService;
     private final SSEController sseController;
+    private final ImageConverter imageConverter;
     private final static int MAX_PAGE_SIZE = 35;
 
 
     public PostServiceImpl(TagService tagService, PostConverter postConverter, UserService userService,
                            PostRepository postRepository, PageConverter pageConverter, ValueConfig valueConfig,
                            TagRepository tagRepository, UserRepository userRepository, ImageService imageService,
-                           SSEController sseController, TextExtractor textExtractor) {
+                           SSEController sseController, ImageConverter imageConverter) {
         this.tagService = tagService;
         this.postConverter = postConverter;
         this.userService = userService;
@@ -64,10 +60,13 @@ public class PostServiceImpl implements PostService {
         this.userRepository = userRepository;
         this.imageService = imageService;
         this.sseController = sseController;
+        this.imageConverter = imageConverter;
     }
 
     @Override
-    public ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws UserNotFoundException {
+    public ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images,
+                                      Authentication authentication) throws UserNotFoundException, InvalidImageNumberException {
+
         Set<TagEntity> existingTags = tagService.getExistingTagsFromText(requestPostDTO.description());
         Set<TagEntity> nonExistingTags = tagService.saveNonExistingTagsFromText(requestPostDTO.description());
         existingTags.addAll(nonExistingTags);
@@ -76,81 +75,86 @@ public class PostServiceImpl implements PostService {
         postRepository.save(postEntity);
         if (images != null) {
             var dtoImages = imageService.uploadImagesForPost(images, postEntity.getIdentifier(), authentication);
-            return new ResponsePostDTO(postEntity,
-                    dtoImages,
-                    imageService.getImageByUser(postEntity.getAuthor().getUsername()),
-                    new HashSet<>(),
-                    new HashSet<>());
+            return new ResponsePostDTO(postEntity, dtoImages, imageService.getImageByUser(postEntity.getAuthor().getUsername()), 0, 0);
         }
         return postConverter.convertToResponsePostDTO(postEntity);
     }
 
     @Override
-    public ResponsePostDTO updatePost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws PostNotFoundException, UserNotFoundException {
+    public ResponsePostDTO updatePost(String identifier, String title, String description, List<RequestImageDTO> images,
+                                      List<RequestImageDTO> newImages,
+                                      Authentication authentication) throws PostNotFoundException, UserNotFoundException, InvalidImageNumberException {
         var postOwner = userService.findUserByAuth(authentication);
-        var postEntity = postRepository.findByIdentifier(requestPostDTO.identifier()).orElseThrow(PostNotFoundException::new);
+        var postEntity = postRepository.findByIdentifier(identifier).orElseThrow(PostNotFoundException::new);
         if (!(postEntity.getAuthor().equals(postOwner))) {
             throw new PostNotFoundException();
         }
-        Set<TagEntity> tags = tagService.getExistingTagsFromText(requestPostDTO.description());
-        Set<TagEntity> nonExistingTags = tagService.saveNonExistingTagsFromText(requestPostDTO.description());
+        Set<TagEntity> tags = tagService.getExistingTagsFromText(description);
+        Set<TagEntity> nonExistingTags = tagService.saveNonExistingTagsFromText(description);
         tags.addAll(nonExistingTags);
         postEntity.setTags(tags);
-        postEntity.setTitle(requestPostDTO.title());
-        postEntity.setDescription(requestPostDTO.description());
+        postEntity.setTitle(title);
+        postEntity.setDescription(description);
+        var imageEntities = imageConverter.convertImagesToEntity( newImages, postEntity);
+        var existedImageEntities = postEntity.getImages().stream()
+                .filter(imageEntity -> images.stream()
+                        .anyMatch(requestImageDTO -> requestImageDTO.identifier().equals(imageEntity.getIdentifier())))
+                .toList();
+        imageEntities.addAll(existedImageEntities);
+        postEntity.getImages().clear();
+        postEntity.getImages().addAll(imageEntities);
         postRepository.save(postEntity);
         var postDTO = postConverter.convertToResponsePostDTO(postEntity);
         sseController.sendPostUpdate(postDTO.identifier(), postDTO);
         return postDTO;
     }
 
+    @Observed(name = "get.posts.time")
     @Override
-    public Map<String, Object> getPosts(int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException {
+    public PostPageDTO getPosts(int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException {
         validatePageSize(pageSize);
         var pageRequest = setPageable(pageNumber, pageSize, sortByValue);
         var posts = postRepository.findAll(pageRequest);
-        return convertPageToResponsePostDTO(posts);
+        return pageConverter.convertPageToPostPageDTO(posts);
     }
 
     @Override
-    public Map<String, Object> getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException {
+    public PostPageDTO getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException {
         validatePageSize(pageSize);
         var pageRequest = setPageable(page, pageSize, sortByValue);
         var tag = tagRepository.findByName(tagName).orElseThrow(TagNotFoundException::new);
         var posts = postRepository.getPostEntitiesByTagsContaining(tag, pageRequest);
-        return convertPageToResponsePostDTO(posts);
+        return pageConverter.convertPageToPostPageDTO(posts);
     }
 
     @Override
-    public Map<String, Object> getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException {
+    public PostPageDTO getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException {
         validatePageSize(pageSize);
         var pageRequest = setPageable(page, pageSize, sortByValue);
         var userEntity = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
 
         var posts = postRepository.findPostEntitiesByAuthor(userEntity, pageRequest);
-        return convertPageToResponsePostDTO(posts);
+        return pageConverter.convertPageToPostPageDTO(posts);
     }
 
+
     @Override
-    public Map<String, Object> getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException {
+    public PostPageDTO getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException {
         validatePageSize(pageSize);
         var user = userService.findUserByAuth(authentication);
         var pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("creationTime").descending());
         var followedUsers = user.getFollowing();
         var postsFromFollowedUsers = postRepository.findPostsByAuthorInAndCreationTimeBetween(
                 followedUsers, getStartTime(), getCurrentTime(), pageRequest);
-        var postDTOForPage = postsFromFollowedUsers.stream()
-                .map(postConverter::convertToResponsePostDTO)
-                .collect(Collectors.toList());
-        return pageConverter.convertPageToResponse(postsFromFollowedUsers, postDTOForPage);
+        return pageConverter.convertPageToPostPageDTO(postsFromFollowedUsers);
     }
 
     @Override
-    public Map<String, Object> findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException {
+    public PostPageDTO findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException {
         validatePageSize(pageSize);
         var pageRequest = setPageable(pageNumber, pageSize, sortByValue);
         var matchedPosts = postRepository.findPostEntitiesByTitleContaining(title, pageRequest);
-        return convertPageToResponsePostDTO(matchedPosts);
+        return pageConverter.convertPageToPostPageDTO(matchedPosts);
     }
 
     @Override
@@ -195,11 +199,5 @@ public class PostServiceImpl implements PostService {
         if (pageSize >= MAX_PAGE_SIZE) {
             throw new InvalidPageSizeException("Page size must be less than " + MAX_PAGE_SIZE);
         }
-    }
-
-    private Map<String, Object> convertPageToResponsePostDTO(Page<PostEntity> posts) {
-        var content = posts.getContent().stream().map(postConverter::convertToResponsePostDTO)
-                .filter(post -> post.userImage() != null).toList();
-        return pageConverter.convertPageToResponse(posts, content, content.size());
     }
 }

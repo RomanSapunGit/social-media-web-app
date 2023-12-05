@@ -15,8 +15,7 @@ import {HttpParams} from "@angular/common/http";
 export class PostService {
 
     constructor(private authService: AuthService,
-                private requestService: RequestService,
-                private page: Page) {
+                private requestService: RequestService) {
     }
 
     fetchPostsByPage(page: number, tagName: string | null, username: string | null, pageSize?: number, sortByValue?: string): Observable<Page> {
@@ -65,7 +64,7 @@ export class PostService {
 
     searchPostsByText(text: string, page: number, pageSize: number, sortBy: string): Observable<Page> {
         let token = this.authService.getAuthToken();
-        return this.requestService.searchPostsByText(token, text, page, pageSize, sortBy).pipe(
+        return this.requestService.searchPostsByText( text, page, pageSize, sortBy).pipe(
             map(response => this.convertToPostPage(response))
         );
     }
@@ -77,31 +76,31 @@ export class PostService {
         )
     }
 
-    addUpvote(identifier: string): Observable<UserModel[]> {
+    addUpvote(identifier: string): Observable<number> {
         let token = this.authService.getAuthToken();
         return this.requestService.addUpvote(token, identifier).pipe(
-            map(response => response as UserModel[])
+            map(response => response as number)
         )
     }
 
-    removeUpvote(identifier: string): Observable<UserModel[]> {
+    removeUpvote(identifier: string): Observable<number> {
         let token = this.authService.getAuthToken();
         return this.requestService.removeUpvote(token, identifier).pipe(
-            map(response => response as UserModel[])
+            map(response => response as number)
         )
     }
 
-    addDownvote(identifier: string): Observable<UserModel[]> {
+    addDownvote(identifier: string): Observable<number> {
         let token = this.authService.getAuthToken();
         return this.requestService.addDownvote(token, identifier).pipe(
-            map(response => response as UserModel[])
+            map(response => response as number)
         )
     }
 
-    removeDownvote(identifier: string): Observable<UserModel[]> {
+    removeDownvote(identifier: string): Observable<number> {
         let token = this.authService.getAuthToken();
         return this.requestService.removeDownvote(token, identifier).pipe(
-            map(response => response as UserModel[])
+            map(response => response as number)
         )
     }
 
@@ -120,11 +119,11 @@ export class PostService {
     }
 
     private convertToPostPage(response: any): Page {
-        return this.page.createPostPage(
-            response['entities'] as PostModel[],
-            response['total-items'] as number,
-            response['current-page'] as number,
-            response['totalPages'] as number
+        return new Page(
+            response.entities as PostModel[],
+            response.total as number,
+            response.currentPage as number,
+            response.totalPages as number
         );
     }
 }

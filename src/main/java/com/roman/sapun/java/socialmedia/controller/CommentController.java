@@ -3,19 +3,14 @@ package com.roman.sapun.java.socialmedia.controller;
 import com.roman.sapun.java.socialmedia.dto.comment.CommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
+import com.roman.sapun.java.socialmedia.dto.page.CommentPageDTO;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
-import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.service.CommentService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/comment")
@@ -52,15 +47,14 @@ public class CommentController {
     /**
      * Retrieves comments for a post identified by its ID and caches the results for 30 minutes.
      *
-     * @param id   The ID of the post.
-     * @param page The page number for pagination.
+     * @param postId   The ID of the post.
+     * @param pageNumber The page number for pagination.
      * @return map that includes 50 comments, overall number of comments, current comment page and overall number of pages.
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/{id}")
-    @Cacheable(value = "commentCache", key = "#id.toString() + '-' + #page", unless = "#result.get('total') == 0")
-    public Map<String, Object> getCommentsByPostIdentifier(@PathVariable String id, @RequestParam int page) throws CommentNotFoundException {
-        return commentService.getCommentsByPostIdentifier(id, page);
+    @GetMapping("/{postId}")
+    public CommentPageDTO getCommentsByPostIdentifier(@PathVariable String postId, @RequestParam int pageNumber) throws CommentNotFoundException {
+        return commentService.getCommentsByPostIdentifier(postId, pageNumber);
     }
 
     /**

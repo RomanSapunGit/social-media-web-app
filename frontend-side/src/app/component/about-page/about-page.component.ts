@@ -22,7 +22,6 @@ import { trigger, state, style, animate, transition, keyframes } from '@angular/
 })
 export class AboutPageComponent {
     isErrorMessage: boolean;
-    aboutPageText: string;
     errorMessage: BehaviorSubject<string>;
     images: string[] = [
         'assets/image/angular-image.png',
@@ -33,17 +32,8 @@ export class AboutPageComponent {
     isAnimating = false;
 
     constructor(private notificationService: NotificationService) {
-        this.aboutPageText = environment.aboutPageText;
         this.isErrorMessage = false;
         this.errorMessage = new BehaviorSubject<string>('');
-    }
-
-    onAnimationStart(event: any) {
-        this.isAnimating = true;
-    }
-
-    onAnimationDone(event: any) {
-        this.isAnimating = false;
     }
 
     ngOnInit() {
@@ -56,6 +46,6 @@ export class AboutPageComponent {
         });
         setInterval(() => {
             this.currentIndex = (this.currentIndex + 1) % this.images.length;
-        }, 2000); // Change image every 2 seconds (adjust as needed)
+        }, 2000);
     }
 }

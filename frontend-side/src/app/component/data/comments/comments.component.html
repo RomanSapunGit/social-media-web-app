@@ -23,15 +23,16 @@
 
 <ng-container *ngIf="isCommentPaginationVisible$ | async" class="pagination">
   <p>
-     {{('PAGE' | translate) (currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined && currentCommentPage[postIdentifier] !== 0) ? currentCommentPage[postIdentifier] + 1 : 1 }}
-     {{('OF' | translate) (postComments | async)?.totalPages }}</p>
+    {{ 'PAGE' | translate }} {{ currentCommentPage + 1 }}
+    {{ 'OF' | translate }} {{ (postComments | async)?.totalPages }}
+  </p>
   <button (click)="previousCommentPage(postIdentifier)"
-          [disabled]="(currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined && currentCommentPage[postIdentifier] !== 0) && currentCommentPage[postIdentifier] + 1 === 1">
+          [disabled]="(currentCommentPage!== 0) &&
+           currentCommentPage + 1 === 1">
     {{'PREVIOUS' | translate}}
   </button>
   <button (click)="nextCommentPage(postIdentifier)"
-          [disabled]="(currentCommentPage[postIdentifier] !== null && currentCommentPage[postIdentifier] !== undefined) &&
-      currentCommentPage[postIdentifier] + 1 === ((postComments | async)?.totalPages || 0)">{{'NEXT' | translate}}
+          [disabled]=" currentCommentPage + 1 === ((postComments | async)?.totalPages || 0)">{{'NEXT' | translate}}
   </button>
 </ng-container>
 </div>

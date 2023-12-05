@@ -1,13 +1,11 @@
 package com.roman.sapun.java.socialmedia.service;
 
+import com.roman.sapun.java.socialmedia.dto.page.UserPageDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
-
-import java.util.Map;
-import java.util.Optional;
 
 public interface UserService {
     /**
@@ -17,11 +15,10 @@ public interface UserService {
      * @param pageNumber  The page number for pagination.
      * @param pageSize    The number of users to display per page.
      * @param sortByValue The criteria for sorting the user results (e.g., by username).
-     *
      * @return A map containing a paginated list of users matching the search criteria, along with
-     *         information about the overall number of users, the current page, and the total number of pages.
+     * information about the overall number of users, the current page, and the total number of pages.
      */
-    Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber, int pageSize, String sortByValue);
+    UserPageDTO getUsersByUsernameContaining(String username, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException;
 
     /**
      * Retrieves a paginated list of all users.
@@ -30,7 +27,7 @@ public interface UserService {
      * @param pageSize The number of users to display per page.
      * @return A list containing users on the specified page, typically up to the specified page size.
      */
-    Map<String, Object> getUsers(int page, int pageSize);
+    UserPageDTO getUsers(int page, int pageSize) throws UserNotFoundException;
 
     /**
      * Updates the details of the current user.

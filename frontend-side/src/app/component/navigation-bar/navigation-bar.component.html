@@ -29,7 +29,7 @@
             </div>
         </div>
             <app-user-notification *ngIf="isMobileView"></app-user-notification>
-        <p *ngIf="isMobileView" (click)="isMenuOpen = !isMenuOpen"><span class="material-icons reorder">reorder</span></p>
+        <b *ngIf="isMobileView" (click)="isMenuOpen = !isMenuOpen"><span class=" material-icons reorder">reorder</span></b>
     </nav>
 </div>
 
@@ -37,6 +37,7 @@
     <div class="circular-image-container">
         <img class="circular-image" [src]="userImage | async" alt="User avatar"
              (click)="displayPostWindow(username); $event.stopPropagation()">
+        <b>{{username}}</b>
     </div>
     <div class="options-container">
         <input class="input-search-field-mobile" type="text" [(ngModel)]="searchQuery"

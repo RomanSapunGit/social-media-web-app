@@ -1,8 +1,8 @@
   <app-error *ngIf="message" [message]="message" (resetError)="message = ''"></app-error>
   <h2 class="text-center">{{'REGISTER_TITLE' | translate}}</h2>
   <form [formGroup]="registerForm" (ngSubmit)="register()">
-    <div class="flex justify-center">
-      <asl-google-signin-button>
+    <div class="flex justify-center register-google-button">
+      <asl-google-signin-button  type="icon" text="signup_with" theme="filled_blue">
       </asl-google-signin-button>
     </div>
     <div class="div-field">

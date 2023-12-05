@@ -1,6 +1,6 @@
 <label *ngIf="!isUserImage && (imageToDisplay | async) as image">
     <div class="register-image-container">
-        <img [lazyLoad]="image.toString()" alt="User image" (click)="toggleProfileMenu($event)"/>
+        <img [lazyLoad]="image.toString()" alt="User image" (click)="displayPostWindow(usernameToDisplay); $event.stopPropagation()"/>
     </div>
 </label>
 
@@ -8,10 +8,6 @@
     <label *ngIf="(imageToDisplay | async) as image ">
         <img [lazyLoad]="image.toString()" alt="User image"/>
     </label>
-</div>
-
-<div [ngClass]="{'dropdown-window': showMenu}" *ngIf="showMenu" (appClickOutside)="closeDropDown()">
-    <app-drop-down-menu [usernameToDisplay]="usernameToDisplay"></app-drop-down-menu>
 </div>
 
 <div class="carousel-container" *ngIf="imagesToDisplay | async">

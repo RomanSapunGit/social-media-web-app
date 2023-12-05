@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 
 @Configuration
@@ -28,7 +27,7 @@ public class SecurityFilter {
         http.cors()
                 .and()
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api/v1/account/**", "/sse/**", "/api/v1/notifications/slack/**").permitAll()
+                        .requestMatchers("/api/v1/account/**", "/sse/**", "/api/v1/notifications/slack/**", "/actuator/prometheus").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/csrf/token").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().hasAnyRole("USER", "ADMIN"))
@@ -38,7 +37,6 @@ public class SecurityFilter {
                 .exceptionHandling()
                 .authenticationEntryPoint(customAuthenticationEntryPoint())
                 .and()
-
                 .csrf(Customizer.withDefaults());
         return http.build();
     }
@@ -48,7 +46,7 @@ public class SecurityFilter {
         return (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write("Some error occured");
+            response.getWriter().write("User is not authorized");
         };
     }
 }

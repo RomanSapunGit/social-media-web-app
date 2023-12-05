@@ -76,13 +76,13 @@
 .navigation-bar {
   position: fixed;
   width: 100%;
-  z-index: 9996;
+  z-index: 200;
 }
 
 .reorder {
-  font-size: 32px;
+  font-size: 42px;
+  margin: unset;
 }
 .filter-button .material-icons {
   font-size: 18px;
 }
-

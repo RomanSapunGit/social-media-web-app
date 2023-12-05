@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Router} from "@angular/router";
 import {CookieService} from 'ngx-cookie-service';
-import {SocialAuthService} from "@abacritt/angularx-social-login";
+import {GoogleLoginProvider, SocialAuthService} from "@abacritt/angularx-social-login";
 import {RequestService} from "./request.service";
 
 @Injectable({
@@ -14,7 +14,9 @@ export class AuthService {
 
     constructor(private router: Router, private cookieService: CookieService, private socialService: SocialAuthService,) {
     }
-
+    getAccessToken(): void {
+        this.socialService.getAccessToken(GoogleLoginProvider.PROVIDER_ID).then(accessToken => console.log(accessToken));
+    }
     private encodeToken(token: string): string {
         return btoa(token);
     }

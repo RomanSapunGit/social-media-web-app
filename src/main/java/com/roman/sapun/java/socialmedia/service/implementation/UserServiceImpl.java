@@ -2,6 +2,7 @@ package com.roman.sapun.java.socialmedia.service.implementation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
+import com.roman.sapun.java.socialmedia.dto.page.UserPageDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
@@ -22,8 +23,6 @@ import org.springframework.stereotype.Service;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
-
 @Service
 @Transactional
 public class UserServiceImpl implements UserService, SubscriptionService {
@@ -41,22 +40,17 @@ public class UserServiceImpl implements UserService, SubscriptionService {
     }
 
     @Override
-    public Map<String, Object> getUsersByUsernameContaining(String username, int pageNumber, int pageSize, String sortByValue) {
+    public UserPageDTO getUsersByUsernameContaining(String username, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, sortByValue));
-        var matchedUsers = userRepository.getAllByUsernameContaining(username, pageable);
-        var postDtoPage = matchedUsers.map(RequestUserDTO::new);
-        return pageConverter.convertPageToResponse(postDtoPage);
+        var userEntityPage = userRepository.getAllByUsernameContaining(username, pageable);
+        return pageConverter.convertPageToUserPageDTO(userEntityPage);
     }
 
     @Override
-    public Map<String, Object> getUsers(int page, int pageSize) {
+    public UserPageDTO getUsers(int page, int pageSize) throws UserNotFoundException {
         var pageable = PageRequest.of(page, pageSize);
         var users = userRepository.findAll(pageable);
-        var content = users.stream().map(userEntity ->
-                        new ResponseUserDTO(userEntity, imageService.getImageByUser(userEntity.getUsername())))
-                .filter(responseUserDTO -> responseUserDTO.userImage() != null)
-                .toList();
-        return pageConverter.convertPageToResponse(users, content, content.size());
+        return pageConverter.convertPageToUserPageDTO(users);
     }
 
     @Override

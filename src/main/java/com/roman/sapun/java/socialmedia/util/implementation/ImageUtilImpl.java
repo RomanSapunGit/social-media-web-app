@@ -15,12 +15,12 @@ public class ImageUtilImpl implements ImageUtil {
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream(data.length);
         Deflater deflater = new Deflater(Deflater.BEST_COMPRESSION);
         DeflaterOutputStream defOutputStream = new DeflaterOutputStream(byteArrayOut, deflater);
-
-        defOutputStream.write(data);
-
-        defOutputStream.close();
-        byteArrayOut.close();
-
+        try {
+            defOutputStream.write(data);
+        } finally {
+            defOutputStream.close();
+            byteArrayOut.close();
+        }
         return byteArrayOut.toByteArray();
     }
 
@@ -39,7 +39,7 @@ public class ImageUtilImpl implements ImageUtil {
             inflaterStream.close();
             return outputStream.toByteArray();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             return new byte[0];
         }
     }

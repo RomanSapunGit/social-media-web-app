@@ -19,7 +19,7 @@
   justify-content: center;
   align-items: center;
   width: 80%;
-  max-width: 50%;
+  max-width: 70%;
   order: 2;
   margin-right: auto;
   margin-left: auto;
@@ -55,7 +55,7 @@
   order: 3;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
   .container {
     grid-template-columns: 1fr;
   }
@@ -70,12 +70,12 @@
     position: unset;
   }
   .post-list {
-    display: inline-table;
+    display: -webkit-box;
     width: unset;
     justify-content: unset;
     align-items: unset;
-    margin-right: unset;
-    margin-left: unset;
+    margin-right: auto;
+    margin-left: auto;
     order: unset;
   }
 }

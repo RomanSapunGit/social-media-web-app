@@ -1,4 +1,13 @@
-import {Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input, NgZone,
+    Output,
+    ViewChild
+} from '@angular/core';
 import {MatDialogService} from "../../services/mat-dialog.service";
 import {AuthService} from "../../services/auth.service";
 import {RequestService} from "../../services/request.service";
@@ -21,7 +30,7 @@ export class DropDownMenuComponent {
 
     constructor(private matDialogService: MatDialogService, private authService: AuthService,
                 private requestService: RequestService, private router: Router,
-                private sseService: ServerSendEventService) {
+                private sseService: ServerSendEventService, private zone: NgZone) {
         this.isProfileMenu = false;
         this.showConfirmation = false;
         this.confirmed = false;
@@ -56,11 +65,12 @@ export class DropDownMenuComponent {
         this.showConfirmation = false;
     }
 
-    logout(): void {
-        this.authService.logout();
+    async logout(): Promise<void> {
+       await this.authService.logout();
         this.sseService.completeSSENotificationConnection(this.username);
-        this.requestService.logout().subscribe({
+        await this.requestService.logout().subscribe({
             next: () => {
+                localStorage.clear();
                 this.requestService.getCsrf();
                 this.router.navigate(["/login"]);
             },

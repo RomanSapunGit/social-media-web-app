@@ -12,12 +12,15 @@ public class ImageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "identifier", unique = true, nullable = false)
+    private String identifier;
+
     private String name;
 
     private String type;
 
     @Lob
-    @Column(name = "image_data", length = 1000)
+    @Column(name = "image_data", length = 1000, nullable = false)
     private byte[] imageData;
     @ManyToOne
     @JoinColumn(name = "post_id")

@@ -29,6 +29,7 @@ public class ValueConfigImpl implements ValueConfig {
         this.clientId = clientId;
         this.slackWebhookUrl = slackWebhookUrl;
         this.libreTranslateUrl = libreTranslateUrl;
+
     }
 
     @Override

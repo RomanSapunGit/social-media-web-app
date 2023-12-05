@@ -26,16 +26,17 @@
   .description-posts {
     overflow: hidden;
     max-width: 160px;
-    text-overflow: ellipsis; /* Add an ellipsis (...) at the end of the visible text */
-    white-space: nowrap; /* Prevent the text from wrapping onto multiple lines */
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 @media (max-width: 1000px) {
   .subscription-posts-end {
     padding-bottom: 40px;
   }
-  .material-icons {
+  .mate rial-icons {
     padding: 15px;
+    font-size: 5px;
   }
 }
 

@@ -17,6 +17,14 @@ export class ServerErrorInterceptor implements HttpInterceptor {
         return next.handle(request).pipe(
             catchError((error: HttpErrorResponse) => {
                 const errorMessage = error.error.message || 'unknown error';
+                const message = error.error
+                console.log(errorMessage)
+                console.log(message)
+                if(message && errorMessage === 'unknown error') {
+                    this.snackBarService.showNotification('Not authenticated to access this site', true)
+                    return EMPTY;
+                }
+                console.log(error)
                 const errorCausedBy = error.error.causedBy;
                 const timestamp = error.error.timestamp;
                 switch (error.status) {
@@ -45,8 +53,10 @@ export class ServerErrorInterceptor implements HttpInterceptor {
                     case 404:
                         console.log(errorMessage, errorCausedBy, timestamp)
                         break;
+                    case 200:
+                        break;
                     default:
-                        this.snackBarService.showNotification(errorMessage, true);
+                        console.log('check')
                         this.snackBarService.showNotification(errorMessage, true);
                         this.snackBarService.sendErrorNotificationToSlack(errorMessage + error.status, errorCausedBy, timestamp);
                         return EMPTY;

@@ -2,6 +2,8 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, SimpleC
 import {Observable} from "rxjs";
 import {FileDTO} from "../../../model/file.model";
 import {ImageService} from "../../../services/image.service";
+import {MatDialogService} from "../../../services/mat-dialog.service";
+import {ImageDtoModel} from "../../../model/image.dto.model";
 
 @Component({
   selector: 'app-image',
@@ -10,7 +12,7 @@ import {ImageService} from "../../../services/image.service";
 })
 export class ImagesComponent {
   @Input() image: FileDTO;
-  @Input() images: FileDTO[];
+  @Input() images: ImageDtoModel[];
   imagesToDisplay: Observable<string[]>;
   imageToDisplay: Observable<string>;
   showMenu: boolean;
@@ -28,10 +30,10 @@ export class ImagesComponent {
     arrows: false,
   };
 
-  constructor(private imageService: ImageService) {
+  constructor(private imageService: ImageService, private matDialogService: MatDialogService) {
     this.isUserImage = false;
     this.images = [];
-    this.image = new FileDTO();
+    this.image = new FileDTO('','', new Uint8Array([200, 255, 100]));
     this.imagesToDisplay = new Observable<string[]>();
     this.imageToDisplay = new Observable<string>();
     this.showMenu = false;
@@ -60,6 +62,9 @@ export class ImagesComponent {
   }
 
   ngOnInit() {
+    this.imagesToDisplay.subscribe( images => {
+      console.log(images)
+    })
     if (this.images && this.images.length > 0) {
       this.imagesToDisplay = this.imageService.fetchImagesFromModel(this.images);
     } else if (this.image && this.image.fileType) {
@@ -78,13 +83,10 @@ export class ImagesComponent {
     return this.currentImageIndex;
   }
 
-  toggleProfileMenu(event: MouseEvent): void {
-    event.stopPropagation();
-    this.showMenu = !this.showMenu;
-  }
-
-  openUserPostsWindow() {
-
+  displayPostWindow(username: string ) {
+    if (username) {
+      this.matDialogService.showPostsByUsername(username);
+    }
   }
 
 

@@ -2,20 +2,19 @@ package com.roman.sapun.java.socialmedia.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
+import com.roman.sapun.java.socialmedia.dto.page.UserPageDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.service.SubscriptionService;
 import com.roman.sapun.java.socialmedia.service.UserService;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -42,9 +41,9 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{username}")
     @Cacheable(value = "userCache", key = "#username.toString() + #page+ '-' + #pageSize", unless = "#result == null")
-    public Map<String, Object> getUsersByUsernameContaining(@PathVariable String username, @RequestParam int page,
-                                                            @RequestParam(defaultValue = "5") int pageSize,
-                                                            @RequestParam(defaultValue = "username") String sortBy) {
+    public UserPageDTO getUsersByUsernameContaining(@PathVariable String username, @RequestParam int page,
+                                                    @RequestParam(defaultValue = "5") int pageSize,
+                                                    @RequestParam(defaultValue = "username") String sortBy) throws UserNotFoundException {
         return userService.getUsersByUsernameContaining(username, page, pageSize, sortBy);
     }
 
@@ -71,7 +70,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping()
     @Cacheable(value = "userCache", key = "#page + #page + '-' + #pageSize", unless = "#result == null")
-    public Map<String, Object> getUsers(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) {
+    public UserPageDTO getUsers(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) throws UserNotFoundException {
         return userService.getUsers(page, pageSize);
     }
 

@@ -1,12 +1,13 @@
 version: "3"
 services:
   account_app:
-    image: backend-image:latest
-    build: ./src
+    image: romannnn/social-media:backend
+    build: src
     container_name: backendApp
     environment:
       - DB_PASSWORD
       - DB_USERNAME
+      - DB_ENDPOINT
       - MAIL_USERNAME
       - MAIL_PASSWORD
       - LOG_CONFIGURATION
@@ -15,16 +16,17 @@ services:
       - BASE64_CODE
       - FRONTEND_URL
       - SLACK_WEBHOOK_URL
+      - LIBRETRANSLATE_URL
     ports:
       - "8080:8080"
     depends_on:
       - mysql_database
 
   frontend:
-    image: frontend-image:latest
+    image: romannnn/social-media:frontend
     container_name: frontendApp
     build:
-      context: ./frontend-side
+      context: frontend-side
     ports:
       - "4200:80"
     depends_on:
@@ -39,19 +41,35 @@ services:
     command: [ "--debug" ]
 
   mysql_database:
-      image: 'mysql:8.1.0'
-      container_name: blog
-      environment:
-        - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-        - MYSQL_DATABASE=blog
-        - MYSQL_USER=${DB_USERNAME}
-        - MYSQL_PASSWORD=${DB_PASSWORD}
-      ports:
-        - "3306:3306"
-      volumes:
-        - mysql-data:/var/lib/mineSql
-        - ./privileges.sql:/docker-entrypoint-initdb.d/privileges.sql
-        - ./init.sql:/data/application/init.sql
-      restart: unless-stopped
+    image: 'mysql:8.1.0'
+    container_name: blog
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=blog
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mineSql
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
 volumes:
   mysql-data:
+  grafana-storage:

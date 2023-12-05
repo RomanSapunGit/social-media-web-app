@@ -1,7 +1,7 @@
-import {ChangeDetectorRef, Component, Input, SimpleChanges} from '@angular/core';
+import {ChangeDetectorRef, Component, Input} from '@angular/core';
 import {
     Observable,
-    ReplaySubject, shareReplay, Subject,
+    ReplaySubject, shareReplay,
     Subscription,
     take, tap
 } from "rxjs";
@@ -20,7 +20,7 @@ import {NotificationService} from "../../../services/notification.service";
 export class CommentsComponent {
     @Input() postIdentifier: string;
     @Input() postComments: ReplaySubject<Page>;
-    @Input() currentCommentPage: { [postId: string]: number };
+    currentCommentPage: number;
     isCommentPaginationVisible$: Observable<boolean>;
     @Input() commentVisibility: boolean;
     currentUser: string | null;
@@ -31,23 +31,21 @@ export class CommentsComponent {
                 private notificationService: NotificationService) {
         this.postIdentifier = '';
         this.postComments = new ReplaySubject<Page>(1);
-        this.currentCommentPage = {};
+        this.currentCommentPage = 0;
         this.isCommentPaginationVisible$ = new Observable<boolean>();
         this.commentVisibility = false;
         this.currentUser = this.authService.getUsername();
         this.subscription = new Subscription();
     }
 
-    async ngOnInit() {
-        this.currentCommentPage[this.postIdentifier] = 0;
+     ngOnInit() {
         this.isCommentPaginationVisible$ = this.isCommentPaginationVisible(this.postComments);
         this.commentService.commentCreated$.subscribe((comment) => {
             if (this.postIdentifier) {
                 this.fetchComments(this.postIdentifier);
-                let token = this.authService.getAuthToken();
 
-                if (token && comment.postAuthorUsername != comment.username) {
-                    this.subscription = this.requestService.sendCommentNotification(token, comment.identifier, comment.username + ' commented on your post')
+                if ( comment.postAuthorUsername != comment.username) {
+                    this.subscription = this.requestService.sendCommentNotification(comment.identifier, comment.username + ' commented on your post')
                         .pipe(take(1), shareReplay(1)).subscribe();
                 }
             } else {
@@ -58,7 +56,7 @@ export class CommentsComponent {
     }
 
     fetchComments(postId: string): void {
-        const sub = this.commentService.getComments(postId, this.currentCommentPage[postId]).pipe(
+        const sub = this.commentService.getComments(postId, this.currentCommentPage).pipe(
             take(1),
             tap(commentPage =>
                 this.postComments.next(commentPage)
@@ -68,21 +66,21 @@ export class CommentsComponent {
     }
 
     previousCommentPage(postId: string) {
-        const currentPage = this.currentCommentPage[postId];
+        const currentPage = this.currentCommentPage;
         if (currentPage > 0) {
-            this.currentCommentPage[postId] = currentPage - 1;
+            this.currentCommentPage = currentPage - 1;
             this.fetchComments(postId);
         }
     }
 
     async nextCommentPage(postId: string) {
-        const currentPage = this.currentCommentPage[postId] || 0;
+        const currentPage = this.currentCommentPage || 0;
         const postComments = this.postComments;
         if (postComments) {
             const sub = postComments.pipe(take(1)).subscribe(async (page: Page) => {
                 const totalPages = page?.totalPages || 0;
                 if (currentPage < totalPages - 1) {
-                    this.currentCommentPage[postId] = currentPage + 1;
+                    this.currentCommentPage = currentPage + 1;
                     await this.fetchComments(postId);
                 }
             });

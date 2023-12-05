@@ -6,6 +6,7 @@ import {AuthService} from "./auth.service";
 import {TokenModel} from "../model/token.model";
 import {environment} from "../../environments/environment";
 import {NotificationService} from "./notification.service";
+import {RequestUpdatePostModel} from "../model/request-update-post.model";
 
 @Injectable({
     providedIn: 'root'
@@ -45,6 +46,8 @@ export class RequestService {
 
 
     loginViaGoogle(token: string) {
+        console.log(token)
+        console.log(this.csrfToken.token)
         return this.http.post(`${this.baseUrl}/api/v1/account/google/login`, null, {
             withCredentials: true,
             headers: new HttpHeaders({
@@ -93,11 +96,11 @@ export class RequestService {
         return this.http.get(`${this.baseUrl}/api/v1/post/search`, {withCredentials: true, params, headers});
     }
 
-    getCommentsByPost(id: string, token: string | null, page: number) {
+    getCommentsByPost(postId: string, token: string | null, pageNumber: number) {
         let params = new HttpParams();
-        params = params.set('page', page.toString());
+        params = params.set('pageNumber', pageNumber.toString());
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-        return this.http.get(`${this.baseUrl}/api/v1/comment/${id}`, {withCredentials: true, params, headers});
+        return this.http.get(`${this.baseUrl}/api/v1/comment/${postId}`, {withCredentials: true, params, headers});
     }
 
     createComment(postIdentifier: string | null, token: string | null, creationData: {
@@ -189,21 +192,22 @@ export class RequestService {
         return this.http.post(`${this.baseUrl}/api/v1/post`, postData, {withCredentials: true, headers})
     }
 
-    updatePost(token: string | null, postData: FormData) {
-
-        return this.http.put(`${this.baseUrl}/api/v1/post`, postData, {
+    updatePost(postUpdateData: RequestUpdatePostModel) {
+        console.log(postUpdateData)
+        return this.http.put(`${this.baseUrl}/api/v1/post`, postUpdateData, {
             withCredentials: true,
-            headers: new HttpHeaders({'X-CSRF-TOKEN': this.csrfToken.token as string})
+            headers: new HttpHeaders({
+                'X-CSRF-TOKEN': this.csrfToken.token as string,
+            })
         })
     }
 
-    searchPostsByText(token: string | null, text: string, page: number, pageSize: number, sortBy: string) {
-        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    searchPostsByText(text: string, page: number, pageSize: number, sortBy: string) {
         let params = new HttpParams();
         params = params.set('page', page.toString());
         params = params.set('pageSize', pageSize.toString());
         params = params.set('sortBy', sortBy);
-        return this.http.get(`${this.baseUrl}/api/v1/post/search/${text}`, {withCredentials: true, params, headers})
+        return this.http.get(`${this.baseUrl}/api/v1/post/search/${text}`, {withCredentials: true, params})
     }
 
     getPostById(token: string | null, identifier: string) {
@@ -211,7 +215,7 @@ export class RequestService {
         return this.http.get(`${this.baseUrl}/api/v1/post/${identifier}`, {withCredentials: true, headers})
     }
 
-    sendCommentNotification(token: string, commentIdentifier: string, message: string) {
+    sendCommentNotification(commentIdentifier: string, message: string) {
         return this.http.post(`${this.baseUrl}/api/v1/notifications/comments`, {commentIdentifier, message}, {
             withCredentials: true,
             headers: new HttpHeaders({'X-CSRF-TOKEN': this.csrfToken.token as string})
@@ -231,6 +235,7 @@ export class RequestService {
     }
 
     sendNotificationToSlack(message: string, causedBy: string, timestamp: Date) {
+        console.log(this.csrfToken.token + 'p')
         return this.http.post(`${this.baseUrl}/api/v1/notifications/slack`, {causedBy, timestamp, message}, {
             withCredentials: true,
             headers: new HttpHeaders({'X-CSRF-TOKEN': this.csrfToken.token as string})
@@ -265,7 +270,7 @@ export class RequestService {
         params = params.set('pageSize', pageSize.toString());
         let headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         console.log('check');
-        return this.http.get(`${this.baseUrl}/api/v1/tag/${text}`, { withCredentials: true, params, headers });
+        return this.http.get(`${this.baseUrl}/api/v1/tag/${text}`, {withCredentials: true, params, headers});
     }
 
     getUsersByText(text: string, page: number, pageSize: number) {
@@ -293,8 +298,7 @@ export class RequestService {
         })
     }
 
-    translateText(text: string, token: string, targetLanguage: string) {
-        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    translateText(text: string, targetLanguage: string) {
         let params = new HttpParams();
         params = params.set('text', text);
         params = params.set('targetLanguage', targetLanguage);

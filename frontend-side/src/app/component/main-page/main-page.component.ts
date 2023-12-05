@@ -1,15 +1,9 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener} from '@angular/core';
-import {AuthService} from "../../services/auth.service";
-import {RequestService} from "../../services/request.service";
 import {NotificationService} from "../../services/notification.service";
 import {BehaviorSubject, fromEvent, map, merge, Observable, of, ReplaySubject, startWith, Subscription} from "rxjs";
-import {CommentService} from "../../services/comment.service";
-import {UserModel} from "../../model/user.model";
-import {TagModel} from "../../model/tag.model";
 import {MatDialogService} from "../../services/mat-dialog.service";
 import {ActivatedRoute, ActivatedRouteSnapshot} from "@angular/router";
 import {RoutingService} from "../../services/routing.service";
-import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 
 
 @Component({
@@ -102,7 +96,7 @@ export class MainPageComponent {
                 this.changeDetectorRef.detectChanges();
             }
         }));
-        this.checkNetworkStatus();
+
     }
 
     @HostListener('window:resize', ['$event'])

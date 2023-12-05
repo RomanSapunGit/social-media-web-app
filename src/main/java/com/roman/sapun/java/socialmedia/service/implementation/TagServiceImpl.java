@@ -1,6 +1,6 @@
 package com.roman.sapun.java.socialmedia.service.implementation;
 
-import com.roman.sapun.java.socialmedia.dto.tag.TagDTO;
+import com.roman.sapun.java.socialmedia.dto.page.TagPageDTO;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import com.roman.sapun.java.socialmedia.repository.TagRepository;
 import com.roman.sapun.java.socialmedia.service.TagService;
@@ -29,12 +29,12 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Map<String, Object> getTags(int page, int pageSize) {
+    public TagPageDTO getTags(int page, int pageSize) {
         var pageable = PageRequest.of(page, pageSize);
-        var tags = tagRepository.findAll(pageable);
-        var tagsDTO = tags.map(TagDTO::new);
-        return pageConverter.convertPageToResponse(tagsDTO);
+        var tagsPage = tagRepository.findAll(pageable);
+        return pageConverter.convertPageToTagPageDTO(tagsPage);
     }
+
 
     @Override
     public Set<TagEntity> getExistingTagsFromText(String text) {
@@ -47,9 +47,10 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Map<String, Object> getExistingTagsFromText(String text, int pageSize, int page) {
+    public TagPageDTO getExistingTagsFromText(String text, int pageSize, int page) {
         var pageable = PageRequest.of(page, pageSize);
-        return pageConverter.convertPageToResponse(tagRepository.findByNameContaining(text, pageable).map(TagDTO::new));
+        var tagsPage = tagRepository.findByNameContaining(text, pageable);
+        return pageConverter.convertPageToTagPageDTO(tagsPage);
     }
 
     @Override
@@ -72,4 +73,5 @@ public class TagServiceImpl implements TagService {
         }
         return hashtags;
     }
+
 }

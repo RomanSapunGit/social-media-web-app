@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users
     PRIMARY KEY (id)
 ) ENGINE = InnoDB;
 
+
 CREATE TABLE IF NOT EXISTS user_followers
 (
     user_id      BIGINT NOT NULL,
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS posts
     description   VARCHAR(2550) NOT NULL,
     creation_time TIMESTAMP     NOT NULL,
     identifier    VARCHAR(255)  NOT NULL UNIQUE,
-    author       BIGINT        NOT NULL,
+    author        BIGINT        NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT FK_posts_users FOREIGN KEY (author) REFERENCES users (id)
 ) ENGINE = InnoDB;
@@ -117,6 +118,7 @@ CREATE TABLE IF NOT EXISTS comments
 CREATE TABLE IF NOT EXISTS images
 (
     id         BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    identifier VARCHAR(255) NOT NULL UNIQUE,
     name       VARCHAR(255) NOT NULL,
     type       VARCHAR(25)  NOT NULL,
     image_data LONGBLOB     NOT NULL,

@@ -29,16 +29,19 @@
         <div ngxSlickItem *ngFor="let url of imageURLS; let i = index" class="slide">
           <img [src]="url" alt="Slide Image" class="slide-image" (click)="isImageClicked = true">
           <div *ngIf="isImageClicked">
-            <div class="image-overlay" (click)="deleteImage(i);$event.stopPropagation()"></div>
+            <div class="image-overlay" (click)="deleteImage(i)"></div>
             <p class="overlay-text" [ngClass]="{'show-overlay': hoverIndex === i}"
                (click)="deleteImage(i);$event.stopPropagation()">{{'DELETE_PHOTO' | translate}}</p>
           </div>
         </div>
       </ngx-slick-carousel>
     </div>
+    <div *ngIf="imageURLS.length > 6">
+      {{'IMAGE_NUMBER_RESTRICTION' | translate}}
+    </div>
 
     <div class="flex justify-center">
-      <button class="btn-login" [disabled]="postForm.invalid" type="submit">
+      <button class="btn-login" [disabled]="postForm.invalid || imageURLS.length > 6" type="submit">
         {{ isUpdating ? ('UPDATE_POST' | translate) : ('CREATE_POST' | translate) }}
       </button>
     </div>

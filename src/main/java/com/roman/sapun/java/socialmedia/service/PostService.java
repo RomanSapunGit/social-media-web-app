@@ -1,16 +1,14 @@
 package com.roman.sapun.java.socialmedia.service;
 
+import com.roman.sapun.java.socialmedia.dto.image.RequestImageDTO;
+import com.roman.sapun.java.socialmedia.dto.page.PostPageDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
-import com.roman.sapun.java.socialmedia.exception.InvalidPageSizeException;
-import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
-import com.roman.sapun.java.socialmedia.exception.TagNotFoundException;
-import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 public interface PostService {
     /**
@@ -21,50 +19,61 @@ public interface PostService {
      * @param authentication The authentication object for the current user.
      * @return The DTO representing the created post.
      */
-    ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws UserNotFoundException;
+    ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws UserNotFoundException, InvalidImageNumberException;
 
     /**
-     * Updates an existing post with the given request data, images, and authentication.
+     * Updates an existing post with the provided data, images, and authentication.
+     * <p>
+     * This method allows an authenticated user to modify an existing post by providing updated information,
+     * including the post identifier, title, description, lists of existing and new images, and user authentication.
      *
-     * @param requestPostDTO The DTO containing the updated post data.
-     * @param images         The list of images associated with the post.
-     * @param authentication The authentication object for the current user.
+     * @param identifier      The unique identifier of the post to be updated.
+     * @param title           The updated title for the post.
+     * @param description     The updated description for the post.
+     * @param images          The list of existing images associated with the post.
+     * @param newImages       The list of new images to be added to the post.
+     * @param authentication  The authentication object for the current user.
      * @return The DTO representing the updated post.
-     * @throws PostNotFoundException If the post with the given identifier is not found or Authors and User's data does not match.
+     * @throws PostNotFoundException         If the post with the given identifier is not found or if the authors' and user's data does not match.
+     * @throws UserNotFoundException         If the authenticated user is not found.
+     * @throws InvalidImageNumberException    If the total number of images exceeds the allowed limit.
      */
-    ResponsePostDTO updatePost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws PostNotFoundException, UserNotFoundException;
+    ResponsePostDTO updatePost(String identifier, String title, String description, List<RequestImageDTO> images,
+                               List<RequestImageDTO> newImages,
+                               Authentication authentication)
+            throws PostNotFoundException, UserNotFoundException, InvalidImageNumberException;
 
     /**
      * Retrieves a paginated list of posts.
      *
-     * @param pageNumber The page number to retrieve.
-     * @param pageSize   The number of posts to include on each page.
+     * @param pageNumber  The page number to retrieve.
+     * @param pageSize    The number of posts to include on each page.
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPosts(int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
+    PostPageDTO getPosts(int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
 
     /**
      * Retrieves a paginated list of posts filtered by a specific tag.
      *
-     * @param tagName   The name of the tag to filter by.
-     * @param page      The page number to retrieve.
-     * @param pageSize  The number of posts to include on each page.
+     * @param tagName     The name of the tag to filter by.
+     * @param page        The page number to retrieve.
+     * @param pageSize    The number of posts to include on each page.
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException;
+    PostPageDTO getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException;
 
     /**
      * Retrieves a paginated list of posts created by a specific user.
      *
-     * @param username  The username of the user.
-     * @param page      The page number to retrieve.
-     * @param pageSize  The number of posts to include on each page.
+     * @param username    The username of the user.
+     * @param page        The page number to retrieve.
+     * @param pageSize    The number of posts to include on each page.
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException;
+    PostPageDTO getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException;
 
     /**
      * Retrieves a paginated list of posts created by users that the authenticated user is following.
@@ -72,22 +81,22 @@ public interface PostService {
      * @param authentication The authentication object for the current user.
      * @param pageNumber     The page number to retrieve.
      * @param pageSize       The number of posts to include on each page.
-     * @param sortByValue The field by which to sort the posts.
+     * @param sortByValue    The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      * @throws IllegalArgumentException If the user is not found.
      */
-    Map<String, Object> getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException;
+    PostPageDTO getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException;
 
     /**
      * Retrieves a paginated list of posts that contain the specified text in their title.
      *
-     * @param title      The text to search for in the post titles.
-     * @param pageNumber The page number to retrieve.
-     * @param pageSize  The number of posts to include on each page.
+     * @param title       The text to search for in the post titles.
+     * @param pageNumber  The page number to retrieve.
+     * @param pageSize    The number of posts to include on each page.
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    Map<String, Object> findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
+    PostPageDTO findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
 
     /**
      * Retrieves a post by its identifier.

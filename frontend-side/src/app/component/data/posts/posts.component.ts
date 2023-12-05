@@ -17,7 +17,7 @@ import {PostModel} from "../../../model/post.model";
 import {RoutingService} from "../../../services/routing.service";
 import {SearchByTextService} from "../../../services/search-by-text.service";
 import {ActivatedRoute} from "@angular/router";
-import {Breakpoints} from "@angular/cdk/layout";
+import {FileDTO} from "../../../model/file.model";
 
 @Component({
     selector: 'app-post',
@@ -86,6 +86,7 @@ export class PostsComponent {
         this.postActionService.postCreated$.subscribe({
             next: (post: PostModel) => {
                 this.updatePostView(post);
+                this.changeDetectorRef.detectChanges();
             }
         });
 
@@ -97,6 +98,8 @@ export class PostsComponent {
                     if (!text) {
                         this.searchText = '';
                         this.fetchPosts().pipe(
+                            take(1),
+                            shareReplay(),
                             tap((page) => {
                                 this.posts.next(page);
                             })
@@ -104,6 +107,7 @@ export class PostsComponent {
                     } else {
                         this.searchText = text;
                         this.postService.searchPostsByText(text, 0, this.pageSize, this.sortBy).pipe(
+                            take(1),
                             tap((page) => {
                                 this.loadedPosts = page.entities;
                                 this.posts.next(page);
@@ -139,6 +143,7 @@ export class PostsComponent {
                 this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
                 this.isLoading.next(false);
                 shareReplay(1);
+                this.hasPostsBySubscription();
             },
             error: (error: any) => {
                 this.errorMessage = 'Something went wrong:' + error.error.message
@@ -146,7 +151,16 @@ export class PostsComponent {
         });
         this.subscriptions.add(subscription);
     }
-
+    hasPostsBySubscription(): void  {
+        this.posts.pipe(
+            take(1),
+            map(postsData => {
+                if (postsData.entities.length == 0 && this.isUserSubscribed.getValue()) {
+                    this.onPostChange();
+                }
+            })
+        ).subscribe();
+    }
     addUpvote(identifier: string) {
         this.postService.addUpvote(identifier).pipe(
             tap(upvotes => {
@@ -275,8 +289,8 @@ export class PostsComponent {
         }
     }
 
-    updatePost(postIdentifier: string, title: string, description: string) {
-        this.matDialogService.updatePost(postIdentifier, title, description);
+    updatePost(postIdentifier: string, title: string, description: string, images: FileDTO) {
+        this.matDialogService.updatePost(postIdentifier, title, description, images);
     }
 
     updatePostView(updatedPost: PostModel) {

@@ -3,6 +3,7 @@ import {map, Observable, of, share} from "rxjs";
 import {FileDTO} from "../model/file.model";
 import {AuthService} from "./auth.service";
 import {RequestService} from "./request.service";
+import {ImageDtoModel} from "../model/image.dto.model";
 
 @Injectable({
   providedIn: 'root'
@@ -12,9 +13,9 @@ export class ImageService {
   constructor(private authService: AuthService, private requestService: RequestService) {
   }
 
-  fetchImagesFromModel(files: FileDTO[]): Observable<string[]> {
-    return of(files.map((file: FileDTO) => {
-      return 'data:' + file.fileType + ';base64,' + file.fileData;
+  fetchImagesFromModel(files: ImageDtoModel[]): Observable<string[]> {
+    return of(files.map((file: ImageDtoModel) => {
+      return 'data:' + file.fileDTO.fileType + ';base64,' +  file.fileDTO.fileData;
     }));
   }
 

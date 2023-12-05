@@ -52,6 +52,6 @@ export class UserNotificationComponent {
             this.subscription.unsubscribe();
         }
         let username = this.authService.getUsername();
-            this.sseService.completeSSENotificationConnection( username);
+        this.sseService.completeSSENotificationConnection( username);
     }
 }
