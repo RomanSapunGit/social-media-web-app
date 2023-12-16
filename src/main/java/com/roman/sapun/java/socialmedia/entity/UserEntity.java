@@ -39,7 +39,7 @@ public class UserEntity {
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime tokenCreationDate;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
             joinColumns = {@JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "role_id", nullable = false, referencedColumnName = "id"))
@@ -50,6 +50,18 @@ public class UserEntity {
             joinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "following_id", nullable = false, referencedColumnName = "id"))
     private Set<UserEntity> following = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "saved_posts",
+            joinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id"))
+    private Set<PostEntity> savedPosts = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "saved_comments",
+            joinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "comment_id", nullable = false, referencedColumnName = "id"))
+    private Set<CommentEntity> savedComments = new HashSet<>();
 
     @ManyToMany(mappedBy = "following", fetch = FetchType.LAZY)
     private Set<UserEntity> followers = new HashSet<>();
@@ -62,6 +74,9 @@ public class UserEntity {
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
     private ImageEntity image;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserStatisticsEntity userStatistics;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     private List<NotificationEntity> notifications;

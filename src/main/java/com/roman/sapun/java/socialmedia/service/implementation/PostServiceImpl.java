@@ -17,9 +17,9 @@ import com.roman.sapun.java.socialmedia.util.converter.ImageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
 import io.micrometer.observation.annotation.Observed;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,13 +43,14 @@ public class PostServiceImpl implements PostService {
     private final ImageService imageService;
     private final SSEController sseController;
     private final ImageConverter imageConverter;
+    private final UserStatisticsService userStatisticsService;
     private final static int MAX_PAGE_SIZE = 35;
 
 
     public PostServiceImpl(TagService tagService, PostConverter postConverter, UserService userService,
                            PostRepository postRepository, PageConverter pageConverter, ValueConfig valueConfig,
                            TagRepository tagRepository, UserRepository userRepository, ImageService imageService,
-                           SSEController sseController, ImageConverter imageConverter) {
+                           SSEController sseController, ImageConverter imageConverter, UserStatisticsService userStatisticsService) {
         this.tagService = tagService;
         this.postConverter = postConverter;
         this.userService = userService;
@@ -61,18 +62,21 @@ public class PostServiceImpl implements PostService {
         this.imageService = imageService;
         this.sseController = sseController;
         this.imageConverter = imageConverter;
+        this.userStatisticsService = userStatisticsService;
     }
 
     @Override
     public ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images,
-                                      Authentication authentication) throws UserNotFoundException, InvalidImageNumberException {
+                                      Authentication authentication, HttpServletRequest request) throws UserNotFoundException, InvalidImageNumberException, UserStatisticsNotFoundException {
 
         Set<TagEntity> existingTags = tagService.getExistingTagsFromText(requestPostDTO.description());
         Set<TagEntity> nonExistingTags = tagService.saveNonExistingTagsFromText(requestPostDTO.description());
         existingTags.addAll(nonExistingTags);
         var postOwner = userService.findUserByAuth(authentication);
         var postEntity = postConverter.convertToPostEntity(requestPostDTO, existingTags, postOwner, new PostEntity(), new HashSet<>());
+        postEntity.setUserStatistics(postOwner.getUserStatistics());
         postRepository.save(postEntity);
+        userStatisticsService.addCreatedPostToStatistic(postOwner, postEntity, request);
         if (images != null) {
             var dtoImages = imageService.uploadImagesForPost(images, postEntity.getIdentifier(), authentication);
             return new ResponsePostDTO(postEntity, dtoImages, imageService.getImageByUser(postEntity.getAuthor().getUsername()), 0, 0);
@@ -95,7 +99,7 @@ public class PostServiceImpl implements PostService {
         postEntity.setTags(tags);
         postEntity.setTitle(title);
         postEntity.setDescription(description);
-        var imageEntities = imageConverter.convertImagesToEntity( newImages, postEntity);
+        var imageEntities = imageConverter.convertImagesToEntity(newImages, postEntity);
         var existedImageEntities = postEntity.getImages().stream()
                 .filter(imageEntity -> images.stream()
                         .anyMatch(requestImageDTO -> requestImageDTO.identifier().equals(imageEntity.getIdentifier())))
@@ -137,6 +141,45 @@ public class PostServiceImpl implements PostService {
         return pageConverter.convertPageToPostPageDTO(posts);
     }
 
+    @Override
+    public PostPageDTO getSavedPosts(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException {
+        validatePageSize(pageSize);
+        var user = userService.findUserByAuth(authentication);
+        var savedPosts = user.getSavedPosts();
+
+        List<PostEntity> savedPostsList = new ArrayList<>(savedPosts);
+
+        Pageable pageable = setPageable(pageNumber, pageSize, sortByValue);
+
+        Page<PostEntity> savedPostsPage = new PageImpl<>(savedPostsList, pageable, savedPostsList.size());
+
+        return pageConverter.convertPageToPostPageDTO(savedPostsPage);
+    }
+
+    @Override
+    public ResponsePostDTO removePostFromSavedList(String identifier, Authentication authentication) throws PostNotFoundException, UserNotFoundException {
+        var user = userService.findUserByAuth(authentication);
+        var postEntity = postRepository.findByIdentifier(identifier).orElseThrow(PostNotFoundException::new);
+        user.getSavedPosts().remove(postEntity);
+        userRepository.save(user);
+        return postConverter.convertToResponsePostDTO(postEntity);
+    }
+
+    @Override
+    public ResponsePostDTO addPostToSavedList(String identifier, Authentication authentication) throws PostNotFoundException, UserNotFoundException {
+        var user = userService.findUserByAuth(authentication);
+        var postEntity = postRepository.findByIdentifier(identifier).orElseThrow(PostNotFoundException::new);
+        user.getSavedPosts().add(postEntity);
+        userRepository.save(user);
+        return postConverter.convertToResponsePostDTO(postEntity);
+    }
+
+    @Override
+    public boolean isPostExistInSavedList(String identifier, Authentication authentication) throws PostNotFoundException, UserNotFoundException {
+        var user = userService.findUserByAuth(authentication);
+        var postEntity = postRepository.findByIdentifier(identifier).orElseThrow(PostNotFoundException::new);
+        return user.getSavedPosts().stream().anyMatch(savedPost -> savedPost.getIdentifier().equals(postEntity.getIdentifier()));
+    }
 
     @Override
     public PostPageDTO getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException {
@@ -158,20 +201,21 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public ResponsePostDTO getPostById(String identifier) throws PostNotFoundException, UserNotFoundException {
+    public ResponsePostDTO getPostById(String identifier, HttpServletRequest request) throws PostNotFoundException, UserNotFoundException, UserStatisticsNotFoundException {
         var post = postRepository.getPostEntityByIdentifier(identifier).orElseThrow(PostNotFoundException::new);
+        userStatisticsService.addViewedPostToStatistic(post.getAuthor(), post, request);
         return postConverter.convertToResponsePostDTO(post);
     }
 
+    @Transactional
     @Override
     public ResponsePostDTO deletePostByIdentifier(String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         var post = postRepository.findByIdentifier(identifier).orElseThrow(PostNotFoundException::new);
         var user = userService.findUserByAuth(authentication);
-
         if (!(post.getAuthor().getUsername().equals(user.getUsername()))) {
             throw new PostNotFoundException();
         }
-
+        user.getSavedPosts().remove(post);
         postRepository.delete(post);
         return postConverter.convertToResponsePostDTO(post);
     }

@@ -7,6 +7,7 @@ import {NotificationService} from "../../../../services/notification.service";
 import {CommentModel} from "../../../../model/comment.model";
 import {CommentService} from "../../../../services/comment.service";
 import {MatDialogService} from "../../../../services/mat-dialog.service";
+import {WebsocketService} from "../../../../services/websocket.service";
 
 @Component({
   selector: 'app-creation-form',
@@ -22,7 +23,8 @@ export class CommentActionComponent {
   constructor(public dialogRef: MatDialogRef<CommentActionComponent>, private formBuilder: FormBuilder,
               private requestService: RequestService, private authService: AuthService,
               private notificationService: NotificationService, private commentService: CommentService,
-              @Inject(MAT_DIALOG_DATA) public data: any, private matDialogService: MatDialogService) {
+              @Inject(MAT_DIALOG_DATA) public data: any, private matDialogService: MatDialogService,
+              private webSocketService: WebsocketService) {
     this.commentForm = this.formBuilder.group({
       title: ['', [Validators.required, Validators.minLength(6)]],
       description: ['', [Validators.required, Validators.minLength(6)]]
@@ -53,6 +55,7 @@ export class CommentActionComponent {
         next: (response: any) => {
           this.commentService.addComment(response as CommentModel);
           this.notificationService.showNotification('comment created successfully', false);
+          this.webSocketService.publish(response as CommentModel);
           this.closeDialog();
         }
       }

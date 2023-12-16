@@ -18,9 +18,9 @@
 </div>
 <div *ngIf="isMobileView | async" class="container">
     <ul>
-        <li><a routerLink="/main/users">Users</a></li>
-        <li><a routerLink="/main/posts">Posts</a></li>
-        <li><a routerLink="/main/tags">Tags</a></li>
+        <li><a routerLink="/main/users" routerLinkActive="active">Users</a></li>
+        <li><a routerLink="/main/posts" routerLinkActive="active">Posts</a></li>
+        <li><a routerLink="/main/tags" routerLinkActive="active">Tags</a></li>
     </ul>
     <div *ngIf="selectedList === 'users'" class="user-list">
         <app-users></app-users>

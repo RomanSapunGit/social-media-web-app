@@ -40,8 +40,11 @@ export class DropDownMenuComponent {
     }
 
     displayPostWindow(username: string | null) {
+        console.log(username)
         if (username) {
             this.matDialogService.showPostsByUsername(username);
+            if (this.isMenuOpen)
+                this.isMenuClose.emit(false);
         }
     }
 
@@ -77,5 +80,9 @@ export class DropDownMenuComponent {
             error: (error: any) => console.log(error.error.message)
         });
     }
-
+    openSavedEntitiesDialog() {
+        this.matDialogService.openSavedEntitiesDialog();
+        if (this.isMenuOpen)
+            this.isMenuClose.emit(false);
+    }
 }

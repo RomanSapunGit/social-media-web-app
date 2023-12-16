@@ -19,6 +19,10 @@ export class RequestService {
         this.csrfToken = null;
     }
 
+    getCsrfToken() {
+        return this.csrfToken;
+    }
+
     login(loginData: { username: string, password: string }) {
         return this.http.post(`${this.baseUrl}/api/v1/account/login`, loginData,
             {withCredentials: true, headers: new HttpHeaders({'X-CSRF-TOKEN': this.csrfToken.token as string})});
@@ -96,11 +100,37 @@ export class RequestService {
         return this.http.get(`${this.baseUrl}/api/v1/post/search`, {withCredentials: true, params, headers});
     }
 
-    getCommentsByPost(postId: string, token: string | null, pageNumber: number) {
+    getCommentsByPost(postId: string, pageNumber: number) {
         let params = new HttpParams();
         params = params.set('pageNumber', pageNumber.toString());
-        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-        return this.http.get(`${this.baseUrl}/api/v1/comment/${postId}`, {withCredentials: true, params, headers});
+        return this.http.get(`${this.baseUrl}/api/v1/comment/${postId}`, {withCredentials: true, params});
+    }
+
+    getSavedComments(pageNumber: number) {
+        let params = new HttpParams();
+        params = params.set('pageNumber', pageNumber.toString());
+        return this.http.get(`${this.baseUrl}/api/v1/comment/saved`, {withCredentials: true, params})
+    }
+
+    addCommentToSavedList(identifier: string) {
+        return this.http.post(`${this.baseUrl}/api/v1/comment/saved/${identifier}`, {}, {
+            withCredentials: true,
+            headers: new HttpHeaders({
+                'X-CSRF-TOKEN': this.csrfToken.token as string,
+            })
+        })
+    }
+
+    deleteCommentFromSavedList(identifier: string) {
+        return this.http.delete(`${this.baseUrl}/api/v1/comment/saved/${identifier}`, {withCredentials: true,
+            headers: new HttpHeaders({
+                'X-CSRF-TOKEN': this.csrfToken.token as string,
+            })
+        })
+    }
+
+    findCommentInSavedList(identifier: string) {
+        return this.http.get(`${this.baseUrl}/api/v1/comment/saved/${identifier}`, {withCredentials: true})
     }
 
     createComment(postIdentifier: string | null, token: string | null, creationData: {
@@ -147,6 +177,26 @@ export class RequestService {
             params = params.set('sortBy', sortByValue);
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.get(`${this.baseUrl}/api/v1/post/tag/${tag}`, {withCredentials: true, params, headers});
+    }
+
+    addPostToSavedList(identifier: string) {
+        return this.http.post(`${this.baseUrl}/api/v1/post/saved/${identifier}`, {}, {
+            withCredentials: true,
+            headers: new HttpHeaders({
+                'X-CSRF-TOKEN': this.csrfToken.token as string,
+            })
+        });
+    }
+    deletePostFromSavedList(identifier: string) {
+        return this.http.delete(`${this.baseUrl}/api/v1/post/saved/${identifier}`,{
+            withCredentials: true,
+            headers: new HttpHeaders({
+            'X-CSRF-TOKEN': this.csrfToken.token as string,
+        })});
+    }
+
+    findPostInSavedList(identifier: string) {
+        return this.http.get(`${this.baseUrl}/api/v1/post/saved/${identifier}`, {withCredentials: true})
     }
 
     getPostsByUsername(page: number, token: string | null, username: string | null, pageSize?: number, sortByValue?: string) {
@@ -208,6 +258,14 @@ export class RequestService {
         params = params.set('pageSize', pageSize.toString());
         params = params.set('sortBy', sortBy);
         return this.http.get(`${this.baseUrl}/api/v1/post/search/${text}`, {withCredentials: true, params})
+    }
+
+    getSavedPosts(page: number, pageSize: number, sortBy: string) {
+        let params = new HttpParams();
+        params = params.set('page', page.toString());
+        params = params.set('pageSize', pageSize.toString());
+        params = params.set('sortBy', sortBy);
+        return this.http.get(`${this.baseUrl}/api/v1/post/saved`, {withCredentials: true, params})
     }
 
     getPostById(token: string | null, identifier: string) {
@@ -353,6 +411,12 @@ export class RequestService {
     deletePost(token: string | null, identifier: string) {
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         return this.http.delete(`${this.baseUrl}/api/v1/post/${identifier}`, {
+            withCredentials: true,
+            headers: new HttpHeaders({'X-CSRF-TOKEN': this.csrfToken.token as string})
+        })
+    }
+    getUser() {
+        return this.http.get(`${this.baseUrl}/api/v1/user/current`, {
             withCredentials: true,
             headers: new HttpHeaders({'X-CSRF-TOKEN': this.csrfToken.token as string})
         })

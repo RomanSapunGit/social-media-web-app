@@ -5,10 +5,7 @@ import com.roman.sapun.java.socialmedia.dto.credentials.ResetPassDTO;
 import com.roman.sapun.java.socialmedia.dto.credentials.SignUpDTO;
 import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
-import com.roman.sapun.java.socialmedia.exception.InvalidValueException;
-import com.roman.sapun.java.socialmedia.exception.TokenExpiredException;
-import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
-import com.roman.sapun.java.socialmedia.exception.ValuesAreNotEqualException;
+import com.roman.sapun.java.socialmedia.exception.*;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -61,5 +58,5 @@ public interface AuthenticationService {
      */
     boolean checkUserByCredentials(String username, String password);
 
-    void logout(HttpServletRequest request);
+    void logout(HttpServletRequest request) throws UserNotFoundException, UserStatisticsNotFoundException;
 }

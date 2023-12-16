@@ -44,6 +44,6 @@
                placeholder="{{ 'SEARCH_PLACEHOLDER' | translate }}"
                (ngModelChange)="searchPosts()">
         <button class="filter-button" (click)="openFilterDialog()"><span class="material-icons">filter_alt</span></button>
-    <app-drop-down-menu [isMenuOpen]="isMenuOpen" (isMenuClose)="isMenuOpen = false"></app-drop-down-menu>
+    <app-drop-down-menu [isMenuOpen]="isMenuOpen" [usernameToDisplay]="username || ''" (isMenuClose)="isMenuOpen = false"></app-drop-down-menu>
     </div>
 </div>

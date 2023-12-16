@@ -35,6 +35,7 @@ export class PostsComponent {
     errorMessage: string;
     @Input() tagName: string | null;
     @Input() username: string | null;
+    @Input() displaySavedComments: boolean;
     loadedPosts: PostModel[] = [];
     totalPages: BehaviorSubject<number>;
     pageSize!: number;
@@ -61,6 +62,7 @@ export class PostsComponent {
         this.searchText = '';
         this.isDownVoteMade = false;
         this.isUpvoteMade = false;
+        this.displaySavedComments = false;
     }
 
 
@@ -119,37 +121,51 @@ export class PostsComponent {
                 }
             })
         }
-
-        const subscription = this.postService.isUserHasSubscriptions(this.username, this.tagName).pipe(
-            take(1),
-            concatMap((isUserHasSubscriptions: boolean) => {
-                this.isUserSubscribed.next(isUserHasSubscriptions);
-                return this.route.data.pipe(
-                    concatMap((data) => {
-                        if (data['postData'] && this.currentPostPage.getValue() == 0) {
-                            console.log('check');
-                            return of(data['postData'] as Page);
-                        } else {
-                            return this.fetchPosts();
-                        }
-                    })
-                );
-            })).subscribe({
-            next: (page) => {
-                this.loadedPosts = [...this.loadedPosts, ...page.entities];
-                this.totalPages.next(page.totalPages);
-                const pageData = new Page(this.loadedPosts, page.total, page.currentPage, page.totalPages);
-                this.posts.next(pageData);
-                this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
-                this.isLoading.next(false);
-                shareReplay(1);
-                this.hasPostsBySubscription();
-            },
-            error: (error: any) => {
-                this.errorMessage = 'Something went wrong:' + error.error.message
-            },
-        });
-        this.subscriptions.add(subscription);
+        if (this.displaySavedComments) {
+            const subscription = this.fetchSavedPosts().pipe().subscribe({
+                next: page => {
+                    this.loadedPosts = [...this.loadedPosts, ...page.entities];
+                    this.totalPages.next(page.totalPages);
+                    const pageData = new Page(this.loadedPosts, page.total, page.currentPage, page.totalPages);
+                    this.posts.next(pageData);
+                    this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
+                    this.isLoading.next(false);
+                    shareReplay(1);
+                }
+            });
+            this.subscriptions.add(subscription);
+        } else {
+            const subscription = this.postService.isUserHasSubscriptions(this.username, this.tagName).pipe(
+                take(1),
+                concatMap((isUserHasSubscriptions: boolean) => {
+                    this.isUserSubscribed.next(isUserHasSubscriptions);
+                    return this.route.data.pipe(
+                        concatMap((data) => {
+                            if (data['postData'] && this.currentPostPage.getValue() == 0) {
+                                console.log('check');
+                                return of(data['postData'] as Page);
+                            } else {
+                                return this.fetchPosts();
+                            }
+                        })
+                    );
+                })).subscribe({
+                next: (page) => {
+                    this.loadedPosts = [...this.loadedPosts, ...page.entities];
+                    this.totalPages.next(page.totalPages);
+                    const pageData = new Page(this.loadedPosts, page.total, page.currentPage, page.totalPages);
+                    this.posts.next(pageData);
+                    this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
+                    this.isLoading.next(false);
+                    shareReplay(1);
+                    this.hasPostsBySubscription();
+                },
+                error: (error: any) => {
+                    this.errorMessage = 'Something went wrong:' + error.error.message
+                },
+            });
+            this.subscriptions.add(subscription);
+        }
     }
     hasPostsBySubscription(): void  {
         this.posts.pipe(
@@ -179,6 +195,7 @@ export class PostsComponent {
             })
         ).subscribe();
     }
+
 
     removeUpvote(identifier: string) {
         this.postService.removeUpvote(identifier).pipe(
@@ -270,14 +287,21 @@ export class PostsComponent {
         this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
     }
 
+    fetchSavedPosts() {
+        return this.currentPostPage.pipe(
+            take(1),
+            distinctUntilChanged(),
+            switchMap((currentPage) =>
+                this.postService.getSavedPosts(currentPage, this.pageSize, this.sortBy)));
+    }
+
     fetchPosts(): Observable<Page> {
         if (this.searchText) {
             return this.currentPostPage.pipe(
                 take(1),
                 distinctUntilChanged(),
                 switchMap((currentPage) =>
-                    this.postService.searchPostsByText(this.searchText, currentPage, this.pageSize, this.sortBy))
-            );
+                    this.postService.searchPostsByText(this.searchText, currentPage, this.pageSize, this.sortBy)));
         } else {
             return this.currentPostPage.pipe(
                 take(1),

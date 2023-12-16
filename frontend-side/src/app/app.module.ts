@@ -55,6 +55,8 @@ import {UsersComponent} from './component/data/users/users.component';
 import { FilterComponent } from './component/dialog/filter/filter.component';
 import { AboutPageComponent } from './component/about-page/about-page.component';
 import { ScrollToTopComponent } from './component/scroll-to-top/scroll-to-top.component';
+import { SavedEntitiesComponent } from './component/dialog/saved-entities/saved-entities.component';
+import {MatIconModule} from "@angular/material/icon";
 
 export function httpTranslateLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, './assets/translations/', '.json');
@@ -90,6 +92,7 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
         FilterComponent,
         AboutPageComponent,
         ScrollToTopComponent,
+        SavedEntitiesComponent,
     ],
     imports: [
         BrowserModule,
@@ -123,6 +126,7 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
             }
         }),
         NgOptimizedImage,
+        MatIconModule,
     ],
     providers: [
         {

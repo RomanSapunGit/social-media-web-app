@@ -11,6 +11,7 @@ import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {NotificationService} from "./notification.service";
 import {FilterComponent} from "../component/dialog/filter/filter.component";
 import {FileDTO} from "../model/file.model";
+import {SavedEntitiesComponent} from "../component/dialog/saved-entities/saved-entities.component";
 
 @Injectable({
     providedIn: 'root'
@@ -162,6 +163,11 @@ export class MatDialogService {
         let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, this.dialogHeight,
             false, {selectedImage: selectedImage});
         this.dialog.open(ImageCropperComponent, dialogConfig);
+    }
+    openSavedEntitiesDialog() {
+        let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, this.dialogHeight,
+            false, {});
+        this.dialog.open(SavedEntitiesComponent, dialogConfig);
     }
 
     private setDialogConfigWithData(disableClose: boolean, autofocus: boolean, width: string, height: string, hasBackDrop: boolean, data: any): MatDialogConfig {

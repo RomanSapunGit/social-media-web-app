@@ -55,6 +55,8 @@ public interface UserService {
     ResponseUserDTO unlockUser(String username) throws UserNotFoundException;
 
 
+    ResponseUserDTO getCurrentUser(Authentication authentication) throws UserNotFoundException;
+
     /**
      * Finds the user entity based on the authentication object.
      *
