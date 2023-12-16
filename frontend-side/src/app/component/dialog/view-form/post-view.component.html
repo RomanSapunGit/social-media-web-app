@@ -6,12 +6,6 @@
 </div>
 
 <div *ngIf="!isMobileView && (postView | async) as post">
-    <div *ngIf="!(isSavedPost | async)">
-        <mat-icon (click)="addPostToSavedList(post.identifier)">star_border</mat-icon>
-    </div>
-    <div *ngIf="(isSavedPost | async)">
-        <mat-icon (click)="deletePostFromSavedList(post.identifier)">star</mat-icon>
-    </div>
     <div class="social-post">
         <h2>{{ post.title }}</h2>
         <div class="items-info">
@@ -56,12 +50,6 @@
 
 </div>
 <div *ngIf="isMobileView && (postView | async) as mobileViewPost">
-    <div *ngIf="!(isSavedPost | async)">
-        <mat-icon (click)="addPostToSavedList(mobileViewPost.identifier)">star_border</mat-icon>
-    </div>
-    <div *ngIf="(isSavedPost | async)">
-        <mat-icon (click)="deletePostFromSavedList(mobileViewPost.identifier)">star</mat-icon>
-    </div>
     <div class="items-info">
         <ng-container *ngIf="mobileViewPost.userImage">
             <app-image [usernameToDisplay]="mobileViewPost.username.toString()" [image]="mobileViewPost.userImage"></app-image>

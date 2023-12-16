@@ -1,18 +1,7 @@
 import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {PostService} from "../../../services/post.service";
-import {
-    BehaviorSubject,
-    combineLatest,
-    map,
-    Observable,
-    ReplaySubject,
-    shareReplay,
-    Subscription,
-    switchMap,
-    take,
-    tap
-} from "rxjs";
+import {combineLatest, Observable, ReplaySubject, shareReplay, Subscription, switchMap, take, tap} from "rxjs";
 import {PostViewModel} from "../../../model/post-view.model";
 import {Page} from "../../../model/page.model";
 import {ServerSendEventService} from "../../../services/server-send-event.service";
@@ -24,7 +13,6 @@ import * as confetti from 'canvas-confetti';
 import {TranslateService} from "@ngx-translate/core";
 import {MatDialogService} from "../../../services/mat-dialog.service";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
-import {NotificationService} from "../../../services/notification.service";
 
 @Component({
     selector: 'app-view-form',
@@ -42,14 +30,13 @@ export class PostViewComponent {
     isUpvoteMade!: boolean;
     isDownvoteMade!: boolean;
     isMobileView: boolean;
-    isSavedPost: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
     constructor(private matDialogRef: MatDialogRef<PostViewComponent>, private postService: PostService,
                 @Inject(MAT_DIALOG_DATA) public data: any,
                 private sseService: ServerSendEventService, private commentService: CommentService,
                 private authService: AuthService, private translatorService: TranslatorService,
                 private translateService: TranslateService, private matDialogService: MatDialogService,
-                private breakpointObserver: BreakpointObserver, private notificationService: NotificationService) {
+                private breakpointObserver: BreakpointObserver) {
         this.subscription = new Subscription();
         this.commentVisibility = {};
         this.identifier = data.identifier;
@@ -64,7 +51,6 @@ export class PostViewComponent {
         this.postService.isDownvoteMade(this.identifier).subscribe(isDownvoteMade => {
             this.isDownvoteMade = isDownvoteMade;
         });
-        this.findPostInSavedList(this.identifier);
     }
 
     ngOnInit() {
@@ -91,30 +77,6 @@ export class PostViewComponent {
                 }, 100)
             }
         })
-    }
-
-    addPostToSavedList(identifier: string) {
-        this.postService.addPostToSavedList(identifier).pipe(take(1)).subscribe({
-            next: value => {
-                this.notificationService.showNotification('Post saved', false);
-                this.isSavedPost.next(true);
-            }
-        })
-    }
-
-    deletePostFromSavedList(identifier: string) {
-        this.postService.deletePostFromSavedList(identifier).pipe(take(1)).subscribe({
-            next: value => {
-                this.notificationService.showNotification('Post deleted from saved list', false);
-                this.isSavedPost.next(false);
-            }
-        })
-    }
-
-    findPostInSavedList(identifier: string) {
-        return this.postService.findPostInSavedList(identifier).pipe(
-            take(1), tap(isSavedPost => this.isSavedPost.next(isSavedPost as boolean))
-        ).subscribe()
     }
 
     addUpvote() {

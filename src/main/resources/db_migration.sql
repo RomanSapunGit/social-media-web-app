@@ -11,22 +11,6 @@ CREATE TABLE IF NOT EXISTS users
     PRIMARY KEY (id)
 ) ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS user_statistics
-(
-    id      BIGINT NOT NULL AUTO_INCREMENT,
-    user_id BIGINT,
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    UNIQUE KEY uk_user_id (user_id)
-);
-
-CREATE TABLE IF NOT EXISTS online_times
-(
-    user_statistics_id   BIGINT NOT NULL,
-    online_time_duration BIGINT NOT NULL,
-    PRIMARY KEY (user_statistics_id, online_time_duration),
-    FOREIGN KEY (user_statistics_id) REFERENCES user_statistics (id)
-);
 
 CREATE TABLE IF NOT EXISTS user_followers
 (
@@ -69,26 +53,8 @@ CREATE TABLE IF NOT EXISTS posts
     creation_time TIMESTAMP     NOT NULL,
     identifier    VARCHAR(255)  NOT NULL UNIQUE,
     author        BIGINT        NOT NULL,
-    statistics_id BIGINT        NOT NULL,
     PRIMARY KEY (id),
-    CONSTRAINT FK_posts_statistics FOREIGN KEY (statistics_id) REFERENCES user_statistics (id),
     CONSTRAINT FK_posts_users FOREIGN KEY (author) REFERENCES users (id)
-) ENGINE = InnoDB;
-
-CREATE TABLE IF NOT EXISTS comments
-(
-    id            BIGINT       NOT NULL AUTO_INCREMENT,
-    title         VARCHAR(25)  NOT NULL,
-    description   VARCHAR(255) NOT NULL,
-    identifier    VARCHAR(255) NOT NULL UNIQUE,
-    creation_time TIMESTAMP    NOT NULL,
-    user_id       BIGINT       NOT NULL,
-    post_id       BIGINT       NOT NULL,
-    statistics_id BIGINT       NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT FK_comments_statistics FOREIGN KEY (statistics_id) REFERENCES user_statistics (id),
-    CONSTRAINT FK_comments_users FOREIGN KEY (user_id) REFERENCES users (id),
-    CONSTRAINT FK_comments_posts FOREIGN KEY (post_id) REFERENCES posts (id)
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS notifications
@@ -106,7 +72,7 @@ CREATE TABLE IF NOT EXISTS notifications
 CREATE TABLE IF NOT EXISTS tags
 (
     id   BIGINT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(255) UNIQUE,
+    name VARCHAR(255),
     PRIMARY KEY (id)
 ) ENGINE = InnoDB;
 
@@ -118,25 +84,6 @@ CREATE TABLE IF NOT EXISTS post_tags
     CONSTRAINT FK_post_tags_posts FOREIGN KEY (post_id) REFERENCES posts (id),
     CONSTRAINT FK_post_tags_tags FOREIGN KEY (tag_id) REFERENCES tags (id)
 ) ENGINE = InnoDB;
-
-CREATE TABLE IF NOT EXISTS saved_posts
-(
-    user_id BIGINT NOT NULL,
-    post_id BIGINT NOT NULL,
-    PRIMARY KEY (user_id, post_id),
-    CONSTRAINT FK_saved_posts_users FOREIGN KEY (user_id) REFERENCES users (id),
-    CONSTRAINT FK_saved_posts_posts FOREIGN KEY (post_id) REFERENCES posts (id)
-) ENGINE = InnoDB;
-
-CREATE TABLE IF NOT EXISTS saved_comments
-(
-    user_id    BIGINT NOT NULL,
-    comment_id BIGINT NOT NULL,
-    PRIMARY KEY (user_id, comment_id),
-    CONSTRAINT FK_saved_comments_users FOREIGN KEY (user_id) REFERENCES users (id),
-    CONSTRAINT FK_saved_comments_comments FOREIGN KEY (comment_id) REFERENCES comments (id)
-) ENGINE = InnoDB;
-
 CREATE TABLE IF NOT EXISTS post_upvotes
 (
     post_id BIGINT NOT NULL,
@@ -154,14 +101,19 @@ CREATE TABLE IF NOT EXISTS post_downvotes
     CONSTRAINT FK_post_dislikes_users FOREIGN KEY (user_id) REFERENCES users (id)
 ) ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS viewed_posts
+CREATE TABLE IF NOT EXISTS comments
 (
-    user_statistics_id BIGINT NOT NULL,
-    post_id            BIGINT NOT NULL,
-    PRIMARY KEY (user_statistics_id, post_id),
-    FOREIGN KEY (user_statistics_id) REFERENCES user_statistics (id),
-    FOREIGN KEY (post_id) REFERENCES posts (id)
-);
+    id            BIGINT       NOT NULL AUTO_INCREMENT,
+    title         VARCHAR(25)  NOT NULL,
+    description   VARCHAR(255) NOT NULL,
+    identifier    VARCHAR(255) NOT NULL UNIQUE,
+    creation_time TIMESTAMP    NOT NULL,
+    user_id       BIGINT       NOT NULL,
+    post_id       BIGINT       NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT FK_comments_users FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT FK_comments_posts FOREIGN KEY (post_id) REFERENCES posts (id)
+) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS images
 (

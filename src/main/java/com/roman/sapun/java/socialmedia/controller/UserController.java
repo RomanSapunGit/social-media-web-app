@@ -118,11 +118,6 @@ public class UserController {
         return subscriptionService.removeFollowing(authentication, username);
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/current")
-    public ResponseUserDTO getCurrentUser(Authentication authentication) throws UserNotFoundException {
-        return userService.getCurrentUser(authentication);
-    }
     /**
      * Blocks a user based on the provided username (only accessible by ADMIN role).
      *

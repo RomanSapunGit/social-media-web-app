@@ -10,7 +10,6 @@ import com.roman.sapun.java.socialmedia.exception.*;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import com.roman.sapun.java.socialmedia.service.VoteService;
 import io.micrometer.core.annotation.Timed;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -45,10 +44,9 @@ public class PostController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public ResponsePostDTO createPost(@ModelAttribute RequestPostDTO requestPostDTO,
-                                      @RequestPart("images") List<MultipartFile> images, Authentication authentication,
-                                      HttpServletRequest request)
-            throws UserNotFoundException, InvalidImageNumberException, UserStatisticsNotFoundException {
-        return postService.createPost(requestPostDTO, images, authentication, request);
+                                      @RequestPart("images") List<MultipartFile> images, Authentication authentication)
+            throws UserNotFoundException, InvalidImageNumberException {
+        return postService.createPost(requestPostDTO, images, authentication);
     }
 
     /**
@@ -162,40 +160,14 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{identifier}")
-    public ResponsePostDTO getPostById(@PathVariable String identifier, HttpServletRequest request) throws PostNotFoundException, UserNotFoundException, UserStatisticsNotFoundException {
-        return postService.getPostById(identifier, request);
+    public ResponsePostDTO getPostById(@PathVariable String identifier) throws PostNotFoundException, UserNotFoundException {
+        return postService.getPostById(identifier);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{identifier}")
     public ResponsePostDTO deletePost(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return postService.deletePostByIdentifier(identifier, authentication);
-    }
-
-    @ResponseStatus (HttpStatus.OK)
-    @GetMapping("/saved")
-    public PostPageDTO getSavedPosts(Authentication authentication, @RequestParam int page,
-                                     @RequestParam(defaultValue = "15") int pageSize,
-                                     @RequestParam(defaultValue = "creationTime") String sortBy) throws UserNotFoundException, InvalidPageSizeException {
-        return postService.getSavedPosts(authentication, page, pageSize, sortBy);
-    }
-
-    @ResponseStatus (HttpStatus.OK)
-    @PostMapping("/saved/{identifier}")
-    public ResponsePostDTO addPostToSavedList(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
-        return postService.addPostToSavedList(identifier, authentication);
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/saved/{identifier}")
-    public boolean isPostExistInSavedList(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
-        return postService.isPostExistInSavedList(identifier, authentication);
-    }
-
-    @ResponseStatus (HttpStatus.OK)
-    @DeleteMapping("/saved/{identifier}")
-    public ResponsePostDTO removePostFromSavedList(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
-        return postService.removePostFromSavedList(identifier, authentication);
     }
 
     /**

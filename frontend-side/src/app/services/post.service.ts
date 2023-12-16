@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Page} from "../model/page.model";
-import {map, Observable, of, ReplaySubject, take} from "rxjs";
+import {map, Observable, of, ReplaySubject} from "rxjs";
 import {RequestService} from "./request.service";
 import {AuthService} from "./auth.service";
 import {PostModel} from "../model/post.model";
@@ -16,16 +16,6 @@ export class PostService {
 
     constructor(private authService: AuthService,
                 private requestService: RequestService) {
-    }
-
-    addPostToSavedList(identifier: string) {
-       return this.requestService.addPostToSavedList(identifier);
-    }
-    deletePostFromSavedList(identifier: string) {
-        return this.requestService.deletePostFromSavedList(identifier);
-    }
-    findPostInSavedList(identifier: string) {
-        return this.requestService.findPostInSavedList(identifier).pipe(take(1),map(isFound => isFound as boolean))
     }
 
     fetchPostsByPage(page: number, tagName: string | null, username: string | null, pageSize?: number, sortByValue?: string): Observable<Page> {
@@ -73,15 +63,10 @@ export class PostService {
     }
 
     searchPostsByText(text: string, page: number, pageSize: number, sortBy: string): Observable<Page> {
+        let token = this.authService.getAuthToken();
         return this.requestService.searchPostsByText( text, page, pageSize, sortBy).pipe(
             map(response => this.convertToPostPage(response))
         );
-    }
-
-    getSavedPosts(page: number, pageSize: number, sortBy: string) {
-        return this.requestService.getSavedPosts(page, pageSize, sortBy).pipe(
-            map(response => this.convertToPostPage(response))
-        )
     }
 
     getPostById(identifier: string): Observable<PostModel> {
