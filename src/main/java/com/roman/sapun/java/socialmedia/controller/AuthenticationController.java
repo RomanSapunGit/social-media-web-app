@@ -5,10 +5,12 @@ import com.roman.sapun.java.socialmedia.dto.credentials.ResetPassDTO;
 import com.roman.sapun.java.socialmedia.dto.credentials.SignUpDTO;
 import com.roman.sapun.java.socialmedia.dto.credentials.TokenDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
-import com.roman.sapun.java.socialmedia.exception.*;
+import com.roman.sapun.java.socialmedia.exception.InvalidValueException;
+import com.roman.sapun.java.socialmedia.exception.TokenExpiredException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.ValuesAreNotEqualException;
 import com.roman.sapun.java.socialmedia.service.AuthenticationService;
 import io.micrometer.core.annotation.Timed;
-import io.micrometer.observation.annotation.Observed;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -79,12 +81,12 @@ public class AuthenticationController {
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/logout")
-    public void logout(HttpServletRequest request) throws UserNotFoundException, UserStatisticsNotFoundException {
+    public void logout(HttpServletRequest request) {
         authenticationService.logout(request);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @Observed(name = "login.observed")
+    @Timed(value = "login.time")
     @PostMapping("/login")
     public AuthRequestDTO login(@RequestBody AuthRequestDTO authRequestDTO, HttpServletRequest request, HttpServletResponse response) throws InvalidValueException {
         return authenticationService.loginUser(authRequestDTO, request, response);

@@ -41,12 +41,14 @@ export class ServerErrorInterceptor implements HttpInterceptor {
                                 }) : notificationMessage = errorMessage;
                             this.snackBarService.showNotification(notificationMessage, true);
                             console.log(errorMessage, errorCausedBy, timestamp)
+                            this.snackBarService.sendErrorNotificationToSlack(errorMessage, errorCausedBy, timestamp);
                         }
                         break;
                     case 500:
                         this.snackBarService.showNotification(errorMessage, true);
                         console.log(errorMessage, errorCausedBy, timestamp)
                         this.snackBarService.showNotification(errorMessage, true);
+                        this.snackBarService.sendErrorNotificationToSlack(errorMessage, errorCausedBy, timestamp);
                         break;
                     case 404:
                         console.log(errorMessage, errorCausedBy, timestamp)
@@ -56,7 +58,7 @@ export class ServerErrorInterceptor implements HttpInterceptor {
                     default:
                         console.log('check')
                         this.snackBarService.showNotification(errorMessage, true);
-
+                        this.snackBarService.sendErrorNotificationToSlack(errorMessage + error.status, errorCausedBy, timestamp);
                         return EMPTY;
                 }
                 return EMPTY;

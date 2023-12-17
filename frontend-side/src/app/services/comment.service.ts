@@ -29,27 +29,10 @@ export class CommentService {
         this.currentCommentPage = 0;
     }
 
-    getSavedComments(currentCommentPage: number) {
-        return this.requestService.getSavedComments(currentCommentPage).pipe(
-            map((response:any) => new Page(response.entities, response.total, response.currentPage, response.totalPages))
-        )
-    }
-
-    addCommentToSavedList(identifier: string) {
-        return this.requestService.addCommentToSavedList(identifier)
-    }
-
-    deleteCommentFromSavedList(identifier: string) {
-        return this.requestService.deleteCommentFromSavedList(identifier)
-    }
-
-    findCommentInSavedList(identifier: string) {
-        return this.requestService.findCommentInSavedList(identifier)
-    }
-
     getComments(postId: string, currentCommentPage: number): Observable<Page> {
         const currentPage = currentCommentPage || 0;
-        return this.requestService.getCommentsByPost(postId, currentPage).pipe(
+        let token = this.authService.getAuthToken();
+        return this.requestService.getCommentsByPost(postId, token, currentPage).pipe(
             map((response: any) => {
                 return new Page(response.entities, response.total, response.currentPage, response.totalPages);
             }),

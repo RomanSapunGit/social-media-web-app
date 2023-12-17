@@ -5,9 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
 @Configuration
+
 public class CorsConfigurer implements WebMvcConfigurer {
     private final ValueConfig valueConfig;
 

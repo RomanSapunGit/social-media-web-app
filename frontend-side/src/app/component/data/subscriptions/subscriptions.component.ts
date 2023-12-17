@@ -4,8 +4,6 @@ import {NotificationService} from "../../../services/notification.service";
 import {SubscriptionService} from "../../../services/subscription.service";
 import {ValidatorModel} from "../../../model/validator.model";
 import {RequestService} from "../../../services/request.service";
-import {map} from "rxjs";
-import {UserModel} from "../../../model/user.model";
 
 @Component({
     selector: 'app-subscriptions',
@@ -20,7 +18,7 @@ export class SubscriptionsComponent {
     showConfirmation: boolean;
     confirmed: boolean;
 
-    constructor(private notificationService: NotificationService,
+    constructor( private notificationService: NotificationService,
                 private subscriptionService: SubscriptionService, private requestService: RequestService) {
         this.username = '';
         this.isSubscribed = false;
@@ -33,14 +31,9 @@ export class SubscriptionsComponent {
     ngOnInit() {
         this.currentUser = localStorage.getItem('username');
         console.log(this.currentUser)
-        if (!this.currentUser) {
-            this.requestService.getUser().pipe(map(user => user as UserModel)).subscribe({
-                next: user => {
-                    localStorage.setItem('username', user.username);
-                    this.currentUser = user.username;
-                }
-            })
-        } else if (this.currentUser !== this.username) {
+        if(!this.currentUser) {
+            this.notificationService.sendErrorNotificationToSlack("Username not found in a local storage", "in SubscriptionsComponent", new Date());
+        }else if (this.currentUser !== this.username) {
             this.findFollowingByUsername();
         }
     }
@@ -56,7 +49,7 @@ export class SubscriptionsComponent {
     addSubscription() {
         this.subscriptionService.addSubscription(this.username, this.token).subscribe({
             next: () => {
-                this.requestService.sendNewSubscriptionNotification(this.token, this.username, `${this.currentUser} subscribed on you`)
+                this.requestService.sendNewSubscriptionNotification(this.token,this.username, `${this.currentUser} subscribed on you`)
                     .subscribe({
                         next: () => {
                             console.log('check')

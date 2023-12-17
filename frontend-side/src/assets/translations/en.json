@@ -48,7 +48,7 @@
   "ABOUT_PAGE": "About",
   "SEARCH_PLACEHOLDER": "Search...",
   "TAGS_TITLE": "Tags",
-  "USERS_TITLE": "Users",
+  "USERS_TITLE":  "Users",
   "PROFILE": "Profile",
   "LOGOUT": "Logout",
   "SETTINGS": "Settings",
@@ -85,7 +85,7 @@
   "SUBSCRIPTION_POSTS": "Subscription Posts",
   "POSTS": "Posts",
   "BAD_CREDENTIALS": "Bad credentials: Wrong username or password",
-  "EXPIRED_SESSION": "Session was Expired",
+  "EXPIRED_SESSION" : "Session was Expired",
   "TITLE": "Title",
   "TRANSLATION_ERROR": "Something went wrong with translating. Please try again later.",
   "TRANSLATE_TO": "Translate to language: English",
@@ -97,6 +97,6 @@
   "POST_DELETION_CONFIRMATION": "Are you sure you want to delete this post?",
   "IMAGE_NUMBER_RESTRICTION": "Number of images cannot be more than 6",
   "ABOUT_DESCRIPTION": "Our social media application is a dynamic platform that allows users to connect, share, and engage with others in a vibrant online community.\n\nWith a user-friendly interface and a range of exciting features, our application provides a seamless and immersive social networking experience that allows users to connect with like-minded individuals and engage in meaningful conversations, receiving notifications regarding your post.\n\nUsers can create personalized profiles, share their thoughts, photos, and interact with friends, family, and like-minded individuals. Stay up-to-date with the latest trends, discover new content, and join conversations on various topics of interest.\n\nOur application prioritizes user privacy and security, offering advanced privacy settings and robust data protection measures. Connect with friends, follow influencers, and build meaningful connections in a safe and inclusive environment.\n\nPowered by Angular and Spring Boot, our application delivers a fast and reliable performance, ensuring a smooth user experience across devices. Join our growing community and unleash your creativity, express yourself, and stay connected with the people and content that matter to you",
-  "COMMENTS_NUMBER": "Number of comments: ",
-  "SAVED": "Saved"
+  "COMMENTS_NUMBER": "Number of comments: "
+
 }

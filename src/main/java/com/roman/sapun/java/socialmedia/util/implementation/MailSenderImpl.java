@@ -31,24 +31,13 @@ public class MailSenderImpl implements MailSender {
     }
 
     @Override
-    public void sendResetPassEmail(String email, UriComponents uri) throws MessagingException, UnsupportedEncodingException {
+    public void sendEmail(String email, UriComponents uri) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
         helper.setFrom(valueConfig.getEmailSubject(), "Support");
         helper.setTo(email);
         helper.setSubject(SUBJECT_TO_MAIL);
         helper.setText(CONTENT_FIRST_PART + uri + " ", true);
-        javaMailSender.send(message);
-    }
-
-    @Override
-    public void sendEmail(String email, String text, String subject) throws MessagingException, UnsupportedEncodingException {
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
-        helper.setFrom(valueConfig.getEmailSubject(), "Support");
-        helper.setTo(email);
-        helper.setSubject(subject);
-        helper.setText(text, true);
         javaMailSender.send(message);
     }
 }

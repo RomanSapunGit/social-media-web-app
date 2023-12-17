@@ -3,11 +3,13 @@ package com.roman.sapun.java.socialmedia.service.implementation;
 import com.roman.sapun.java.socialmedia.dto.credentials.*;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
-import com.roman.sapun.java.socialmedia.exception.*;
+import com.roman.sapun.java.socialmedia.exception.InvalidValueException;
+import com.roman.sapun.java.socialmedia.exception.TokenExpiredException;
+import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.ValuesAreNotEqualException;
 import com.roman.sapun.java.socialmedia.security.UserDetailsServiceImpl;
 import com.roman.sapun.java.socialmedia.service.GoogleTokenService;
 import com.roman.sapun.java.socialmedia.service.ImageService;
-import com.roman.sapun.java.socialmedia.service.UserStatisticsService;
 import com.roman.sapun.java.socialmedia.util.MailSender;
 import com.roman.sapun.java.socialmedia.repository.RoleRepository;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
@@ -50,7 +52,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserDetailsServiceImpl userDetailsService;
     private final SecurityContextRepository securityContextRepository;
     private final GoogleTokenService tokenService;
-    private final UserStatisticsService userStatisticsService;
 
 
     @Autowired
@@ -58,8 +59,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                      PasswordEncoder passwordEncoder, URLBuilder urlBuilder,
                                      MailSender mailSender, AuthenticationManager authenticationManager,
                                      ImageService imageService, UserDetailsServiceImpl userDetailsService,
-                                     SecurityContextRepository securityContextRepository, GoogleTokenService tokenService,
-                                     UserStatisticsService userStatisticsService) {
+                                     SecurityContextRepository securityContextRepository, GoogleTokenService tokenService) {
         this.userConverter = userConverter;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -71,7 +71,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.userDetailsService = userDetailsService;
         this.securityContextRepository = securityContextRepository;
         this.tokenService = tokenService;
-        this.userStatisticsService = userStatisticsService;
     }
 
     @Override
@@ -79,8 +78,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var createdUser = userConverter.convertToUserEntity(signUpDto, new UserEntity());
         var role = roleRepository.findByName("ROLE_USER").orElseThrow(() -> new InvalidValueException("Role not found"));
         createdUser.setRoles(Collections.singleton(role));
-        var userStatistics = userStatisticsService.createUserStatistics(createdUser);
-        createdUser.setUserStatistics(userStatistics);
         userRepository.save(createdUser);
         imageService.uploadImageForUser(image, signUpDto.username());
         authenticateUser(signUpDto.username(), request, response);
@@ -107,18 +104,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public boolean validateSession(HttpSession httpSession) {
         if (httpSession != null) {
             try {
-                var username = httpSession.getAttribute("username");
+               var username = httpSession.getAttribute("username");
                 return username != null;
             } catch (IllegalStateException e) {
                 return false;
             }
         }
-        return false;
+            return false;
     }
 
     private void authenticateUser(String username, HttpServletRequest request, HttpServletResponse response) {
         var userDetails = userDetailsService.loadUserByUsername(username);
-        var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        var authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
 
         var context = SecurityContextHolder.getContext();
         context.setAuthentication(authentication);
@@ -126,29 +124,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         var session = request.getSession();
         session.setAttribute("username", username);
-        session.setAttribute("loginTime", System.currentTimeMillis());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void logout(HttpServletRequest request) throws UserNotFoundException, UserStatisticsNotFoundException {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            long loginTime = (long) session.getAttribute("loginTime");
-            long onlineTime = System.currentTimeMillis() - loginTime;
-
-            userStatisticsService.saveOnlineTime((String) session.getAttribute("username"), onlineTime);
-            Set<String> createdPostsId = session.getAttribute("createdPostsId") == null ?
-                    new HashSet<>() : (Set<String>) session.getAttribute("createdPostsId");
-            userStatisticsService.saveCreatedPostsStatistic((String) session.getAttribute("username"), createdPostsId);
-            Set<String> createdCommentsId = session.getAttribute("createdCommentsId") == null ?
-                    new HashSet<>() : (Set<String>) session.getAttribute("createdCommentsId");
-            userStatisticsService.saveCreatedCommentsStatistic((String) session.getAttribute("username"), createdCommentsId);
-            Set<String> viewedPostsId = session.getAttribute("viewedPostsId") == null ?
-                    new HashSet<>() : (Set<String>) session.getAttribute("viewedPostsId");
-            userStatisticsService.saveViewedPostsStatistic((String) session.getAttribute("username"), viewedPostsId);
-            session.invalidate();
-        }
     }
 
     @Override
@@ -174,7 +149,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public void sendEmail(String email) throws MessagingException, UnsupportedEncodingException, UserNotFoundException {
         var userToken = setTokensByEmail(email);
         var uri = urlBuilder.buildUrl(userToken);
-        mailSender.sendResetPassEmail(email, uri);
+        mailSender.sendEmail(email, uri);
     }
 
     @Override
@@ -185,6 +160,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var authentication = authenticationManager.authenticate
                 (new UsernamePasswordAuthenticationToken(username, password));
         return authentication.isAuthenticated();
+    }
+    @Override
+    public void logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
     }
 
     private boolean isTokenExpired(final LocalDateTime tokenCreationDate) {
@@ -205,5 +187,4 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var token = new StringBuilder();
         return String.valueOf(token.append(UUID.randomUUID()));
     }
-
 }

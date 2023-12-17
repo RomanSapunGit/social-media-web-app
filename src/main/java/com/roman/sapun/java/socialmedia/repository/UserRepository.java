@@ -1,6 +1,5 @@
 package com.roman.sapun.java.socialmedia.repository;
 
-import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

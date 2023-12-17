@@ -31,5 +31,4 @@ export class ProfileFormComponent {
     this.matDialogService.dialogClosed();
     this.matDialogRef.close();
   }
-
 }
