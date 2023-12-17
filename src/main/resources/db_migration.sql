@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users
 ) ENGINE = InnoDB;
 
 
-CREATE TABLE IF NOT EXISTS user_followers
+CREATE TABLE IF NOT EXISTS   user_followers
 (
     user_id      BIGINT NOT NULL,
     following_id BIGINT NOT NULL,
