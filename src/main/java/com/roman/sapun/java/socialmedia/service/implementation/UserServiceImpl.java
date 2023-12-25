@@ -3,6 +3,7 @@ package com.roman.sapun.java.socialmedia.service.implementation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.dto.page.UserPageDTO;
+import com.roman.sapun.java.socialmedia.dto.user.ConsentDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
@@ -95,6 +96,21 @@ public class UserServiceImpl implements UserService, SubscriptionService {
     }
 
     @Override
+    public ConsentDTO sendUserConsent(Authentication authentication, ConsentDTO consent) throws Exception {
+        if(consent.consent() == null) throw new Exception("Consent cannot be null");
+        var user = findUserByAuth(authentication);
+        user.getUserStatistics().setConsent(consent.consent());
+        userRepository.save(user);
+        return new ConsentDTO(user.getUserStatistics().getConsent());
+    }
+
+    @Override
+    public ConsentDTO getConsent(Authentication authentication) throws UserNotFoundException {
+        var user = findUserByAuth(authentication);
+        return new ConsentDTO(user.getUserStatistics().getConsent());
+    }
+
+    @Override
     public ValidatorDTO findFollowingByUsername(Authentication authentication, String username) throws UserNotFoundException {
         var user = findUserByAuth(authentication);
         return new ValidatorDTO(user.getFollowing().contains(userRepository.findByUsername(username)
@@ -115,6 +131,14 @@ public class UserServiceImpl implements UserService, SubscriptionService {
         userRepository.save(user);
         return new ResponseUserDTO(userToFollow, imageService.getImageByUser(userToFollow.getUsername()));
     }
+
+    @Override
+    public ResponseUserDTO getCurrentUser(Authentication authentication) throws UserNotFoundException {
+        var user = findUserByAuth(authentication);
+        return new ResponseUserDTO(user, imageService.getImageByUser(user.getUsername()));
+    }
+
+
 
     @Override
     public UserEntity findUserByAuth(Authentication authentication) throws UserNotFoundException {

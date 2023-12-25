@@ -5,6 +5,7 @@ import com.roman.sapun.java.socialmedia.dto.image.ResponseImageDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.InvalidImageNumberException;
+import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +38,8 @@ public interface ImageService {
      */
 
     List<ResponseImageDTO> uploadImagesForPost(List<MultipartFile> images, String postId, Authentication authentication) throws InvalidImageNumberException;
+
+    List<ResponseImageDTO> getImagesByPost(String postId) throws PostNotFoundException;
 
     /**
      * <p>Retrieve images by specific post.</p>

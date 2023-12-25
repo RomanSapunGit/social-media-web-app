@@ -2,6 +2,7 @@ export const environment = {
   production: false,
   googleClientId: '973660462549-isbq8itomqfkjbt7m2rrnht9jv7rt3tn.apps.googleusercontent.com',
   backendUrl: 'http://localhost:8080',
+  brokerURL: `ws://localhost:8080/ws`,
   aboutPageText: `Our social media application is a dynamic platform that allows users to connect, share, and engage with others in a vibrant online community.
 
 With a user-friendly interface and a range of exciting features, our application provides a seamless and immersive social networking experience that allows users to connect with like-minded individuals and engage in meaningful conversations, receiving notifications regarding your post.

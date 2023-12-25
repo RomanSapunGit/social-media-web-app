@@ -4,7 +4,20 @@ import {Page} from "./page.model";
 import {UserModel} from "./user.model";
 import {ImageDtoModel} from "./image.dto.model";
 
-export interface PostViewModel {
+export class PostViewModel {
+  constructor(identifier: string, title: string, description: string, creationTime: Timestamp<any>, username: string,
+              userImage: FileDTO, postImages: ImageDtoModel[] , upvotes: number, downvotes: number, commentsPage?: Page) {
+    this.identifier = identifier;
+    this.title = title;
+    this.description = description;
+    this.creationTime = creationTime;
+    this.username = username;
+    this.userImage = userImage;
+    this.postImages = postImages;
+    this.commentsPage = commentsPage;
+    this.upvotes = upvotes;
+    this.downvotes = downvotes;
+  }
   identifier: string;
   title: string;
   description: string;

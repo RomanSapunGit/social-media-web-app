@@ -1,5 +1,5 @@
 import {Component, Inject, Input} from '@angular/core';
-import {NotificationService} from "../../../services/notification.service";
+import {NotificationService} from "../../../services/entity/notification.service";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatDialogService} from "../../../services/mat-dialog.service";
 

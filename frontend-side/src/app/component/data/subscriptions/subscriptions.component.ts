@@ -1,9 +1,13 @@
 import {Component, Input} from '@angular/core';
-import {AuthService} from "../../../services/auth.service";
-import {NotificationService} from "../../../services/notification.service";
-import {SubscriptionService} from "../../../services/subscription.service";
+import {AuthService} from "../../../services/auth/auth.service";
+import {NotificationService} from "../../../services/entity/notification.service";
+import {SubscriptionService} from "../../../services/entity/subscription.service";
 import {ValidatorModel} from "../../../model/validator.model";
-import {RequestService} from "../../../services/request.service";
+import {SseRequestService} from "../../../services/request/sse.request.service";
+import {map} from "rxjs";
+import {UserModel} from "../../../model/user.model";
+import {UserRequestService} from "../../../services/request/user.request.service";
+import {NotificationRequestService} from "../../../services/request/notification.request.service";
 
 @Component({
     selector: 'app-subscriptions',
@@ -18,8 +22,9 @@ export class SubscriptionsComponent {
     showConfirmation: boolean;
     confirmed: boolean;
 
-    constructor( private notificationService: NotificationService,
-                private subscriptionService: SubscriptionService, private requestService: RequestService) {
+    constructor(private notificationService: NotificationService,
+                private subscriptionService: SubscriptionService, private requestService: UserRequestService,
+                private notificationRequestService: NotificationRequestService) {
         this.username = '';
         this.isSubscribed = false;
         this.currentUser = '';
@@ -31,15 +36,20 @@ export class SubscriptionsComponent {
     ngOnInit() {
         this.currentUser = localStorage.getItem('username');
         console.log(this.currentUser)
-        if(!this.currentUser) {
-            this.notificationService.sendErrorNotificationToSlack("Username not found in a local storage", "in SubscriptionsComponent", new Date());
-        }else if (this.currentUser !== this.username) {
+        if (!this.currentUser) {
+            this.requestService.getUser().pipe(map(user => user as UserModel)).subscribe({
+                next: user => {
+                    localStorage.setItem('username', user.username);
+                    this.currentUser = user.username;
+                }
+            })
+        } else if (this.currentUser !== this.username) {
             this.findFollowingByUsername();
         }
     }
 
     findFollowingByUsername() {
-        this.subscriptionService.findFollowingByUsername(this.token, this.username).subscribe({
+        this.subscriptionService.findFollowingByUsername( this.username).subscribe({
             next: (isSubscribed: ValidatorModel) => {
                 this.isSubscribed = isSubscribed.valid;
             }
@@ -47,11 +57,12 @@ export class SubscriptionsComponent {
     }
 
     addSubscription() {
-        this.subscriptionService.addSubscription(this.username, this.token).subscribe({
+        this.subscriptionService.addSubscription(this.username).subscribe({
             next: () => {
-                this.requestService.sendNewSubscriptionNotification(this.token,this.username, `${this.currentUser} subscribed on you`)
+                this.notificationRequestService.sendNewSubscriptionNotification(this.token, this.username, `${this.currentUser} subscribed on you`)
                     .subscribe({
                         next: () => {
+                            this.notificationService.showNotification('Successfully subscribed', false)
                             console.log('check')
                         }
                     })
@@ -75,7 +86,7 @@ export class SubscriptionsComponent {
     }
 
     logout(): void {
-        this.subscriptionService.removeSubscription(this.username, this.token).subscribe({
+        this.subscriptionService.removeSubscription(this.username).subscribe({
             next: () => {
                 this.isSubscribed = false;
             }

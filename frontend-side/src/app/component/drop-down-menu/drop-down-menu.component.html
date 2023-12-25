@@ -6,13 +6,13 @@
 
 <div *ngIf="isProfileMenu">
   <div class="profile-menu-options">
-    <p>{{username}}</p>
     <button (click)="displayPostWindow(username); $event.stopPropagation()">{{'PROFILE' | translate}}</button>
-    <a href="#">{{'SETTINGS' | translate}}</a>
+    <button (click)="displaySettings()">{{'SETTINGS' | translate}}</button>
+    <button (click)="openSavedEntitiesDialog(); $event.stopPropagation();"> {{'SAVED' | translate}}</button>
     <form (ngSubmit)="logout()">
       <button class="nav-link" type="button" (click)="confirmLogout()">{{'LOGOUT' | translate}}</button>
     </form>
-    <button class="button" (click)="createPost()">
+    <button class="button profile-menu-button" (click)="createPost()">
       {{'CREATE_POST' | translate}}
     </button>
   </div>
@@ -26,6 +26,7 @@
     <li class="nav-item">
       <a class="nav-link" routerLink="/about">{{ 'ABOUT_PAGE' | translate }}</a>
     </li>
+    <li><button (click)="openSavedEntitiesDialog(); $event.stopPropagation();"> {{'SAVED' | translate}}</button></li>
     <li>
       <a href="#">{{'SETTINGS' | translate}}</a>
     </li>

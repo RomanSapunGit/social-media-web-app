@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener} from '@angular/core';
-import {NotificationService} from "../../services/notification.service";
-import {BehaviorSubject, fromEvent, map, merge, Observable, of, ReplaySubject, startWith, Subscription} from "rxjs";
+import {NotificationService} from "../../services/entity/notification.service";
+import {BehaviorSubject, fromEvent, map, merge,  of,  Subscription} from "rxjs";
 import {MatDialogService} from "../../services/mat-dialog.service";
 import {ActivatedRoute, ActivatedRouteSnapshot} from "@angular/router";
 import {RoutingService} from "../../services/routing.service";
@@ -62,14 +62,6 @@ export class MainPageComponent {
                 }
             }
         }));
-        this.subscriptions.push(
-        this.route.paramMap.subscribe(params => {
-            let identifier = params.get('id');
-            console.log('check')
-            if (identifier) {
-                this.displaySinglePost(identifier);
-            }
-        }));
         if (this.isMobileView) {
             const snapshot: ActivatedRouteSnapshot = this.route.snapshot;
             const url: string = snapshot.url.join('/');
@@ -96,7 +88,15 @@ export class MainPageComponent {
                 this.changeDetectorRef.detectChanges();
             }
         }));
+        this.subscriptions.push(
+            this.route.paramMap.subscribe(params => {
+                let identifier = params.get('id');
+                console.log('check')
+                if (identifier) {
 
+                    this.displaySinglePost(identifier);
+                }
+            }));
     }
 
     @HostListener('window:resize', ['$event'])

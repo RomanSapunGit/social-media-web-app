@@ -38,6 +38,7 @@ logging:
       springframework:
         web: ${LOG_CONFIGURATION}
         security: DEBUG
+        socket: TRACE
 server:
   servlet:
     session:

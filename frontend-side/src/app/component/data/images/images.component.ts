@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
 import {Observable} from "rxjs";
 import {FileDTO} from "../../../model/file.model";
-import {ImageService} from "../../../services/image.service";
+import {ImageService} from "../../../services/entity/image.service";
 import {MatDialogService} from "../../../services/mat-dialog.service";
 import {ImageDtoModel} from "../../../model/image.dto.model";
 
@@ -101,8 +101,5 @@ export class ImagesComponent {
 
     imageElement.style.maxWidth = `${containerWidth}px`;
     imageElement.style.maxHeight = `${containerHeight}px`;
-  }
-  closeDropDown() {
-    this.showMenu = false;
   }
 }

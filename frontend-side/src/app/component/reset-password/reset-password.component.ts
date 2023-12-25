@@ -1,8 +1,9 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {RequestService} from "../../services/request.service";
+import {SseRequestService} from "../../services/request/sse.request.service";
 import {ActivatedRoute, Router} from "@angular/router";
-import {NotificationService} from "../../services/notification.service";
+import {NotificationService} from "../../services/entity/notification.service";
 import {interval, map, Observable, of, share, takeWhile, tap} from "rxjs";
+import {AuthRequestService} from "../../services/request/auth.request.service";
 
 @Component({
     selector: 'app-reset-password',
@@ -20,7 +21,7 @@ export class ResetPasswordComponent implements OnInit {
     timerValue$: Observable<number> = interval(0);
     isTimerRunning$: Observable<boolean> = interval(0).pipe(map(() => false));
 
-    constructor(private route: ActivatedRoute, private requestService: RequestService,
+    constructor(private route: ActivatedRoute, private requestService: AuthRequestService,
                 private notificationService: NotificationService, private changeDetectorRef: ChangeDetectorRef,
                 private router: Router) {
         this.message = '';

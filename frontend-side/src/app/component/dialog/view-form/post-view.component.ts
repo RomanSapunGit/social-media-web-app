@@ -1,18 +1,22 @@
 import {Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {PostService} from "../../../services/post.service";
-import {combineLatest, Observable, ReplaySubject, shareReplay, Subscription, switchMap, take, tap} from "rxjs";
+import {PostService} from "../../../services/entity/post.service";
+import {BehaviorSubject, combineLatest, map, ReplaySubject, Subscription, switchMap, take, tap, withLatestFrom} from "rxjs";
 import {PostViewModel} from "../../../model/post-view.model";
 import {Page} from "../../../model/page.model";
 import {ServerSendEventService} from "../../../services/server-send-event.service";
 import {PostModel} from "../../../model/post.model";
-import {CommentService} from "../../../services/comment.service";
-import {AuthService} from "../../../services/auth.service";
-import {TranslatorService} from "../../../services/translator.service";
+import {CommentService} from "../../../services/entity/comment.service";
+import {AuthService} from "../../../services/auth/auth.service";
+import {TranslatorService} from "../../../services/entity/translator.service";
 import * as confetti from 'canvas-confetti';
 import {TranslateService} from "@ngx-translate/core";
 import {MatDialogService} from "../../../services/mat-dialog.service";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
+import {NotificationService} from "../../../services/entity/notification.service";
+import {WebsocketPostService} from "../../../services/websocket/websocket-post.service";
+import {ImageService} from "../../../services/entity/image.service";
+import {VoteService} from "../../../services/entity/vote.service";
 
 @Component({
     selector: 'app-view-form',
@@ -30,13 +34,16 @@ export class PostViewComponent {
     isUpvoteMade!: boolean;
     isDownvoteMade!: boolean;
     isMobileView: boolean;
+    isSavedPost: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
     constructor(private matDialogRef: MatDialogRef<PostViewComponent>, private postService: PostService,
+                private voteService: VoteService,
                 @Inject(MAT_DIALOG_DATA) public data: any,
                 private sseService: ServerSendEventService, private commentService: CommentService,
                 private authService: AuthService, private translatorService: TranslatorService,
                 private translateService: TranslateService, private matDialogService: MatDialogService,
-                private breakpointObserver: BreakpointObserver) {
+                private breakpointObserver: BreakpointObserver, private notificationService: NotificationService,
+                private websocketPostService: WebsocketPostService, private imageService: ImageService) {
         this.subscription = new Subscription();
         this.commentVisibility = {};
         this.identifier = data.identifier;
@@ -44,13 +51,14 @@ export class PostViewComponent {
         this.postComments = new ReplaySubject<Page>(1);
         this.isTranslated = false;
         this.previousPostView = new ReplaySubject<PostViewModel>(1);
-        this.postService.isUpvoteMade(this.identifier).subscribe(isUpvoteMade => {
+        this.voteService.isUpvoteMade(this.identifier).subscribe(isUpvoteMade => {
             this.isUpvoteMade = isUpvoteMade;
         });
         this.isMobileView = this.breakpointObserver.isMatched(Breakpoints.Handset)
-        this.postService.isDownvoteMade(this.identifier).subscribe(isDownvoteMade => {
+        this.voteService.isDownvoteMade(this.identifier).subscribe(isDownvoteMade => {
             this.isDownvoteMade = isDownvoteMade;
         });
+        this.findPostInSavedList(this.identifier);
     }
 
     ngOnInit() {
@@ -61,11 +69,18 @@ export class PostViewComponent {
                     this.postComments.next(commentPage)
                 }
             )).subscribe();
-        this.subscription = this.sseService.getPostUpdateFromServer(this.identifier).subscribe(post => {
-            shareReplay(1);
-            const postView = post as PostViewModel;
-            this.postView.next(postView);
-        })
+        this.websocketPostService.connect();
+        let postUpdateSubscription = this.websocketPostService.subscribeToPostUpdate(this.identifier).pipe(
+            withLatestFrom(this.postView),
+            switchMap(([response, post]) => {
+                return this.createPostFromWebSocketResponse(response, post).pipe(
+                    map(newPost => ({response, newPost}))
+                );
+            })
+        ).subscribe(({response, newPost}) => {
+            this.postView.next(newPost);
+        });
+        this.subscription.add(postUpdateSubscription);
         this.postService.getPostById(this.identifier).subscribe({
             next: (post) => {
                 this.previousPostView.next((JSON.parse(JSON.stringify(post))))
@@ -79,8 +94,48 @@ export class PostViewComponent {
         })
     }
 
+    createPostFromWebSocketResponse(response: any, post: PostViewModel) {
+        return this.imageService.getImagesByPost(response.identifier).pipe(
+            map(responseImages => new PostViewModel(
+                post.identifier,
+                response.title,
+                response.description,
+                post.creationTime,
+                post.username,
+                post.userImage,
+                responseImages,
+                post.upvotes,
+                post.downvotes,
+                post.commentsPage
+            )))
+    }
+
+    addPostToSavedList(identifier: string) {
+        this.postService.addPostToSavedList(identifier).pipe(take(1)).subscribe({
+            next: value => {
+                this.notificationService.showNotification('Post saved', false);
+                this.isSavedPost.next(true);
+            }
+        })
+    }
+
+    deletePostFromSavedList(identifier: string) {
+        this.postService.deletePostFromSavedList(identifier).pipe(take(1)).subscribe({
+            next: value => {
+                this.notificationService.showNotification('Post deleted from saved list', false);
+                this.isSavedPost.next(false);
+            }
+        })
+    }
+
+    findPostInSavedList(identifier: string) {
+        return this.postService.findPostInSavedList(identifier).pipe(
+            take(1), tap(isSavedPost => this.isSavedPost.next(isSavedPost as boolean))
+        ).subscribe()
+    }
+
     addUpvote() {
-        this.postService.addUpvote(this.identifier).pipe(
+        this.voteService.addUpvote(this.identifier).pipe(
             tap(upvotes => {
                 this.postView.pipe(
                     take(1),
@@ -94,7 +149,7 @@ export class PostViewComponent {
     }
 
     removeUpvote() {
-        this.postService.removeUpvote(this.identifier).pipe(
+        this.voteService.removeUpvote(this.identifier).pipe(
             tap(upvotes => {
                 this.postView.pipe(
                     take(1)
@@ -107,7 +162,7 @@ export class PostViewComponent {
     }
 
     addDownvote() {
-        this.postService.addDownvote(this.identifier).pipe(
+        this.voteService.addDownvote(this.identifier).pipe(
             tap(downvotes => {
                 this.postView.pipe(
                     take(1)
@@ -120,7 +175,7 @@ export class PostViewComponent {
     }
 
     removeDownvote() {
-        this.postService.removeDownvote(this.identifier).pipe(
+        this.voteService.removeDownvote(this.identifier).pipe(
             tap(downvotes => {
                 this.postView.pipe(
                     take(1)
@@ -200,6 +255,6 @@ export class PostViewComponent {
         const resultData = {isDialogClosed: true};
         this.matDialogRef.close(resultData);
         this.subscription.unsubscribe();
-        this.sseService.completeSSEPostUpdateConnection(this.identifier);
+        this.websocketPostService.disconnect();
     }
 }

@@ -5,7 +5,10 @@ import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.page.CommentPageDTO;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.InvalidPageSizeException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.UserStatisticsNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 
 
@@ -17,7 +20,7 @@ public interface CommentService {
      * @param authentication    for searching currently logged-in user.
      * @return comment DTO that includes author image and comment details.
      */
-    CommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication) throws CommentNotFoundException, UserNotFoundException;
+    CommentDTO createComment(RequestCommentDTO requestCommentDTO, Authentication authentication, HttpServletRequest request) throws CommentNotFoundException, UserNotFoundException, UserStatisticsNotFoundException;
 
     /**
      * <p>Deletes comment based on comment identifier.</p>
@@ -47,4 +50,12 @@ public interface CommentService {
      * @throws CommentNotFoundException if comment cannot be found or if author and user doesn't match.
      */
     ResponseCommentDTO updateCommentById(RequestCommentDTO requestCommentDTO, String identifier, Authentication authentication) throws CommentNotFoundException, UserNotFoundException;
+
+    CommentPageDTO getSavedComments(Authentication authentication, int pageNumber) throws UserNotFoundException, InvalidPageSizeException;
+
+    boolean findSavedCommentByIdentifier(String identifier, Authentication authentication) throws UserNotFoundException;
+
+    ResponseCommentDTO removeCommentFromSavedList(String identifier, Authentication authentication) throws  UserNotFoundException, CommentNotFoundException;
+
+    ResponseCommentDTO addCommentToSavedList(String identifier, Authentication authentication) throws UserNotFoundException, CommentNotFoundException;
 }

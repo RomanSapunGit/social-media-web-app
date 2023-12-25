@@ -8,9 +8,11 @@ import {PostViewComponent} from "../component/dialog/view-form/post-view.compone
 import {BehaviorSubject} from "rxjs";
 import {ImageCropperComponent} from "../component/image-cropper/image-cropper.component";
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
-import {NotificationService} from "./notification.service";
+import {NotificationService} from "./entity/notification.service";
 import {FilterComponent} from "../component/dialog/filter/filter.component";
 import {FileDTO} from "../model/file.model";
+import {SavedEntitiesComponent} from "../component/dialog/saved-entities/saved-entities.component";
+import {SettingsComponent} from "../component/settings/settings.component";
 
 @Injectable({
     providedIn: 'root'
@@ -29,7 +31,7 @@ export class MatDialogService {
             this.dialogWidth = '120%';
             this.dialogHeight = '70%';
         } else {
-            this.dialogWidth = '40%';
+            this.dialogWidth = '30%';
             this.dialogHeight = '80%';
         }
     }
@@ -72,11 +74,11 @@ export class MatDialogService {
         }
     }
 
-    updateComment(id: string, title: string, description: string) {
+    updateComment(id: string, title: string, description: string, postId: string) {
         if (this.canOpenDialog()) {
             let dialogConfig = this.setDialogConfigWithData(true, true, this.dialogWidth, this.dialogHeight,
                 false,
-                {id, isUpdating: true, title, description});
+                {id, isUpdating: true, title, description, postId});
             this.openDialogs++;
             this.dialog.open(CommentActionComponent, dialogConfig);
         } else {
@@ -123,6 +125,15 @@ export class MatDialogService {
         }
     }
 
+    showSettings() {
+        if(this.canOpenDialog()) {
+            let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, this.dialogHeight,
+                false, null);
+            this.openDialogs++;
+            this.dialog.open(SettingsComponent, dialogConfig);
+        }
+    }
+
     showPostsByUsername(username: string) {
         if (this.canOpenDialog()) {
             let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, this.dialogHeight,
@@ -162,6 +173,11 @@ export class MatDialogService {
         let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, this.dialogHeight,
             false, {selectedImage: selectedImage});
         this.dialog.open(ImageCropperComponent, dialogConfig);
+    }
+    openSavedEntitiesDialog() {
+        let dialogConfig = this.setDialogConfigWithData(false, true, this.dialogWidth, this.dialogHeight,
+            false, {});
+        this.dialog.open(SavedEntitiesComponent, dialogConfig);
     }
 
     private setDialogConfigWithData(disableClose: boolean, autofocus: boolean, width: string, height: string, hasBackDrop: boolean, data: any): MatDialogConfig {

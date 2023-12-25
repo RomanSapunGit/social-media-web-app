@@ -41,7 +41,7 @@
     </div>
 
     <div class="flex justify-center">
-      <button class="btn-login" [disabled]="postForm.invalid || imageURLS.length > 6" type="submit">
+      <button class="btn-login" [disabled]="postForm.invalid || imageURLS.length > 6 " type="submit">
         {{ isUpdating ? ('UPDATE_POST' | translate) : ('CREATE_POST' | translate) }}
       </button>
     </div>

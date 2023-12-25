@@ -86,7 +86,7 @@
   list-style-type: none;
   padding: 0;
   overflow: hidden;
-  background-color: #333;
+  background-color: lightslategrey;
   width: 100%;
   position: fixed;
   left: 0;
@@ -99,7 +99,6 @@
 
 .container li a {
   display: flex;
-  color: white;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
@@ -112,4 +111,7 @@
 
 low-z-index {
   z-index: -1
+}
+.active {
+  background-color: gainsboro; /* change this to the color you want */
 }

@@ -9,15 +9,17 @@ import {
     switchMap,
     take,
 } from "rxjs";
-import {PostService} from "../../../services/post.service";
+import {PostService} from "../../../services/entity/post.service";
 import {MatDialogService} from "../../../services/mat-dialog.service";
-import {AuthService} from "../../../services/auth.service";
-import {PostActionService} from "../../../services/post-action.service";
+import {AuthService} from "../../../services/auth/auth.service";
+import {PostActionService} from "../../../services/entity/post-action.service";
 import {PostModel} from "../../../model/post.model";
 import {RoutingService} from "../../../services/routing.service";
 import {SearchByTextService} from "../../../services/search-by-text.service";
 import {ActivatedRoute} from "@angular/router";
 import {FileDTO} from "../../../model/file.model";
+import {SubscriptionService} from "../../../services/entity/subscription.service";
+import {VoteService} from "../../../services/entity/vote.service";
 
 @Component({
     selector: 'app-post',
@@ -35,6 +37,7 @@ export class PostsComponent {
     errorMessage: string;
     @Input() tagName: string | null;
     @Input() username: string | null;
+    @Input() displaySavedComments: boolean;
     loadedPosts: PostModel[] = [];
     totalPages: BehaviorSubject<number>;
     pageSize!: number;
@@ -46,7 +49,8 @@ export class PostsComponent {
     constructor(private postService: PostService, private matDialogService: MatDialogService,
                 private authService: AuthService, private postActionService: PostActionService,
                 private routingService: RoutingService, private searchByTextService: SearchByTextService,
-                private route: ActivatedRoute, private changeDetectorRef: ChangeDetectorRef) {
+                private route: ActivatedRoute, private changeDetectorRef: ChangeDetectorRef,
+                private subscriptionService: SubscriptionService, private voteService: VoteService) {
         this.totalPages = new BehaviorSubject(0);
         this.posts = new ReplaySubject<Page>(1);
         this.currentPostPage = new BehaviorSubject<number>(0);
@@ -61,6 +65,7 @@ export class PostsComponent {
         this.searchText = '';
         this.isDownVoteMade = false;
         this.isUpvoteMade = false;
+        this.displaySavedComments = false;
     }
 
 
@@ -90,7 +95,7 @@ export class PostsComponent {
             }
         });
 
-        if (!(this.username || this.tagName)) {
+        if (!(this.username || this.tagName || this.displaySavedComments)) {
             this.searchByTextService.textFound$.subscribe({
                 next: (text) => {
                     this.isLoading.next(true);
@@ -119,37 +124,51 @@ export class PostsComponent {
                 }
             })
         }
-
-        const subscription = this.postService.isUserHasSubscriptions(this.username, this.tagName).pipe(
-            take(1),
-            concatMap((isUserHasSubscriptions: boolean) => {
-                this.isUserSubscribed.next(isUserHasSubscriptions);
-                return this.route.data.pipe(
-                    concatMap((data) => {
-                        if (data['postData'] && this.currentPostPage.getValue() == 0) {
-                            console.log('check');
-                            return of(data['postData'] as Page);
-                        } else {
-                            return this.fetchPosts();
-                        }
-                    })
-                );
-            })).subscribe({
-            next: (page) => {
-                this.loadedPosts = [...this.loadedPosts, ...page.entities];
-                this.totalPages.next(page.totalPages);
-                const pageData = new Page(this.loadedPosts, page.total, page.currentPage, page.totalPages);
-                this.posts.next(pageData);
-                this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
-                this.isLoading.next(false);
-                shareReplay(1);
-                this.hasPostsBySubscription();
-            },
-            error: (error: any) => {
-                this.errorMessage = 'Something went wrong:' + error.error.message
-            },
-        });
-        this.subscriptions.add(subscription);
+        if (this.displaySavedComments) {
+            const subscription = this.fetchSavedPosts().pipe().subscribe({
+                next: page => {
+                    this.loadedPosts = [...this.loadedPosts, ...page.entities];
+                    this.totalPages.next(page.totalPages);
+                    const pageData = new Page(this.loadedPosts, page.total, page.currentPage, page.totalPages);
+                    this.posts.next(pageData);
+                    this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
+                    this.isLoading.next(false);
+                    shareReplay(1);
+                }
+            });
+            this.subscriptions.add(subscription);
+        } else {
+            const subscription = this.subscriptionService.isUserHasSubscriptions(this.username, this.tagName).pipe(
+                take(1),
+                concatMap((isUserHasSubscriptions: boolean) => {
+                    this.isUserSubscribed.next(isUserHasSubscriptions);
+                    return this.route.data.pipe(
+                        concatMap((data) => {
+                            if (data['postData'] && this.currentPostPage.getValue() == 0) {
+                                console.log('check');
+                                return of(data['postData'] as Page);
+                            } else {
+                                return this.fetchPosts();
+                            }
+                        })
+                    );
+                })).subscribe({
+                next: (page) => {
+                    this.loadedPosts = [...this.loadedPosts, ...page.entities];
+                    this.totalPages.next(page.totalPages);
+                    const pageData = new Page(this.loadedPosts, page.total, page.currentPage, page.totalPages);
+                    this.posts.next(pageData);
+                    this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
+                    this.isLoading.next(false);
+                    shareReplay(1);
+                    this.hasPostsBySubscription();
+                },
+                error: (error: any) => {
+                    this.errorMessage = 'Something went wrong:' + error.error.message
+                },
+            });
+            this.subscriptions.add(subscription);
+        }
     }
     hasPostsBySubscription(): void  {
         this.posts.pipe(
@@ -162,7 +181,7 @@ export class PostsComponent {
         ).subscribe();
     }
     addUpvote(identifier: string) {
-        this.postService.addUpvote(identifier).pipe(
+        this.voteService.addUpvote(identifier).pipe(
             tap(upvotes => {
                 this.posts.pipe(
                     take(1),
@@ -180,8 +199,9 @@ export class PostsComponent {
         ).subscribe();
     }
 
+
     removeUpvote(identifier: string) {
-        this.postService.removeUpvote(identifier).pipe(
+        this.voteService.removeUpvote(identifier).pipe(
             tap(upvotes => {
                 this.posts.pipe(
                     take(1),
@@ -200,7 +220,7 @@ export class PostsComponent {
     }
 
     addDownvote(identifier: string) {
-        this.postService.addDownvote(identifier).pipe(
+        this.voteService.addDownvote(identifier).pipe(
             tap(downvotes => {
                 this.posts.pipe(
                     take(1),
@@ -220,7 +240,7 @@ export class PostsComponent {
     }
 
     removeDownvote(identifier: string) {
-        this.postService.removeDownvote(identifier).pipe(
+        this.voteService.removeDownvote(identifier).pipe(
             tap(downvotes => {
                 this.posts.pipe(
                     take(1),
@@ -270,14 +290,21 @@ export class PostsComponent {
         this.isPostPaginationVisible$ = this.isPostPaginationVisible(this.posts);
     }
 
+    fetchSavedPosts() {
+        return this.currentPostPage.pipe(
+            take(1),
+            distinctUntilChanged(),
+            switchMap((currentPage) =>
+                this.postService.getSavedPosts(currentPage, this.pageSize, this.sortBy)));
+    }
+
     fetchPosts(): Observable<Page> {
         if (this.searchText) {
             return this.currentPostPage.pipe(
                 take(1),
                 distinctUntilChanged(),
                 switchMap((currentPage) =>
-                    this.postService.searchPostsByText(this.searchText, currentPage, this.pageSize, this.sortBy))
-            );
+                    this.postService.searchPostsByText(this.searchText, currentPage, this.pageSize, this.sortBy)));
         } else {
             return this.currentPostPage.pipe(
                 take(1),

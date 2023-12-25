@@ -14,9 +14,9 @@ import {
 import {MatDialogService} from "../../../services/mat-dialog.service";
 import {SearchByTextService} from "../../../services/search-by-text.service";
 import {UserModel} from "../../../model/user.model";
-import {AuthService} from "../../../services/auth.service";
-import {RequestService} from "../../../services/request.service";
+import {AuthService} from "../../../services/auth/auth.service";
 import {ActivatedRoute, Route, Router} from "@angular/router";
+import {UserRequestService} from "../../../services/request/user.request.service";
 
 @Component({
     selector: 'app-users',
@@ -34,7 +34,7 @@ export class UsersComponent {
     currentUser: string | null;
 
     constructor(private matDialogService: MatDialogService, private searchByTextService: SearchByTextService,
-                private authService: AuthService, private requestService: RequestService, private route: ActivatedRoute) {
+                private authService: AuthService, private requestService: UserRequestService, private route: ActivatedRoute) {
         this.subscription = new Subscription();
         this.page = 0;
         this.currentUser = localStorage.getItem('username');

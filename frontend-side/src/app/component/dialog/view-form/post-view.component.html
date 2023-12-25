@@ -7,7 +7,15 @@
 
 <div *ngIf="!isMobileView && (postView | async) as post">
     <div class="social-post">
-        <h2>{{ post.title }}</h2>
+        <div class="post-header-row">
+            <h2>{{ post.title }}</h2>
+            <div *ngIf="!(isSavedPost | async)">
+                <mat-icon (click)="addPostToSavedList(post.identifier)">star_border</mat-icon>
+            </div>
+            <div *ngIf="(isSavedPost | async)">
+                <mat-icon (click)="deletePostFromSavedList(post.identifier)">star</mat-icon>
+            </div>
+        </div>
         <div class="items-info">
             <ng-container *ngIf="post.userImage">
                 <app-image [usernameToDisplay]="post.username.toString()" [image]="post.userImage"></app-image>
@@ -25,13 +33,14 @@
             <button (click)="isUpvoteMade  ? removeUpvote() : addUpvote()"><i class="material-icons">arrow_upward</i>
                 {{post.upvotes }}</button>
         </div>
+        <button (click)="isTranslated ? reverseTranslatePost() : translatePost()">{{'TRANSLATE_TO' | translate}}</button>
+        <div>
+            <p class="comments-number">{{('COMMENTS_NUMBER' | translate)}}{{ (postComments | async)?.total || 0}}</p>
+            <button class="button comments-button"  (click)="toggleCommentsVisibility(post.identifier.toString())">
+                {{ commentVisibility[post.identifier] ? ('HIDE_COMMENTS' | translate) : ('SHOW_COMMENTS' | translate) }}
+            </button>
     </div>
-    <button (click)="isTranslated ? reverseTranslatePost() : translatePost()">{{'TRANSLATE_TO' | translate}}</button>
-    <div>
-        <p class="comments-number">{{('COMMENTS_NUMBER' | translate)}}{{ (postComments | async)?.total || 0}}</p>
-        <button class="button comments-button" (click)="toggleCommentsVisibility(post.identifier.toString())">
-            {{ commentVisibility[post.identifier] ? ('HIDE_COMMENTS' | translate) : ('SHOW_COMMENTS' | translate) }}
-        </button>
+
     </div>
 
 
@@ -50,6 +59,12 @@
 
 </div>
 <div *ngIf="isMobileView && (postView | async) as mobileViewPost">
+    <div *ngIf="!(isSavedPost | async)">
+        <mat-icon (click)="addPostToSavedList(mobileViewPost.identifier)">star_border</mat-icon>
+    </div>
+    <div *ngIf="(isSavedPost | async)">
+        <mat-icon (click)="deletePostFromSavedList(mobileViewPost.identifier)">star</mat-icon>
+    </div>
     <div class="items-info">
         <ng-container *ngIf="mobileViewPost.userImage">
             <app-image [usernameToDisplay]="mobileViewPost.username.toString()" [image]="mobileViewPost.userImage"></app-image>

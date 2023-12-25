@@ -3,7 +3,6 @@ package com.roman.sapun.java.socialmedia.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.BatchSize;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -47,15 +46,22 @@ public class PostEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ImageEntity> images;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "post_upvotes",
             joinColumns = {@JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"))
     private Set<UserEntity> upvotes;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "post_downvotes",
             joinColumns = {@JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"))
     private Set<UserEntity> downvotes;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "statistics_id", nullable = false)
+    private UserStatisticsEntity userStatistics;
+
+    @ManyToMany(mappedBy = "savedPosts")
+    private Set<UserEntity> users;
 }

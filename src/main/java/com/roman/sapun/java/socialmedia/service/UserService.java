@@ -1,6 +1,7 @@
 package com.roman.sapun.java.socialmedia.service;
 
 import com.roman.sapun.java.socialmedia.dto.page.UserPageDTO;
+import com.roman.sapun.java.socialmedia.dto.user.ConsentDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
@@ -54,6 +55,12 @@ public interface UserService {
      */
     ResponseUserDTO unlockUser(String username) throws UserNotFoundException;
 
+
+    ConsentDTO sendUserConsent(Authentication authentication, ConsentDTO consent) throws Exception;
+
+    ConsentDTO getConsent(Authentication authentication) throws UserNotFoundException;
+
+    ResponseUserDTO getCurrentUser(Authentication authentication) throws UserNotFoundException;
 
     /**
      * Finds the user entity based on the authentication object.

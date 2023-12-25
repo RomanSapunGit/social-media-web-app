@@ -1,17 +1,16 @@
 import {catchError, defaultIfEmpty, map, Observable, of} from "rxjs";
 import {Router, UrlTree} from "@angular/router";
-import {AuthService} from "../services/auth.service";
+import {AuthService} from "../services/auth/auth.service";
 import {Injectable} from "@angular/core";
-import {RequestService} from "../services/request.service";
 import {MatDialogService} from "../services/mat-dialog.service";
 import {TranslateService} from "@ngx-translate/core";
-import {CredentialsService} from "../services/credentials.service";
+import {AuthRequestService} from "../services/request/auth.request.service";
 
 @Injectable()
 export class AuthGuard {
     errorMessage: string
 
-    constructor(private requestService: RequestService, private authService: AuthService,
+    constructor(private requestService: AuthRequestService, private authService: AuthService,
                 private router: Router, private matDialogService: MatDialogService, private translateService: TranslateService) {
         this.errorMessage = '';
     }

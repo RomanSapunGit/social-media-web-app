@@ -2,7 +2,7 @@ import {Component, ElementRef, ViewChild} from '@angular/core';
 import {environment} from "../../../environments/environment";
 import {NgOptimizedImage} from '@angular/common'
 import {BehaviorSubject} from "rxjs";
-import {NotificationService} from "../../services/notification.service";
+import {NotificationService} from "../../services/entity/notification.service";
 import { trigger, state, style, animate, transition, keyframes } from '@angular/animations';
 @Component({
     selector: 'app-about-page',

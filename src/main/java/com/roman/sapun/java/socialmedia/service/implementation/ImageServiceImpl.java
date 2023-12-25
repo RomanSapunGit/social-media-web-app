@@ -98,6 +98,12 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
+    public List<ResponseImageDTO> getImagesByPost(String postId) throws PostNotFoundException {
+        var post = postRepository.getPostEntityByIdentifier(postId).orElseThrow(PostNotFoundException::new);
+        return getImagesByPost(post);
+    }
+
+    @Override
     public List<ResponseImageDTO> getImagesByPost(PostEntity post) {
         return post.getImages().stream().parallel()
                 .map(imageEntity -> new ResponseImageDTO(imageEntity.getIdentifier(), new FileDTO

@@ -1,18 +1,14 @@
 import {
-    ChangeDetectorRef,
     Component,
-    ElementRef,
     EventEmitter,
-    HostListener,
-    Input, NgZone,
+    Input,
     Output,
-    ViewChild
 } from '@angular/core';
 import {MatDialogService} from "../../services/mat-dialog.service";
-import {AuthService} from "../../services/auth.service";
-import {RequestService} from "../../services/request.service";
+import {AuthService} from "../../services/auth/auth.service";
 import {Router} from "@angular/router";
 import {ServerSendEventService} from "../../services/server-send-event.service";
+import {AuthRequestService} from "../../services/request/auth.request.service";
 
 @Component({
     selector: 'app-drop-down-menu',
@@ -29,8 +25,8 @@ export class DropDownMenuComponent {
     @Output() isMenuClose = new EventEmitter<boolean>();
 
     constructor(private matDialogService: MatDialogService, private authService: AuthService,
-                private requestService: RequestService, private router: Router,
-                private sseService: ServerSendEventService, private zone: NgZone) {
+                private requestService: AuthRequestService, private router: Router,
+                private sseService: ServerSendEventService) {
         this.isProfileMenu = false;
         this.showConfirmation = false;
         this.confirmed = false;
@@ -39,9 +35,16 @@ export class DropDownMenuComponent {
         this.isMenuOpen = false;
     }
 
+    displaySettings() {
+        this.matDialogService.showSettings();
+    }
+
     displayPostWindow(username: string | null) {
+        console.log(username)
         if (username) {
             this.matDialogService.showPostsByUsername(username);
+            if (this.isMenuOpen)
+                this.isMenuClose.emit(false);
         }
     }
 
@@ -66,9 +69,9 @@ export class DropDownMenuComponent {
     }
 
     async logout(): Promise<void> {
-       await this.authService.logout();
+        await this.authService.logout();
         this.sseService.completeSSENotificationConnection(this.username);
-        await this.requestService.logout().subscribe({
+       await this.requestService.logout().subscribe({
             next: () => {
                 localStorage.clear();
                 this.requestService.getCsrf();
@@ -77,5 +80,9 @@ export class DropDownMenuComponent {
             error: (error: any) => console.log(error.error.message)
         });
     }
-
+    openSavedEntitiesDialog() {
+        this.matDialogService.openSavedEntitiesDialog();
+        if (this.isMenuOpen)
+            this.isMenuClose.emit(false);
+    }
 }

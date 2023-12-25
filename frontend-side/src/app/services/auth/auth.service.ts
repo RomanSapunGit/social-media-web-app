@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {Router} from "@angular/router";
 import {CookieService} from 'ngx-cookie-service';
 import {GoogleLoginProvider, SocialAuthService} from "@abacritt/angularx-social-login";
-import {RequestService} from "./request.service";
+import {SseRequestService} from "../request/sse.request.service";
 
 @Injectable({
     providedIn: 'root'
@@ -34,16 +34,6 @@ export class AuthService {
 
     public getIsGoogleAccount(): string {
         return this.cookieService.get(this.isGoogleAccountName)
-    }
-
-    public setAuthData(token: string, username: string): void {
-        this.cookieService.set(this.authTokenCookieName, this.encodeToken(token));
-
-        this.cookieService.set(this.usernameCookieName, username);
-    }
-
-    public setAuthToken(token: string): void {
-        this.cookieService.set(this.authTokenCookieName, this.encodeToken(token));
     }
 
     public getAuthToken(): string | null {

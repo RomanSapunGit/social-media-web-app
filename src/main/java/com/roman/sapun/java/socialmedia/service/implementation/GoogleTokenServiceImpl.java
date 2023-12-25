@@ -2,13 +2,12 @@ package com.roman.sapun.java.socialmedia.service.implementation;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
-import com.roman.sapun.java.socialmedia.exception.InvalidValueException;
+import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.GoogleTokenService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.google.api.client.json.gson.GsonFactory;
@@ -33,34 +32,40 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
     }
 
     @Override
-    public String validateAndGetUsername(String authToken) throws GeneralSecurityException, IOException, UserNotFoundException {
-        if (!isGoogleJwtToken(authToken)) {
-            return null;
-        }
-        var email = getEmailFromGoogleToken(authToken);
-        var user = userRepository.findByEmail(email).orElseThrow(() ->
-                new UserNotFoundException("User with email " + email + " not found"));
-        return user.getUsername();
+    public UserEntity getUserByGoogleId(String subToken) throws UserNotFoundException {
+        return userRepository.findByGoogleToken(subToken).orElseThrow(UserNotFoundException::new);
     }
 
     @Override
-    public String generateJwtTokenByGoogleToken(String authToken, HttpServletRequest request, HttpServletResponse response)
-            throws GeneralSecurityException, IOException, UserNotFoundException, InvalidValueException {
-        authToken = authToken != null && authToken.startsWith("Bearer ") ? authToken.substring(7) : authToken;
-        if (!isGoogleJwtToken(authToken)) {
-            throw new InvalidValueException("Invalid token");
-        }
-        return userRepository.findByEmail(getEmailFromGoogleToken(authToken)).orElseThrow(UserNotFoundException::new).getUsername();
+    public String extractSubFromIdToken(String authToken) throws GeneralSecurityException, IOException {
+        var token = authToken != null && authToken.startsWith("Bearer ") ? authToken.substring(7) : authToken;
+        var httpTransport = new NetHttpTransport();
+        var verifier = new GoogleIdTokenVerifier.Builder(httpTransport, gsonFactory)
+                .setAudience(Collections.singletonList(valueConfig.getClientId()))
+                .build();
+        var idToken = verifier.verify(token);
+        return idToken.getPayload().getSubject();
     }
 
     @Override
-    public boolean isGoogleJwtToken(String authToken) throws GeneralSecurityException, IOException {
-        var idToken = extractIdToken(authToken);
-        return idToken != null;
+    public void synchronizeGoogleUserWithDatabase(UserEntity user, GoogleIdToken idToken) {
+        user.setEmail(getEmailFromGoogleToken(idToken));
+        user.setName(getUsernameFromGoogleToken(idToken));
+        user.setUsername(getUsernameFromGoogleToken( idToken));
+        userRepository.save(user);
     }
 
-    private String getEmailFromGoogleToken(String authToken) throws GeneralSecurityException, IOException {
-        var idToken = extractIdToken(authToken);
+    @Override
+    public GoogleIdToken extractIdToken(String authToken) throws GeneralSecurityException, IOException {
+        var token = authToken != null && authToken.startsWith("Bearer ") ? authToken.substring(7) : authToken;
+        var httpTransport = new NetHttpTransport();
+        var verifier = new GoogleIdTokenVerifier.Builder(httpTransport, gsonFactory)
+                .setAudience(Collections.singletonList(valueConfig.getClientId()))
+                .build();
+        return verifier.verify(token);
+    }
+
+    private String getEmailFromGoogleToken(GoogleIdToken idToken) {
         if (idToken != null) {
             var payload = idToken.getPayload();
             return (String) payload.get("email");
@@ -68,11 +73,11 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
         return null;
     }
 
-    private GoogleIdToken extractIdToken(String authToken) throws GeneralSecurityException, IOException {
-        var httpTransport = new com.google.api.client.http.javanet.NetHttpTransport();
-        var verifier = new GoogleIdTokenVerifier.Builder(httpTransport, gsonFactory)
-                .setAudience(Collections.singletonList(valueConfig.getClientId()))
-                .build();
-        return verifier.verify(authToken);
+    private String getUsernameFromGoogleToken(GoogleIdToken idToken) {
+        if (idToken != null) {
+            var payload = idToken.getPayload();
+            return (String) payload.get("name");
+        }
+        return null;
     }
 }

@@ -1,10 +1,11 @@
 import {Component} from '@angular/core';
 import {TranslateService} from "@ngx-translate/core";
-import {AuthService} from "./services/auth.service";
+import {AuthService} from "./services/auth/auth.service";
 import {HttpClient} from "@angular/common/http";
-import {RequestService} from "./services/request.service";
+import {SseRequestService} from "./services/request/sse.request.service";
 import {BehaviorSubject} from "rxjs";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
+import {AuthRequestService} from "./services/request/auth.request.service";
 
 @Component({
     selector: 'app-root',
@@ -15,7 +16,7 @@ export class AppComponent {
     isNavbarCollapsed = true;
     selectedLanguage: string = 'en';
 
-    constructor(private translate: TranslateService, private requestService: RequestService,
+    constructor(private translate: TranslateService, private requestService: AuthRequestService,
                 private breakpointObserver: BreakpointObserver) {
         const storedLanguage = localStorage.getItem('Language');
         this.selectedLanguage = storedLanguage === null ? 'en' : storedLanguage as string;
@@ -23,8 +24,13 @@ export class AppComponent {
         localStorage.setItem('isMobileView', JSON.stringify(breakpointObserver.isMatched(Breakpoints.Handset)));
     }
 
-    ngOnInit() {
-        this.requestService.getCsrf()
+   async ngOnInit() {
+       await this.requestService.getCsrf().pipe().subscribe({
+           next: (token: any) => {
+               console.log('check')
+               this.requestService.setCsrfToken(token)
+           }
+       })
     }
     ngOnDestroy() {
         localStorage.clear();

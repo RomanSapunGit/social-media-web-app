@@ -10,6 +10,7 @@ import com.roman.sapun.java.socialmedia.exception.*;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import com.roman.sapun.java.socialmedia.service.VoteService;
 import io.micrometer.core.annotation.Timed;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -44,9 +45,10 @@ public class PostController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public ResponsePostDTO createPost(@ModelAttribute RequestPostDTO requestPostDTO,
-                                      @RequestPart("images") List<MultipartFile> images, Authentication authentication)
-            throws UserNotFoundException, InvalidImageNumberException {
-        return postService.createPost(requestPostDTO, images, authentication);
+                                      @RequestPart("images") List<MultipartFile> images, Authentication authentication,
+                                      HttpServletRequest request)
+            throws UserNotFoundException, InvalidImageNumberException, UserStatisticsNotFoundException {
+        return postService.createPost(requestPostDTO, images, authentication, request);
     }
 
     /**
@@ -160,16 +162,88 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{identifier}")
-    public ResponsePostDTO getPostById(@PathVariable String identifier) throws PostNotFoundException, UserNotFoundException {
-        return postService.getPostById(identifier);
+    public ResponsePostDTO getPostById(@PathVariable String identifier, HttpServletRequest request, Authentication authentication) throws PostNotFoundException, UserNotFoundException, UserStatisticsNotFoundException {
+        return postService.getPostById(identifier, request, authentication);
     }
 
+    /**
+     * Deletes a post by its identifier.
+     *
+     * @param identifier      The identifier of the post to be deleted.
+     * @param authentication  The authentication object representing the current user.
+     * @return The DTO representing the deleted post.
+     * @throws UserNotFoundException  If the user is not found.
+     * @throws PostNotFoundException  If the post with the specified identifier is not found.
+     */
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{identifier}")
     public ResponsePostDTO deletePost(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return postService.deletePostByIdentifier(identifier, authentication);
     }
 
+    /**
+     * Retrieves saved posts for the authenticated user.
+     *
+     * @param authentication  The authentication object representing the current user.
+     * @param page            The page number for pagination.
+     * @param pageSize        The number of posts per page.
+     * @param sortBy          The field by which posts are sorted.
+     * @return A PostPageDTO containing saved posts, the overall number of posts, current page, and overall number of pages.
+     * @throws UserNotFoundException    If the user is not found.
+     * @throws InvalidPageSizeException If the page size is invalid.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/saved")
+    public PostPageDTO getSavedPosts(Authentication authentication, @RequestParam int page,
+                                     @RequestParam(defaultValue = "15") int pageSize,
+                                     @RequestParam(defaultValue = "creationTime") String sortBy) throws UserNotFoundException, InvalidPageSizeException {
+        return postService.getSavedPosts(authentication, page, pageSize, sortBy);
+    }
+
+    /**
+     * Adds a post to the saved list of the authenticated user.
+     *
+     * @param identifier      The identifier of the post to be added to the saved list.
+     * @param authentication  The authentication object representing the current user.
+     * @return The DTO representing the added post.
+     * @throws UserNotFoundException  If the user is not found.
+     * @throws PostNotFoundException  If the post with the specified identifier is not found.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/saved/{identifier}")
+    public ResponsePostDTO addPostToSavedList(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
+        return postService.addPostToSavedList(identifier, authentication);
+    }
+
+    /**
+     * Checks if a post exists in the saved list of the authenticated user.
+     *
+     * @param identifier      The identifier of the post to be checked.
+     * @param authentication  The authentication object representing the current user.
+     * @return True if the post exists in the saved list; otherwise, false.
+     * @throws UserNotFoundException  If the user is not found.
+     * @throws PostNotFoundException  If the post with the specified identifier is not found.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/saved/{identifier}")
+    public boolean isPostExistInSavedList(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
+        return postService.isPostExistInSavedList(identifier, authentication);
+    }
+
+    /**
+     * Removes a post from the saved list of the authenticated user.
+     *
+     * @param identifier      The identifier of the post to be removed from the saved list.
+     * @param authentication  The authentication object representing the current user.
+     * @return The DTO representing the removed post.
+     * @throws UserNotFoundException  If the user is not found.
+     * @throws PostNotFoundException  If the post with the specified identifier is not found.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/saved/{identifier}")
+    public ResponsePostDTO removePostFromSavedList(@PathVariable String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
+        return postService.removePostFromSavedList(identifier, authentication);
+    }
     /**
      * Adds an upvote to the specified post and returns the users who upvoted the post.
      *

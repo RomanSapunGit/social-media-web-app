@@ -15,4 +15,6 @@ public class RoleEntity {
 
     @Column(length = 20, unique = true)
     private String name;
+
+
 }

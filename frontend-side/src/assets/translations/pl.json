@@ -97,5 +97,11 @@
   "POST_DELETION_CONFIRMATION": "Czy na pewno chcesz usun±æ ten post?",
   "IMAGE_NUMBER_RESTRICTION": "Nie możesz dodać więcej niż 6 obrazów",
   "ABOUT_DESCRIPTION": "Nasza aplikacja społecznościowa to dynamiczna platforma, która pozwala użytkownikom łączyć się, udostępniać i angażować innych w tętniącą życiem społeczność internetową.\\n\\nDzięki przyjaznemu interfejsowi i szeregowi ekscytujących funkcji nasza aplikacja zapewnia płynne i wciągające doświadczenie w sieciach społecznościowych, które pozwala użytkownikom łączyć się z podobnymi\nmyślących ludzi i angażuj się w istotne rozmowy, otrzymując powiadomienia dotyczące Twojego wpisu.\\n\\nUżytkownicy mogą tworzyć spersonalizowane profile, dzielić się swoimi przemyśleniami i zdjęciami oraz kontaktować się z przyjaciółmi, rodziną i osobami o podobnych poglądach. Bądź na bieżąco z najnowszymi trendami, odkrywaj nowe treści,\ni dołącz do rozmów na różne interesujące Cię tematy.\\n\\nNasza aplikacja priorytetowo traktuje prywatność i bezpieczeństwo użytkowników, oferując zaawansowane ustawienia prywatności i solidne środki ochrony danych. Kontaktuj się ze znajomymi, obserwuj wpływowe osoby i buduj wartościowe kontakty w bezpiecznym i włączającym środowisku.\\n\\nDzięki Angular i Spring Boot,\nnasza aplikacja zapewnia szybkie i niezawodne działanie, zapewniając płynną obsługę użytkowników na różnych urządzeniach. Dołącz do naszej rosnącej społeczności i uwolnij swoją kreatywność, wyraź siebie i pozostań w kontakcie z ludźmi i treściami, które są dla Ciebie ważne",
-  "COMMENTS_NUMBER": "Liczba komentarzy: "
+  "COMMENTS_NUMBER": "Liczba komentarzy: ",
+  "SAVED": "Zapisane",
+  "COLLECTING STATISTICS": "Pobieranie statystyki",
+  "ENABLED": "Włączony",
+  "DISABLED": "Wyłączony",
+  "FINISH_REGISTRATION": "Zakończyć rejestrację",
+  "RETURN_TO_REGISTER": "Powrót do rejestracji"
 }

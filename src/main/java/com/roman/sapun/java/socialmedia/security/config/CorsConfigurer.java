@@ -7,7 +7,6 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-
 public class CorsConfigurer implements WebMvcConfigurer {
     private final ValueConfig valueConfig;
 
@@ -23,7 +22,7 @@ public class CorsConfigurer implements WebMvcConfigurer {
                 .maxAge(3600L)
                 .allowedMethods("*")
                 .allowedHeaders("*")
-                .exposedHeaders("Authorization")
+                .exposedHeaders("Upgrade")
                 .allowCredentials(true);
     }
 }

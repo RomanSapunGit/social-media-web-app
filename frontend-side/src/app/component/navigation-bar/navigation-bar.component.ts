@@ -1,9 +1,7 @@
 import {Component, HostListener, Input} from '@angular/core';
-import {AuthService} from "../../services/auth.service";
-import {ImageService} from "../../services/image.service";
+import {AuthService} from "../../services/auth/auth.service";
+import {ImageService} from "../../services/entity/image.service";
 import {BehaviorSubject, Observable} from "rxjs";
-import {RequestService} from "../../services/request.service";
-import {PostService} from "../../services/post.service";
 import {MatDialogService} from "../../services/mat-dialog.service";
 import {SearchByTextService} from "../../services/search-by-text.service";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";

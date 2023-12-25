@@ -7,7 +7,6 @@ import com.roman.sapun.java.socialmedia.util.IdentifierGenerator;
 import com.roman.sapun.java.socialmedia.util.ImageUtil;
 import com.roman.sapun.java.socialmedia.util.converter.ImageConverter;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;

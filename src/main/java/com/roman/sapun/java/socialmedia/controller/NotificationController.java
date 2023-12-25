@@ -22,6 +22,12 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
+    /**
+     * Creates a follow notification for a user.
+     *
+     * @param notificationDTO The DTO containing the notification message and username.
+     * @throws UserNotFoundException If the specified user is not found.
+     */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/subscriptions")
     public void createFollowNotification(@RequestBody NotificationDTO notificationDTO) throws UserNotFoundException {
@@ -33,6 +39,8 @@ public class NotificationController {
      * This method is used to notify users about new comments.
      *
      * @param commentNotificationDTO The DTO containing the comment identifier and message for the notification.
+     * @throws PostNotFoundException   If the post for the comment is not found.
+     * @throws CommentNotFoundException If the comment is not found.
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/comments")
@@ -59,6 +67,7 @@ public class NotificationController {
      *
      * @param username The username of the user for whom notifications are to be retrieved.
      * @return A list of NotificationDTO objects, each representing a notification.
+     * @throws UserNotFoundException If the specified user is not found.
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{username}")

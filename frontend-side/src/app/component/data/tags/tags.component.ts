@@ -3,9 +3,10 @@ import {BehaviorSubject, map, Observable, of, ReplaySubject, Subscription, switc
 import {MatDialogService} from "../../../services/mat-dialog.service";
 import {SearchByTextService} from "../../../services/search-by-text.service";
 import {TagModel} from "../../../model/tag.model";
-import {AuthService} from "../../../services/auth.service";
-import {RequestService} from "../../../services/request.service";
+import {AuthService} from "../../../services/auth/auth.service";
+import {SseRequestService} from "../../../services/request/sse.request.service";
 import {ActivatedRoute} from "@angular/router";
+import {TagRequestService} from "../../../services/request/tag.request.service";
 
 @Component({
     selector: 'app-tags',
@@ -22,7 +23,7 @@ export class TagsComponent {
     private pageSize!: number;
 
     constructor(private matDialogService: MatDialogService, private searchByTextService: SearchByTextService,
-                private authService: AuthService, private requestService: RequestService,
+                private authService: AuthService, private requestService: TagRequestService,
                 private route: ActivatedRoute) {
         this.subscription = new Subscription();
         this.page = 0;
@@ -83,13 +84,6 @@ export class TagsComponent {
                 });
         }
         this.tags.pipe(tap(tags => console.log(tags.length))).subscribe();
-    }
-
-    onWindowScroll() {
-        const postBox = document.querySelector('.post-list') as HTMLElement;
-        if (postBox) {
-            postBox.style.userSelect = 'none';
-        }
     }
 
     getTags(): Observable<TagModel[]> {

@@ -1,13 +1,11 @@
-import {ChangeDetectorRef, Component, NgZone, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {RequestService} from "../../services/request.service";
-import {NotificationService} from "../../services/notification.service";
-import {GoogleLoginProvider, SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
-import {AuthService} from "../../services/auth.service";
+import {NotificationService} from "../../services/entity/notification.service";
+import { SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
+import {AuthService} from "../../services/auth/auth.service";
 import {Subscription} from "rxjs";
-import {ServerSendEventService} from "../../services/server-send-event.service";
 import {Router} from "@angular/router";
-import {CredentialsService} from "../../services/credentials.service";
+import {CredentialsService} from "../../services/auth/credentials.service";
 
 @Component({
     selector: 'app-login',

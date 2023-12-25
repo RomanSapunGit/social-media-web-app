@@ -1,20 +1,20 @@
 import {Component, Inject, Input} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {RequestService} from "../../../../services/request.service";
-import {AuthService} from "../../../../services/auth.service";
+import {AuthService} from "../../../../services/auth/auth.service";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {PostActionService} from "../../../../services/post-action.service";
+import {PostActionService} from "../../../../services/entity/post-action.service";
 import {PostModel} from "../../../../model/post.model";
 import {MatDialogService} from "../../../../services/mat-dialog.service";
-import {NotificationService} from "../../../../services/notification.service";
-import {PostService} from "../../../../services/post.service";
-import {FileDTO} from "../../../../model/file.model";
+import {NotificationService} from "../../../../services/entity/notification.service";
+import {PostService} from "../../../../services/entity/post.service";
 import {DomSanitizer} from "@angular/platform-browser";
 import {CustomFile} from "../../../../model/custom.file.model";
 import {ImageDtoModel} from "../../../../model/image.dto.model";
 import {RequestUpdatePostModel} from "../../../../model/request-update-post.model";
 import {RequestImageDtoModel} from "../../../../model/request-image-dto.model";
 import {RequestFileDtoModel} from "../../../../model/response-file-dto.model";
+import {WebsocketPostService} from "../../../../services/websocket/websocket-post.service";
+import {PostRequestService} from "../../../../services/request/post.request.service";
 
 @Component({
     selector: 'app-post-action',
@@ -34,11 +34,11 @@ export class PostActionComponent {
     imageUrl = 'assets/image/default-post-image.png';
     isPostDeletionSubmitted: boolean;
 
-    constructor(private formBuilder: FormBuilder, private requestService: RequestService, private authService: AuthService,
+    constructor(private formBuilder: FormBuilder, private requestService: PostRequestService, private authService: AuthService,
                 @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<PostActionComponent>,
                 private postActionService: PostActionService, private matDialogService: MatDialogService,
                 private notificationService: NotificationService, private postService: PostService,
-                private _sanitizer: DomSanitizer) {
+                private _sanitizer: DomSanitizer, private webSocketPostService: WebsocketPostService) {
         this.existedImages = data.images;
         this.isPostDeletionSubmitted = false;
         this.selectedImages = [];
@@ -48,8 +48,8 @@ export class PostActionComponent {
         this.postIdentifier = this.data.postIdentifier;
         this.isUpdating = this.data.isUpdating;
         this.postForm = this.formBuilder.group({
-            title: ['', [Validators.required, Validators.minLength(6)]],
-            description: ['', [Validators.required, Validators.minLength(6)]],
+            title: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
+            description: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(1000)]],
             images: [],
         });
         if (this.isUpdating) {
@@ -61,12 +61,18 @@ export class PostActionComponent {
     }
 
     ngOnInit() {
-        this.selectedImages = this.convertFileDTOsToFiles(this.existedImages, "existed");
-        this.imageURLS = this.existedImages.map(fileDTO => {
-            const base64String = fileDTO.fileDTO.fileData;
-            return this._sanitizer.bypassSecurityTrustResourceUrl('data:image/jpeg;base64,' + base64String);
-        });
-        this.selectedImages.forEach(image => console.log(image))
+        console.log(this.isUpdating)
+        if (this.isUpdating) {
+            this.webSocketPostService.connect();
+            this.selectedImages = this.convertFileDTOsToFiles(this.existedImages, "existed");
+            this.postForm.patchValue({
+                images: this.selectedImages
+            })
+            this.imageURLS = this.existedImages.map(fileDTO => {
+                const base64String = fileDTO.fileDTO.fileData;
+                return this._sanitizer.bypassSecurityTrustResourceUrl('data:image/jpeg;base64,' + base64String);
+            });
+        }
     }
 
     private convertFileDTOsToFiles(fileDTOs: ImageDtoModel[], source: 'existed' | 'new'): CustomFile[] {
@@ -80,10 +86,10 @@ export class PostActionComponent {
         });
     }
 
-    onSubmit() {
+    async onSubmit() {
         this.postData = {...this.postForm.value};
         let token = this.authService.getAuthToken();
-        this.isUpdating ? this.updatePost() : this.createPost(token);
+        this.isUpdating ? await this.updatePost() : await this.createPost(token);
         this.selectedImages = [];
         this.imageURLS = [];
         this.closeDialog();
@@ -92,6 +98,7 @@ export class PostActionComponent {
     deletePost() {
         this.postService.deletePost(this.postIdentifier).subscribe();
         this.postActionService.deletePost(this.postIdentifier);
+        this.notificationService.showNotification('Post successfully deleted', false);
         this.closeDialog();
     }
 
@@ -108,13 +115,14 @@ export class PostActionComponent {
     }
 
     async updatePost() {
+        console.log(this.postData.images)
+        let images = this.postData.images ? this.postData.images : [];
         const requestUpdatePostDTO: RequestUpdatePostModel = {
             identifier: this.postIdentifier,
             title: this.postData.title,
             description: this.postData.description,
             images: await Promise.all(
-                this.postData.images
-                    .filter((image: CustomFile) => image.source === 'existed')
+                images.filter((image: CustomFile) => image.source === 'existed')
                     .map(async (image: CustomFile) => {
                         const arrayBuffer = await this.readFileAsArrayBuffer(image.file);
                         const base64String = this.arrayBufferToBase64(arrayBuffer);
@@ -129,7 +137,7 @@ export class PostActionComponent {
                     })
             ),
             newImages: await Promise.all(
-                this.postData.images
+                images
                     .filter((image: CustomFile) => image.source === 'new')
                     .map(async (image: CustomFile) => {
                         const arrayBuffer = await this.readFileAsArrayBuffer(image.file);
@@ -147,14 +155,15 @@ export class PostActionComponent {
         };
 
         const response = await this.requestService.updatePost(requestUpdatePostDTO).toPromise();
-        this.postActionService.addPost(response as PostModel)
+        this.webSocketPostService.publishCommentUpdated(response as PostModel, this.postIdentifier);
+        this.postActionService.addPost(response as PostModel);
         this.notificationService.showNotification('Post updated', false);
     }
 
-   private arrayBufferToBase64(buffer: any) {
-       let binary = '';
-       let bytes = new Uint8Array(buffer);
-       let len = bytes.byteLength;
+    private arrayBufferToBase64(buffer: any) {
+        let binary = '';
+        let bytes = new Uint8Array(buffer);
+        let len = bytes.byteLength;
         for (let i = 0; i < len; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
@@ -241,6 +250,8 @@ export class PostActionComponent {
 
     closeDialog() {
         this.matDialogService.dialogClosed();
+        if (this.isUpdating)
+            this.webSocketPostService.disconnect();
         this.dialogRef.close();
     }
 }

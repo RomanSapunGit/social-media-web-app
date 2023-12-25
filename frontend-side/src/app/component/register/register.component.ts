@@ -1,14 +1,13 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {RequestService} from "../../services/request.service";
-import {NotificationService} from "../../services/notification.service";
+import {NotificationService} from "../../services/entity/notification.service";
 import {SocialAuthService, SocialUser} from "@abacritt/angularx-social-login";
 import {Subscription} from "rxjs";
 import {MatDialogService} from "../../services/mat-dialog.service";
 import {ImageCropperService} from "../../services/image-cropper.service";
-import {AuthService} from "../../services/auth.service";
+import {AuthService} from "../../services/auth/auth.service";
 import {Router} from "@angular/router";
-import {CredentialsService} from "../../services/credentials.service";
+import {CredentialsService} from "../../services/auth/credentials.service";
 
 @Component({
   selector: 'app-register',
@@ -18,7 +17,8 @@ import {CredentialsService} from "../../services/credentials.service";
 export class RegisterComponent implements OnInit {
   registerData: { email: string, password: string, name: string, username: string };
   registerForm: FormGroup;
-  socialUser!: SocialUser;
+  googleRegisterForm!: FormGroup;
+  socialUser: SocialUser|null = null;
   authSubscription: Subscription;
   selectedImage: File | null = null;
   image = 'assets/image/bg1.jpg'
@@ -66,9 +66,8 @@ export class RegisterComponent implements OnInit {
       console.log('check')
       this.socialUser = user;
       if (this.socialUser && this.socialUser.email) {
-        this.registerForm.controls['email'].setValue(user.email);
-        this.registerForm.controls['username'].setValue(user.name);
-        this.registerForm.controls['name'].setValue(user.name);
+        this.createGoogleLoginRegisterGroup(user);
+        this.imageUrl = user.photoUrl;
       }
     });
     this.imageCropperService.getCroppedImageObjectUrl$().subscribe({
@@ -79,27 +78,33 @@ export class RegisterComponent implements OnInit {
       error: (err) => console.log(err.error.message)
     });
   }
-  googleSignin(googleUser: any) {
-    if (googleUser.credential)
-      this.credentialsService.loginViaGoogleAndRedirect(googleUser.credential);
+
+  createGoogleLoginRegisterGroup(user: SocialUser) {
+    this.googleRegisterForm = this.formBuilder.group({
+      email: [user.email, [Validators.required, Validators.minLength(12)]],
+      password: [''],
+      name: [user.name, [Validators.required, Validators.minLength(6)]],
+      username: [user.name, [Validators.required, Validators.minLength(6)]],
+    });
   }
-  ngOnDestroy() {
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
-    this.socialAuthService.signOut();
+  returnToRegularRegister() {
+    this.socialUser = null;
+    this.imageUrl = 'assets/image/png-transparent-default-avatar.png';
   }
 
   async register() {
-    const { name, username, email, password } = this.registerForm.value;
+    const { name, username, email, password } = this.googleRegisterForm ? this.googleRegisterForm.value : this.registerForm.value;
     const formData = new FormData();
     formData.append('name', name);
     formData.append('username', username);
     formData.append('email', email);
     formData.append('password', password);
+    if(this.socialUser)
+    formData.append('googleIdentifier', this.socialUser.idToken);
 
     const imageToUpload = this.selectedImage || await this.getCircularImage(this.imageUrl);
     if (imageToUpload) {
+      console.log(imageToUpload)
       formData.append('image', imageToUpload);
     }
 
@@ -128,11 +133,6 @@ export class RegisterComponent implements OnInit {
       this.imageUrl = reader.result as string;
     };
     reader.readAsDataURL(file);
-  }
-
-  clearFileInput() {
-    const inputElement = document.getElementById('file') as HTMLInputElement;
-    inputElement.value = '';
   }
 
   async createCircularImage(blob: Blob): Promise<Blob | null> {
@@ -180,5 +180,12 @@ export class RegisterComponent implements OnInit {
       console.error('Error fetching image:', error);
       return null;
     }
+  }
+  ngOnDestroy() {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
+    this.socialUser = null;
+    this.socialAuthService.signOut();
   }
 }

@@ -138,7 +138,8 @@ $my-app-theme: mat.define-light-theme((
 }
 
 .draggable-container {
-  position: fixed;
+  display: flex;
+  align-items: center;
   cursor: move;
   top: 0;
   flex: 1 1 auto;
@@ -225,7 +226,7 @@ $my-app-theme: mat.define-light-theme((
 
 .draggable-style {
   position: sticky;
-  height: 10px;
+  height: 0px;
   top: 0;
   z-index: 1;
 }

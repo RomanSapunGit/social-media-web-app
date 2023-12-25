@@ -4,7 +4,7 @@ import {BehaviorSubject, Observable, ReplaySubject, shareReplay, switchMap, take
 import {ServerSendEventService} from "../../services/server-send-event.service";
 import {NotificationModel} from "../../model/notification.model";
 import {UserNotificationModel} from "../../model/user-notification.model";
-import {AuthService} from "../../services/auth.service";
+import {AuthService} from "../../services/auth/auth.service";
 
 
 @Component({

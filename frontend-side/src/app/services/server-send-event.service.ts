@@ -1,11 +1,12 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, map, Observable, of, take} from "rxjs";
-import {AuthService} from "./auth.service";
-import {RequestService} from "./request.service";
+import {AuthService} from "./auth/auth.service";
+import {SseRequestService} from "./request/sse.request.service";
 import {UserNotificationModel} from "../model/user-notification.model";
 import {PostViewModel} from "../model/post-view.model";
 import {environment} from "../../environments/environment";
-import {NotificationService} from "./notification.service";
+import {NotificationService} from "./entity/notification.service";
+import {NotificationRequestService} from "./request/notification.request.service";
 
 @Injectable({
     providedIn: 'root'
@@ -14,7 +15,7 @@ export class ServerSendEventService {
     private baseUrl = environment.backendUrl;
     private eventSources: Map<string, EventSource>;
 
-    constructor( private requestService: RequestService,
+    constructor( private requestService: NotificationRequestService, private sseRequestService: SseRequestService,
                 private notificationService: NotificationService) {
         this.eventSources = new Map<string, EventSource>();
     }
@@ -61,20 +62,12 @@ export class ServerSendEventService {
 
     completeSSENotificationConnection(username: string | null) {
         if ( username) {
-            this.requestService.completeNotificationSSE(username).pipe(take(1)).subscribe();
+            this.sseRequestService.completeNotificationSSE(username).pipe(take(1)).subscribe();
             this.eventSources.get('notifications')?.close();
         } else {
             console.log('Username is null');
         }
 
-    }
-
-    completeSSEPostUpdateConnection(postId: string | null) {
-        if ( postId) {
-            this.requestService.completePostUpdateSSE(postId).pipe(take(1)).subscribe();
-            this.eventSources.get('postUpdates')?.close()
-            console.log('check')
-        }
     }
 
     getNotifications(): Observable<UserNotificationModel[]> {
@@ -87,33 +80,5 @@ export class ServerSendEventService {
             );
         }
         return new Observable<UserNotificationModel[]>();
-    }
-
-    getPostUpdateFromServer(postId: string): Observable<PostViewModel> {
-        let username = localStorage.getItem('username');
-        if (username) {
-            this.eventSources.set('postUpdates', new EventSource(`${this.baseUrl}/sse/posts/updates?postId=${postId}`));
-            return new Observable<PostViewModel>(observer => {
-                const postUpdateEventSource = this.eventSources.get('postUpdates');
-                if (postUpdateEventSource) {
-                    postUpdateEventSource.onmessage = event => {
-                        const post = JSON.parse(event.data) as PostViewModel;
-                        observer.next(post);
-                    };
-                    postUpdateEventSource.onerror = error => {
-                        observer.error(error);
-                    };
-                    return () => {
-                        postUpdateEventSource.close();
-                    };
-                } else {
-                    this.notificationService.sendErrorNotificationToSlack(
-                        'connection related to notifications SSE has been lost', 'In ServerSendEventService', new Date());
-                    observer.complete();
-                }
-                return;
-            });
-        }
-        return new Observable<PostViewModel>();
     }
 }

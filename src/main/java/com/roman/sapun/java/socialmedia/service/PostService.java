@@ -5,6 +5,7 @@ import com.roman.sapun.java.socialmedia.dto.page.PostPageDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
 import com.roman.sapun.java.socialmedia.exception.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,7 +20,7 @@ public interface PostService {
      * @param authentication The authentication object for the current user.
      * @return The DTO representing the created post.
      */
-    ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication) throws UserNotFoundException, InvalidImageNumberException;
+    ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication, HttpServletRequest request) throws UserNotFoundException, InvalidImageNumberException, UserStatisticsNotFoundException;
 
     /**
      * Updates an existing post with the provided data, images, and authentication.
@@ -75,6 +76,14 @@ public interface PostService {
      */
     PostPageDTO getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException;
 
+    PostPageDTO getSavedPosts(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException;
+
+    ResponsePostDTO removePostFromSavedList(String identifier, Authentication authentication) throws PostNotFoundException, UserNotFoundException;
+
+    ResponsePostDTO addPostToSavedList(String identifier, Authentication authentication) throws PostNotFoundException, UserNotFoundException;
+
+    boolean isPostExistInSavedList(String identifier, Authentication authentication) throws PostNotFoundException, UserNotFoundException;
+
     /**
      * Retrieves a paginated list of posts created by users that the authenticated user is following.
      *
@@ -104,7 +113,7 @@ public interface PostService {
      * @param identifier The identifier of the post.
      * @return The DTO representing the post.
      */
-    ResponsePostDTO getPostById(String identifier) throws PostNotFoundException, UserNotFoundException;
+    ResponsePostDTO getPostById(String identifier, HttpServletRequest request, Authentication authentication) throws PostNotFoundException, UserNotFoundException, UserStatisticsNotFoundException;
 
     ResponsePostDTO deletePostByIdentifier(String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException;
 }

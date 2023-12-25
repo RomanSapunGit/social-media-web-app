@@ -55,6 +55,11 @@ import {UsersComponent} from './component/data/users/users.component';
 import { FilterComponent } from './component/dialog/filter/filter.component';
 import { AboutPageComponent } from './component/about-page/about-page.component';
 import { ScrollToTopComponent } from './component/scroll-to-top/scroll-to-top.component';
+import { SavedEntitiesComponent } from './component/dialog/saved-entities/saved-entities.component';
+import {MatIconModule} from "@angular/material/icon";
+import { ConsentComponent } from './component/consent/consent.component';
+import { SettingsComponent } from './component/settings/settings.component';
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 export function httpTranslateLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, './assets/translations/', '.json');
@@ -90,6 +95,9 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
         FilterComponent,
         AboutPageComponent,
         ScrollToTopComponent,
+        SavedEntitiesComponent,
+        ConsentComponent,
+        SettingsComponent,
     ],
     imports: [
         BrowserModule,
@@ -123,6 +131,8 @@ export function httpTranslateLoaderFactory(http: HttpClient) {
             }
         }),
         NgOptimizedImage,
+        MatIconModule,
+        MatProgressSpinnerModule,
     ],
     providers: [
         {
