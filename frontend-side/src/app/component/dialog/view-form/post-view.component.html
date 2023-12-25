@@ -6,6 +6,12 @@
 </div>
 
 <div *ngIf="!isMobileView && (postView | async) as post">
+    <div *ngIf="!(isSavedPost | async)">
+        <mat-icon (click)="addPostToSavedList(post.identifier)">star_border</mat-icon>
+    </div>
+    <div *ngIf="(isSavedPost | async)">
+        <mat-icon (click)="deletePostFromSavedList(post.identifier)">star</mat-icon>
+    </div>
     <div class="social-post">
         <div class="post-header-row">
             <h2>{{ post.title }}</h2>
