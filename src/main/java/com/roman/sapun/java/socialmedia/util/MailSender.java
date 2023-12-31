@@ -14,5 +14,7 @@ public interface MailSender {
       * @throws MessagingException           If an error occurs while sending the email.
       * @throws UnsupportedEncodingException If the email subject encoding is not supported.
       */
-     void sendEmail(String email, UriComponents uri) throws MessagingException, UnsupportedEncodingException;
+     void sendResetPassEmail(String email, UriComponents uri) throws MessagingException, UnsupportedEncodingException;
+
+     void sendEmail(String email, String text, String subject) throws MessagingException, UnsupportedEncodingException;
 }

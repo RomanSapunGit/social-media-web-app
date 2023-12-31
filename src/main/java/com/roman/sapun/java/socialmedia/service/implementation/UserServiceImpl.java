@@ -133,6 +133,14 @@ public class UserServiceImpl implements UserService, SubscriptionService {
     }
 
     @Override
+    public ResponseUserDTO getCurrentUser(Authentication authentication) throws UserNotFoundException {
+        var user = findUserByAuth(authentication);
+        return new ResponseUserDTO(user, imageService.getImageByUser(user.getUsername()));
+    }
+
+
+
+    @Override
     public UserEntity findUserByAuth(Authentication authentication) throws UserNotFoundException {
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
             return userRepository.findByUsername(userDetails.getUsername()).orElseThrow(UserNotFoundException::new);
