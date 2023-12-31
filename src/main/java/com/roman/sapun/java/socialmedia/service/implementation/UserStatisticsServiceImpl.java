@@ -66,7 +66,8 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
     public void saveOnlineTime(String username, long onlineTime) {
         var userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
-
+        var consent = userEntity.getUserStatistics().getConsent() == null ? "false" : userEntity.getUserStatistics().getConsent();
+        if(consent.equals("false")) return;
         var userStatistics = userEntity.getUserStatistics();
 
         userStatistics.getOnlineTimesDuration().add(onlineTime);
@@ -75,29 +76,30 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
 
     @Override
     public void saveCreatedPostsStatistic(String username, Set<String> createdPosts) {
-        var userEntity = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
-        var userStatistics = userEntity.getUserStatistics();
+        var userStatistics = getUserStatistic(username);
+        if(userStatistics == null) return;
         postRepository.findAllByIdentifierIn(createdPosts.stream().toList())
                 .forEach(userStatistics.getCreatedPosts()::add);
-        userRepository.save(userEntity);
+        userRepository.save(userStatistics.getUser());
     }
 
     @Override
     public void saveCreatedCommentsStatistic(String username, Set<String> createdComments) {
-        var userEntity = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
-        var userStatistics = userEntity.getUserStatistics();
+        var userStatistics = getUserStatistic(username);
+        if(userStatistics == null) return;
         commentRepository.findAllByIdentifierIn(createdComments.stream().toList())
                 .forEach(userStatistics.getCreatedComments()::add);
-        userRepository.save(userEntity);
+        userRepository.save(userStatistics.getUser());
     }
 
     @Override
-    public void saveViewedPostsStatistic(String username, Set<String> viewedPosts) throws UserStatisticsNotFoundException {
-        var userEntity = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
-        var userStatistics = getUserStatistic(userEntity);
-        postRepository.findAllByIdentifierIn(viewedPosts.stream().toList())
+    public void saveViewedPostsStatistic(String username, Set<String> viewedPosts) {
+        var userStatistics = getUserStatistic(username);
+        if(userStatistics == null) return;
+        postRepository.findAllByIdentifierIn(viewedPosts.stream().toList()).stream()
+                .filter(post -> !userStatistics.getViewedPosts().contains(post))
                 .forEach(userStatistics.getViewedPosts()::add);
-        userRepository.save(userEntity);
+        userRepository.save(userStatistics.getUser());
     }
 
     @SuppressWarnings("unchecked")
@@ -160,22 +162,29 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
         session.setAttribute("viewedPostsId", viewedPosts);
     }
 
+    private UserStatisticsEntity getUserStatistic(String username) {
+        var userEntity = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
+        var consent = userEntity.getUserStatistics().getConsent() == null ? "false" : userEntity.getUserStatistics().getConsent();
+        if(consent.equals("false")) return null;
+        return userEntity.getUserStatistics();
+    }
+
     private UserStatisticsEntity getUserStatistic(UserEntity user) throws UserStatisticsNotFoundException {
         var userStatistics = user.getUserStatistics();
-
         if (userStatistics == null) {
             throw new UserStatisticsNotFoundException("User statistics not found for user: " + user.getUsername());
         }
         return userStatistics;
     }
 
-    @Scheduled(cron = "0 0/10 * * * *")
+    @Scheduled(cron = "0 0 0 * * MON")
     @Async
     @Transactional
     public void clearUserStatistics() {
         var statisticsList = userStatisticsRepository.findAll();
 
-        statisticsList.forEach(statistic -> {
+        statisticsList.stream().filter(statistic -> statistic.getConsent().equals("true"))
+                .forEach(statistic -> {
             statistic.getOnlineTimesDuration().clear();
             statistic.getCreatedPosts().clear();
             statistic.getCreatedComments().clear();

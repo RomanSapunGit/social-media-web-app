@@ -12,8 +12,7 @@ import org.springframework.security.messaging.access.intercept.MessageMatcherDel
 public class WebSocketSecurityConfig {
     @Bean
     AuthorizationManager<Message<?>> authorizationManager(MessageMatcherDelegatingAuthorizationManager.Builder messages) {
-        messages
-                .simpDestMatchers("/topic/**").hasRole("USER")
+        messages.simpDestMatchers("/topic/**").hasRole("USER")
                 .anyMessage().authenticated();
         return messages.build();
     }

@@ -15,6 +15,7 @@ public class UserStatisticsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String consent;
 
     @OneToOne
     @JoinColumn(name = "user_id")
