@@ -3,12 +3,12 @@ name: Deploy to ECR
 on:
 
   push:
-    branches: [ master ]
+    branches: [ "main" ]
 
 env:
   ECR_REPOSITORY: flask-app
   EKS_CLUSTER_NAME: Kubernetes-demo
-  AWS_REGION: us-east-1
+  AWS_REGION: eu-north-1
 
 jobs:
 
@@ -40,8 +40,7 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: socialmedia-app
-          IMAGE_TAG: develop
+          IMAGE_TAG: ${{ steps.commit.outputs.short }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
