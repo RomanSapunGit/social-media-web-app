@@ -19,21 +19,14 @@ import java.time.ZonedDateTime;
 
 @RestControllerAdvice
 public class HandlerController {
-    /**
-     * Handles common exceptions and returns an appropriate response entity.
-     *
-     * @param ex The exception to handle.
-     * @return The response entity with the exception details.
-     */
-    @ExceptionHandler(value = {DataIntegrityViolationException.class, Exception.class})
-    protected ResponseEntity<ResponseExceptionDTO> handleCommonException(Exception ex) {
+    @ExceptionHandler(value = {Exception.class})
+    protected ResponseEntity<ResponseExceptionDTO> handleException(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ResponseExceptionDTO(ex.getClass().getName(),
                         Timestamp.from(ZonedDateTime.now().toInstant()),
                         ex.getMessage()));
     }
-
     /**
      * Handles validation exceptions and returns an appropriate response entity.
      *

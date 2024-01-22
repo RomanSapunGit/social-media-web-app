@@ -47,6 +47,7 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
         return idToken.getPayload().getSubject();
     }
 
+
     @Override
     public void synchronizeGoogleUserWithDatabase(UserEntity user, GoogleIdToken idToken) {
         user.setEmail(getEmailFromGoogleToken(idToken));

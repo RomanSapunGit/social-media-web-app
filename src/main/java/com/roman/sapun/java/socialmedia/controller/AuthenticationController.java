@@ -47,6 +47,7 @@ public class AuthenticationController {
      * @throws GeneralSecurityException If a general security-related exception occurs.
      */
     @ResponseStatus(HttpStatus.CREATED)
+    @Observed(name = "register.observed")
     @PostMapping()
     public RequestUserDTO registerUser(@ModelAttribute SignUpDTO signUpDto,
                                        @RequestPart("image") MultipartFile image,
@@ -123,10 +124,10 @@ public class AuthenticationController {
      * @param request  The HttpServletRequest object.
      * @param response The HttpServletResponse object.
      * @return The DTO representing the authenticated user.
-     * @throws UserNotFoundException     If the user is not found.
-     * @throws GeneralSecurityException  If a general security-related exception occurs.
+     * @throws UserNotFoundException    If the user is not found.
+     * @throws GeneralSecurityException If a general security-related exception occurs.
      * @throws IOException              If an I/O exception occurs.
-     * @throws InvalidValueException     If the provided token is invalid.
+     * @throws InvalidValueException    If the provided token is invalid.
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/google/login")

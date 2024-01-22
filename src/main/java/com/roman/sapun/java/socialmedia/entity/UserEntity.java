@@ -42,7 +42,7 @@ public class UserEntity {
     private LocalDateTime tokenCreationDate;
 
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = {@JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "role_id", nullable = false, referencedColumnName = "id"))
@@ -75,7 +75,7 @@ public class UserEntity {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
     private List<CommentEntity> comments;
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     private ImageEntity image;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)

@@ -8,10 +8,10 @@ import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
-import com.roman.sapun.java.socialmedia.service.ImageService;
 import com.roman.sapun.java.socialmedia.service.SubscriptionService;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import com.roman.sapun.java.socialmedia.util.TextExtractor;
+import com.roman.sapun.java.socialmedia.util.converter.ImageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -30,14 +30,15 @@ public class UserServiceImpl implements UserService, SubscriptionService {
     private final UserRepository userRepository;
     private final PageConverter pageConverter;
     private final TextExtractor textExtractor;
-    private final ImageService imageService;
+    private final ImageConverter imageConverter;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PageConverter pageConverter, ImageService imageService, TextExtractor textExtractor) {
+    public UserServiceImpl(UserRepository userRepository, PageConverter pageConverter,
+                           TextExtractor textExtractor, ImageConverter imageConverter) {
         this.userRepository = userRepository;
         this.pageConverter = pageConverter;
         this.textExtractor = textExtractor;
-        this.imageService = imageService;
+        this.imageConverter = imageConverter;
     }
 
     @Override
@@ -74,7 +75,7 @@ public class UserServiceImpl implements UserService, SubscriptionService {
         var user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         user.setNotBlocked("false");
         userRepository.save(user);
-        return new ResponseUserDTO(user, imageService.getImageByUser(user.getUsername()));
+        return new ResponseUserDTO(user, imageConverter.convertImageToDTO(user.getImage()));
     }
 
     @Override
@@ -82,7 +83,7 @@ public class UserServiceImpl implements UserService, SubscriptionService {
         var user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         user.setNotBlocked("true");
         userRepository.save(user);
-        return new ResponseUserDTO(user, imageService.getImageByUser(user.getUsername()));
+        return new ResponseUserDTO(user, imageConverter.convertImageToDTO(user.getImage()));
     }
 
     @Override
@@ -92,7 +93,7 @@ public class UserServiceImpl implements UserService, SubscriptionService {
         var userToFollow = userRepository.findByUsername(usernameAsValue).orElseThrow(UserNotFoundException::new);
         user.getFollowing().add(userToFollow);
         userRepository.save(user);
-        return new ResponseUserDTO(userToFollow, imageService.getImageByUser(userToFollow.getUsername()));
+        return new ResponseUserDTO(userToFollow, imageConverter.convertImageToDTO(userToFollow.getImage()));
     }
 
     @Override
@@ -129,20 +130,18 @@ public class UserServiceImpl implements UserService, SubscriptionService {
         var userToFollow = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         user.getFollowing().remove(userToFollow);
         userRepository.save(user);
-        return new ResponseUserDTO(userToFollow, imageService.getImageByUser(userToFollow.getUsername()));
+        return new ResponseUserDTO(userToFollow, imageConverter.convertImageToDTO(userToFollow.getImage()));
     }
 
     @Override
     public ResponseUserDTO getCurrentUser(Authentication authentication) throws UserNotFoundException {
         var user = findUserByAuth(authentication);
-        return new ResponseUserDTO(user, imageService.getImageByUser(user.getUsername()));
+        return new ResponseUserDTO(user, imageConverter.convertImageToDTO(user.getImage()));
     }
-
-
 
     @Override
     public UserEntity findUserByAuth(Authentication authentication) throws UserNotFoundException {
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
+        if ( authentication.getPrincipal() instanceof UserDetails userDetails) {
             return userRepository.findByUsername(userDetails.getUsername()).orElseThrow(UserNotFoundException::new);
         }
         throw new AuthenticationCredentialsNotFoundException("User not found");

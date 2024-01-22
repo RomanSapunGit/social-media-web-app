@@ -2,6 +2,7 @@ package com.roman.sapun.java.socialmedia.util.converter.implementation;
 
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
 import com.roman.sapun.java.socialmedia.service.ImageService;
+import com.roman.sapun.java.socialmedia.util.converter.ImageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
@@ -19,12 +20,12 @@ import java.util.Set;
 public class PostConverterImpl implements PostConverter {
 
     private final IdentifierGenerator identifierGenerator;
-    private final ImageService imageService;
+    private final ImageConverter imageConverter;
 
     @Autowired
-    public PostConverterImpl(IdentifierGenerator identifierGenerator, ImageService imageService) {
+    public PostConverterImpl(IdentifierGenerator identifierGenerator, ImageConverter imageConverter) {
         this.identifierGenerator = identifierGenerator;
-        this.imageService = imageService;
+        this.imageConverter = imageConverter;
     }
 
     @Override
@@ -43,8 +44,8 @@ public class PostConverterImpl implements PostConverter {
     @Override
     public ResponsePostDTO convertToResponsePostDTO(PostEntity post) {
             return new ResponsePostDTO(post,
-                    imageService.getImagesByPost(post),
-                    imageService.getImageByUser(post.getAuthor().getUsername()),
+                    imageConverter.convertImagesToResponseImageDTO(post.getImages()),
+                    imageConverter.convertImageToDTO(post.getAuthor().getImage()),
                     post.getUpvotes().size(),
                     post.getDownvotes().size());
     }

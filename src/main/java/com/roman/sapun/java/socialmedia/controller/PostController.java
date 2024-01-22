@@ -10,6 +10,7 @@ import com.roman.sapun.java.socialmedia.exception.*;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import com.roman.sapun.java.socialmedia.service.VoteService;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @Timed
@@ -44,10 +46,11 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
+    @Observed(name = "create.post.observed")
     public ResponsePostDTO createPost(@ModelAttribute RequestPostDTO requestPostDTO,
                                       @RequestPart("images") List<MultipartFile> images, Authentication authentication,
                                       HttpServletRequest request)
-            throws UserNotFoundException, InvalidImageNumberException, UserStatisticsNotFoundException {
+            throws Exception {
         return postService.createPost(requestPostDTO, images, authentication, request);
     }
 
@@ -100,7 +103,7 @@ public class PostController {
     public PostPageDTO getPostsByTag(@PathVariable String tag, @RequestParam int page,
                                      @RequestParam(defaultValue = "5") int pageSize,
                                      @RequestParam(defaultValue = "creationTime") String sortBy
-    ) throws InvalidPageSizeException, TagNotFoundException {
+    ) throws InvalidPageSizeException, TagNotFoundException, ExecutionException, InterruptedException {
         return postService.getPostsByTag(tag, page, pageSize, sortBy);
     }
 

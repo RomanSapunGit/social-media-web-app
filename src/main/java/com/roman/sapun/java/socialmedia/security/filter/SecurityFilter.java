@@ -1,6 +1,7 @@
 package com.roman.sapun.java.socialmedia.security.filter;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -21,16 +22,20 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityFilter {
 
+    @Value("${TEST_ENVIRONMENT:false}")
+    private boolean testEnvironment;
+
     @Order(1)
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors()
                 .and()
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api/v1/account/**", "/sse/**", "/api/v1/notifications/slack/**", "/actuator/prometheus").permitAll()
+                        .requestMatchers("/api/v1/account/**", "/sse/**", "/api/v1/notifications/slack/**",
+                                "/actuator/metrics", "/actuator", "/actuator/prometheus").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/csrf/token").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().hasAnyRole("USER", "ADMIN"))
+                        .anyRequest().permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1))
@@ -38,6 +43,9 @@ public class SecurityFilter {
                 .authenticationEntryPoint(customAuthenticationEntryPoint())
                 .and()
                 .csrf(Customizer.withDefaults());
+        if(testEnvironment) {
+            http.csrf().disable();
+        }
         return http.build();
     }
 

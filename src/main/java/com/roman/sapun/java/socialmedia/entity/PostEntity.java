@@ -34,25 +34,25 @@ public class PostEntity {
     @JoinColumn(name = "author", nullable = false)
     private UserEntity author;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "post_tags",
             joinColumns = {@JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "tag_id", nullable = false, referencedColumnName = "id"))
     private Set<TagEntity> tags;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "post", cascade = CascadeType.ALL)
     private List<CommentEntity> comments;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY,  mappedBy = "post", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<ImageEntity> images;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "post_upvotes",
             joinColumns = {@JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"))
     private Set<UserEntity> upvotes;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "post_downvotes",
             joinColumns = {@JoinColumn(name = "post_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id"))
@@ -62,6 +62,6 @@ public class PostEntity {
     @JoinColumn(name = "statistics_id", nullable = false)
     private UserStatisticsEntity userStatistics;
 
-    @ManyToMany(mappedBy = "savedPosts")
+    @ManyToMany(mappedBy = "savedPosts", fetch = FetchType.LAZY)
     private Set<UserEntity> users;
 }

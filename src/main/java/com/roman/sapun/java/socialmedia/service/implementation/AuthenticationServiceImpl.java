@@ -33,6 +33,7 @@ import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -77,13 +78,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public RequestUserDTO register(SignUpDTO signUpDto, MultipartFile image, HttpServletRequest request, HttpServletResponse response) throws IOException, InvalidValueException, UserNotFoundException, GeneralSecurityException {
         var createdUser = userConverter.convertToUserEntity(signUpDto, new UserEntity());
-        if(signUpDto.googleIdentifier() != null) {
-           var subToken = tokenService.extractSubFromIdToken(signUpDto.googleIdentifier());
-           createdUser.setGoogleToken(subToken);
+        if (signUpDto.googleIdentifier() != null) {
+            var subToken = tokenService.extractSubFromIdToken(signUpDto.googleIdentifier());
+            createdUser.setGoogleToken(subToken);
         }
         var role = roleRepository.findByName("ROLE_USER").orElseThrow(() -> new InvalidValueException("Role not found"));
         createdUser.setRoles(Collections.singleton(role));
-        var userStatistics =  userStatisticsService.createUserStatistics(createdUser);
+        var userStatistics = userStatisticsService.createUserStatistics(createdUser);
         createdUser.setUserStatistics(userStatistics);
         userRepository.save(createdUser);
         imageService.uploadImageForUser(image, signUpDto.username());
@@ -124,24 +125,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return false;
     }
 
-    private void authenticateUser(String username, HttpServletRequest request, HttpServletResponse response) {
-        var userDetails = userDetailsService.loadUserByUsername(username);
-        var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-        var context = SecurityContextHolder.getContext();
-        context.setAuthentication(authentication);
-        securityContextRepository.saveContext(context, request, response);
-
-        var session = request.getSession();
-        session.setAttribute("username", username);
-        session.setAttribute("loginTime", System.currentTimeMillis());
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public void logout(HttpServletRequest request) throws UserStatisticsNotFoundException {
         HttpSession session = request.getSession(false);
-        if (session != null  ) {
+        if (session != null) {
             long loginTime = (long) session.getAttribute("loginTime");
             long onlineTime = System.currentTimeMillis() - loginTime;
             Set<String> createdPostsId = session.getAttribute("createdPostsId") == null ?
@@ -198,6 +186,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var currentDateTime = LocalDateTime.now();
         var difference = Duration.between(tokenCreationDate, currentDateTime);
         return difference.toHours() >= TOKEN_EXPIRATION_HOURS;
+    }
+
+    private void authenticateUser(String username, HttpServletRequest request, HttpServletResponse response) {
+        var userDetails = userDetailsService.loadUserByUsername(username);
+        var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        var context = SecurityContextHolder.getContext();
+        context.setAuthentication(authentication);
+        securityContextRepository.saveContext(context, request, response);
+
+        var session = request.getSession();
+        session.setAttribute("username", username);
+        session.setAttribute("loginTime", System.currentTimeMillis());
     }
 
     private String setTokensByEmail(String email) throws UserNotFoundException {

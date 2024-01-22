@@ -2,7 +2,6 @@ package com.roman.sapun.java.socialmedia.service;
 
 import com.roman.sapun.java.socialmedia.dto.FileDTO;
 import com.roman.sapun.java.socialmedia.dto.image.ResponseImageDTO;
-import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.InvalidImageNumberException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
@@ -14,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public interface ImageService {
 
@@ -37,17 +37,12 @@ public interface ImageService {
      * @return list of images.
      */
 
-    List<ResponseImageDTO> uploadImagesForPost(List<MultipartFile> images, String postId, Authentication authentication) throws InvalidImageNumberException;
+    CompletableFuture<List<ResponseImageDTO>> uploadImagesForPost(List<MultipartFile> images, String postId, Authentication authentication) throws InvalidImageNumberException;
+
+    FileDTO getImageByUsername(String username) throws UserNotFoundException;
 
     List<ResponseImageDTO> getImagesByPost(String postId) throws PostNotFoundException;
 
-    /**
-     * <p>Retrieve images by specific post.</p>
-     *
-     * @param post we want to retrieve images from.
-     * @return list of images.
-     */
-    List<ResponseImageDTO> getImagesByPost(PostEntity post);
 
     /**
      * <p>Get image by User.</p>
@@ -57,13 +52,7 @@ public interface ImageService {
 
     FileDTO getImageByUser(Authentication authentication) throws UserNotFoundException;
 
+
     Map<String, FileDTO> getImagesByUsers(Set<UserEntity> userEntities) throws UserNotFoundException;
 
-
-    /**
-     * <p>Get image by User's username.</p>
-     * @param username User's username.
-     * @return image.
-     */
-    FileDTO getImageByUser(String username);
 }

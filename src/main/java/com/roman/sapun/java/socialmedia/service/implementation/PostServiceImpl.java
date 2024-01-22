@@ -7,6 +7,7 @@ import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
+import com.roman.sapun.java.socialmedia.entity.UserStatisticsEntity;
 import com.roman.sapun.java.socialmedia.exception.*;
 import com.roman.sapun.java.socialmedia.repository.PostRepository;
 import com.roman.sapun.java.socialmedia.repository.TagRepository;
@@ -18,6 +19,7 @@ import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
 import io.micrometer.observation.annotation.Observed;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import org.dataloader.BatchLoader;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 
 @Service
@@ -64,22 +68,24 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images,
-                                      Authentication authentication, HttpServletRequest request) throws UserNotFoundException, InvalidImageNumberException, UserStatisticsNotFoundException {
+                                      Authentication authentication, HttpServletRequest request) throws Exception {
 
         Set<TagEntity> existingTags = tagService.getExistingTagsFromText(requestPostDTO.description());
         Set<TagEntity> nonExistingTags = tagService.saveNonExistingTagsFromText(requestPostDTO.description());
         existingTags.addAll(nonExistingTags);
         var postOwner = userService.findUserByAuth(authentication);
         var postEntity = postConverter.convertToPostEntity(requestPostDTO, existingTags, postOwner, new PostEntity(), new HashSet<>());
+        var statistics = postOwner.getUserStatistics();
         postEntity.setUserStatistics(postOwner.getUserStatistics());
         postRepository.save(postEntity);
         var consent = postEntity.getAuthor().getUserStatistics().getConsent() == null ? "false" : postEntity.getAuthor().getUserStatistics().getConsent();
-        if(consent.equals("true")) {
+        if (consent.equals("true")) {
             userStatisticsService.addCreatedPostToStatistic(postOwner, postEntity, request);
         }
         if (images != null) {
             var dtoImages = imageService.uploadImagesForPost(images, postEntity.getIdentifier(), authentication);
-            return new ResponsePostDTO(postEntity, dtoImages, imageService.getImageByUser(postEntity.getAuthor().getUsername()), 0, 0);
+            return new ResponsePostDTO(postEntity, dtoImages.join(), imageConverter.convertImageToDTO(postEntity.getAuthor().getImage()),
+                    0, 0);
         }
         return postConverter.convertToResponsePostDTO(postEntity);
     }
@@ -87,7 +93,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public ResponsePostDTO updatePost(String identifier, String title, String description, List<RequestImageDTO> images,
                                       List<RequestImageDTO> newImages,
-                                      Authentication authentication) throws PostNotFoundException, UserNotFoundException, InvalidImageNumberException {
+                                      Authentication authentication) throws PostNotFoundException, UserNotFoundException {
         var postOwner = userService.findUserByAuth(authentication);
         var postEntity = postRepository.findByIdentifier(identifier).orElseThrow(PostNotFoundException::new);
         if (!(postEntity.getAuthor().equals(postOwner))) {
@@ -114,7 +120,6 @@ public class PostServiceImpl implements PostService {
     @Observed(name = "get.posts.time")
     @Override
     public PostPageDTO getPosts(int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException {
-        validatePageSize(pageSize);
         var pageRequest = setPageable(pageNumber, pageSize, sortByValue);
         var posts = postRepository.findAll(pageRequest);
         return pageConverter.convertPageToPostPageDTO(posts);
@@ -122,7 +127,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostPageDTO getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException {
-        validatePageSize(pageSize);
         var pageRequest = setPageable(page, pageSize, sortByValue);
         var tag = tagRepository.findByName(tagName).orElseThrow(TagNotFoundException::new);
         var posts = postRepository.getPostEntitiesByTagsContaining(tag, pageRequest);
@@ -131,7 +135,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostPageDTO getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException {
-        validatePageSize(pageSize);
         var pageRequest = setPageable(page, pageSize, sortByValue);
         var userEntity = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
 
@@ -141,7 +144,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostPageDTO getSavedPosts(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException {
-        validatePageSize(pageSize);
         var user = userService.findUserByAuth(authentication);
         var savedPosts = user.getSavedPosts();
 
@@ -181,7 +183,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostPageDTO getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException {
-        validatePageSize(pageSize);
         var user = userService.findUserByAuth(authentication);
         var pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("creationTime").descending());
         var followedUsers = user.getFollowing();
@@ -192,7 +193,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostPageDTO findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException {
-        validatePageSize(pageSize);
         var pageRequest = setPageable(pageNumber, pageSize, sortByValue);
         var matchedPosts = postRepository.findPostEntitiesByTitleContaining(title, pageRequest);
         return pageConverter.convertPageToPostPageDTO(matchedPosts);
@@ -203,7 +203,7 @@ public class PostServiceImpl implements PostService {
         var post = postRepository.getPostEntityByIdentifier(identifier).orElseThrow(PostNotFoundException::new);
         var viewer = userService.findUserByAuth(authentication);
         var consent = viewer.getUserStatistics().getConsent() == null ? "false" : viewer.getUserStatistics().getConsent();
-        if(consent.equals("true")) {
+        if (consent.equals("true")) {
             userStatisticsService.addViewedPostToStatistic(viewer, post, request);
         }
         return postConverter.convertToResponsePostDTO(post);

@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public interface PostService {
     /**
@@ -20,7 +21,7 @@ public interface PostService {
      * @param authentication The authentication object for the current user.
      * @return The DTO representing the created post.
      */
-    ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication, HttpServletRequest request) throws UserNotFoundException, InvalidImageNumberException, UserStatisticsNotFoundException;
+    ResponsePostDTO createPost(RequestPostDTO requestPostDTO, List<MultipartFile> images, Authentication authentication, HttpServletRequest request) throws Exception;
 
     /**
      * Updates an existing post with the provided data, images, and authentication.
@@ -63,7 +64,7 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    PostPageDTO getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException;
+    PostPageDTO getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException, ExecutionException, InterruptedException;
 
     /**
      * Retrieves a paginated list of posts created by a specific user.

@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 services:
   account_app:
     image: romannnn/social-media:backend
@@ -17,6 +17,7 @@ services:
       - FRONTEND_URL
       - SLACK_WEBHOOK_URL
       - LIBRETRANSLATE_URL
+      - TEST_ENVIRONMENT
     ports:
       - "8080:8080"
     depends_on:
@@ -26,7 +27,7 @@ services:
     image: romannnn/social-media:frontend
     container_name: frontendApp
     build:
-      context: frontend-side
+      context: D:\social-media-web-app-frontend/frontend-side
     ports:
       - "4200:80"
     depends_on:

@@ -13,10 +13,10 @@ import com.roman.sapun.java.socialmedia.repository.CommentRepository;
 import com.roman.sapun.java.socialmedia.repository.PostRepository;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.CommentService;
-import com.roman.sapun.java.socialmedia.service.ImageService;
 import com.roman.sapun.java.socialmedia.service.UserService;
 import com.roman.sapun.java.socialmedia.service.UserStatisticsService;
 import com.roman.sapun.java.socialmedia.util.converter.CommentConverter;
+import com.roman.sapun.java.socialmedia.util.converter.ImageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,24 +38,24 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final PageConverter pageConverter;
     private final ValueConfig valueConfig;
-    private final ImageService imageService;
     private final UserRepository userRepository;
     private final UserStatisticsService userStatisticsService;
+    private final ImageConverter imageConverter;
 
     @Autowired
     public CommentServiceImpl(CommentRepository commentRepository, CommentConverter commentConverter,
                               UserService userService, PostRepository postRepository, PageConverter pageConverter,
-                              ValueConfig valueConfig, ImageService imageService, UserRepository userRepository,
-                              UserStatisticsService userStatisticsService) {
+                              ValueConfig valueConfig, UserRepository userRepository,
+                              UserStatisticsService userStatisticsService, ImageConverter imageConverter) {
         this.commentRepository = commentRepository;
         this.userService = userService;
         this.commentConverter = commentConverter;
         this.postRepository = postRepository;
         this.pageConverter = pageConverter;
         this.valueConfig = valueConfig;
-        this.imageService = imageService;
         this.userRepository = userRepository;
         this.userStatisticsService = userStatisticsService;
+        this.imageConverter = imageConverter;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class CommentServiceImpl implements CommentService {
         if(consent.equals("true")) {
             userStatisticsService.addCreatedCommentToStatistic(commentOwner, commentEntity, request);
         }
-        return new CommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
+        return new CommentDTO(commentEntity, imageConverter.convertImageToDTO(commentEntity.getAuthor().getImage()));
     }
 
     @Override
@@ -88,7 +88,7 @@ public class CommentServiceImpl implements CommentService {
             throw new CommentNotFoundException();
         }
         commentRepository.delete(commentEntity);
-        return new ResponseCommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
+        return new ResponseCommentDTO(commentEntity, imageConverter.convertImageToDTO(commentEntity.getAuthor().getImage()));
     }
 
     @Override
@@ -103,7 +103,7 @@ public class CommentServiceImpl implements CommentService {
         commentEntity.setDescription(requestCommentDTO.description() == null ?
                 commentEntity.getDescription() : requestCommentDTO.description());
         commentRepository.save(commentEntity);
-        return new ResponseCommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
+        return new ResponseCommentDTO(commentEntity, imageConverter.convertImageToDTO(commentEntity.getAuthor().getImage()));
     }
 
     @Override
@@ -132,7 +132,7 @@ public class CommentServiceImpl implements CommentService {
         var commentEntity = commentRepository.findByIdentifier(identifier).orElseThrow(CommentNotFoundException::new);
         user.getSavedComments().remove(commentEntity);
         userRepository.save(user);
-        return new ResponseCommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
+        return new ResponseCommentDTO(commentEntity, imageConverter.convertImageToDTO(commentEntity.getAuthor().getImage()));
     }
 
     @Override
@@ -141,6 +141,6 @@ public class CommentServiceImpl implements CommentService {
         var commentEntity = commentRepository.findByIdentifier(identifier).orElseThrow(CommentNotFoundException::new);
         user.getSavedComments().add(commentEntity);
         userRepository.save(user);
-        return new ResponseCommentDTO(commentEntity, imageService.getImageByUser(commentEntity.getAuthor().getUsername()));
+        return new ResponseCommentDTO(commentEntity, imageConverter.convertImageToDTO(commentEntity.getAuthor().getImage()));
     }
 }

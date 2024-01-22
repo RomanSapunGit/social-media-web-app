@@ -182,3 +182,12 @@ INSERT IGNORE INTO roles (id, name)
 VALUES (1, 'ROLE_USER');
 INSERT IGNORE INTO roles (id, name)
 VALUES (2, 'ROLE_ADMIN');
+
+INSERT IGNORE INTO users(id, name, username, email)
+VALUES (1, 'Admin1', 'Admin1', 'admin@admin');
+INSERT IGNORE INTO user_roles (user_id, role_id)
+VALUES (1, 1);
+INSERT IGNORE INTO user_statistics (id, consent,user_id)
+VALUES (1,'true',1);
+INSERT IGNORE INTO images (id, identifier, name, type, image_data, user_id, post_id)
+VALUES (1, '1', '1', '1', '1', 1, null);

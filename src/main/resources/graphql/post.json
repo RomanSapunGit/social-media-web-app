@@ -1,0 +1,47 @@
+{
+  "data": {
+    "getPosts": [
+      {
+        "id": "1",
+        "identifier": "210332150731864",
+        "title": "title",
+        "description": "description",
+        "creationTime": "2024-01-09 18:47:28.0",
+        "tags": [],
+        "author": {
+          "image": {
+            "identifier": "1",
+            "name": "1",
+            "type": "1",
+            "imageData": "[B@405117ce"
+          },
+          "name": "Admin1",
+          "username": "Admin1",
+          "email": "admin@admin",
+          "notBlocked": "true"
+        },
+        "images": [
+          {
+            "identifier": "999515860509413",
+            "name": "filename.txt",
+            "type": "text/plain",
+            "imageData": "[B@1a9ae78f"
+          },
+          {
+            "identifier": "417604098913285",
+            "name": "filename.txt",
+            "type": "text/plain",
+            "imageData": "[B@34516406"
+          },
+          {
+            "identifier": "778962974164312",
+            "name": "filename.txt",
+            "type": "text/plain",
+            "imageData": "[B@205dbb33"
+          }
+        ],
+        "comments": []
+      }
+    ]
+  }
+}

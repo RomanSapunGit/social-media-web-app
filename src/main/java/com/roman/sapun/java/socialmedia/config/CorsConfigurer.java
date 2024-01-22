@@ -1,4 +1,4 @@
-package com.roman.sapun.java.socialmedia.security.config;
+package com.roman.sapun.java.socialmedia.config;
 
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import org.springframework.beans.factory.annotation.Autowired;

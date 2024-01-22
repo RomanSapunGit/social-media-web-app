@@ -16,7 +16,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
-@EnableAsync
 @EnableTransactionManagement
 public class UserStatisticsServiceImpl implements UserStatisticsService {
 
@@ -38,7 +36,7 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
     private final String EMAIL_MESSAGE_GREETING = "Hello, ";
     private final String EMAIL_SUBJECT = "Weekly user statistics";
     private final String EMAIL_TEXT = "\nYour statistics: created Posts: ";
-    private final String CREATED_COMMENTS =  "\ncreated Comments: ";
+    private final String CREATED_COMMENTS = "\ncreated Comments: ";
     private final String VIEWED_POSTS = "\nviewed Posts: ";
     private final int MAX_STATISTIC_LIST_SIZE = 25;
     private final MailSender mailSender;
@@ -62,46 +60,51 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
         return userStatistics;
     }
 
+    @Async
     @Override
     public void saveOnlineTime(String username, long onlineTime) {
         var userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
         var consent = userEntity.getUserStatistics().getConsent() == null ? "false" : userEntity.getUserStatistics().getConsent();
-        if(consent.equals("false")) return;
+        if (consent.equals("false")) return;
         var userStatistics = userEntity.getUserStatistics();
 
         userStatistics.getOnlineTimesDuration().add(onlineTime);
         userRepository.save(userEntity);
     }
 
+    @Async
     @Override
     public void saveCreatedPostsStatistic(String username, Set<String> createdPosts) {
         var userStatistics = getUserStatistic(username);
-        if(userStatistics == null) return;
+        if (userStatistics == null) return;
         postRepository.findAllByIdentifierIn(createdPosts.stream().toList())
                 .forEach(userStatistics.getCreatedPosts()::add);
         userRepository.save(userStatistics.getUser());
     }
 
+    @Async
     @Override
     public void saveCreatedCommentsStatistic(String username, Set<String> createdComments) {
         var userStatistics = getUserStatistic(username);
-        if(userStatistics == null) return;
+        if (userStatistics == null) return;
         commentRepository.findAllByIdentifierIn(createdComments.stream().toList())
                 .forEach(userStatistics.getCreatedComments()::add);
         userRepository.save(userStatistics.getUser());
     }
 
+    @Async
     @Override
     public void saveViewedPostsStatistic(String username, Set<String> viewedPosts) {
         var userStatistics = getUserStatistic(username);
-        if(userStatistics == null) return;
+        if (userStatistics == null) return;
         postRepository.findAllByIdentifierIn(viewedPosts.stream().toList()).stream()
                 .filter(post -> !userStatistics.getViewedPosts().contains(post))
                 .forEach(userStatistics.getViewedPosts()::add);
         userRepository.save(userStatistics.getUser());
     }
 
+    @Async
     @SuppressWarnings("unchecked")
     @Override
     public void addCreatedPostToStatistic(UserEntity user, PostEntity post, HttpServletRequest request) throws UserStatisticsNotFoundException {
@@ -122,6 +125,7 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
         session.setAttribute("createdPostsId", createdPostsId);
     }
 
+    @Async
     @SuppressWarnings("unchecked")
     @Override
     public void addCreatedCommentToStatistic(UserEntity user, CommentEntity comment, HttpServletRequest request) throws UserStatisticsNotFoundException {
@@ -142,6 +146,7 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
         session.setAttribute("createdCommentsId", createdCommentsId);
     }
 
+    @Async
     @SuppressWarnings("unchecked")
     @Override
     public void addViewedPostToStatistic(UserEntity user, PostEntity post, HttpServletRequest request) throws UserStatisticsNotFoundException {
@@ -165,7 +170,7 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
     private UserStatisticsEntity getUserStatistic(String username) {
         var userEntity = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
         var consent = userEntity.getUserStatistics().getConsent() == null ? "false" : userEntity.getUserStatistics().getConsent();
-        if(consent.equals("false")) return null;
+        if (consent.equals("false")) return null;
         return userEntity.getUserStatistics();
     }
 
@@ -185,11 +190,11 @@ public class UserStatisticsServiceImpl implements UserStatisticsService {
 
         statisticsList.stream().filter(statistic -> statistic.getConsent().equals("true"))
                 .forEach(statistic -> {
-            statistic.getOnlineTimesDuration().clear();
-            statistic.getCreatedPosts().clear();
-            statistic.getCreatedComments().clear();
-            statistic.getViewedPosts().clear();
-        });
+                    statistic.getOnlineTimesDuration().clear();
+                    statistic.getCreatedPosts().clear();
+                    statistic.getCreatedComments().clear();
+                    statistic.getViewedPosts().clear();
+                });
         userStatisticsRepository.saveAll(statisticsList);
     }
 

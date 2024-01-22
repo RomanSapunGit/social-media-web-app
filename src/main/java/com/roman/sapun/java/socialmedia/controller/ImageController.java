@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/image")
@@ -50,8 +51,8 @@ public class ImageController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}")
-    public List<ResponseImageDTO> uploadImagesForPost(@PathVariable("id") String postId,
-                                                      @RequestPart("image") List<MultipartFile> files, Authentication authentication) throws InvalidImageNumberException {
+    public CompletableFuture<List<ResponseImageDTO>> uploadImagesForPost(@PathVariable("id") String postId,
+                                                                         @RequestPart("image") List<MultipartFile> files, Authentication authentication) throws InvalidImageNumberException {
         return imageService.uploadImagesForPost(files, postId, authentication);
     }
 
@@ -76,8 +77,8 @@ public class ImageController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{username}")
-    public FileDTO getImageByUsername(@PathVariable("username") String username) {
-        return imageService.getImageByUser(username);
+    public FileDTO getImageByUsername(@PathVariable("username") String username) throws UserNotFoundException {
+        return imageService.getImageByUsername(username);
     }
 
     /**

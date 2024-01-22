@@ -1,6 +1,8 @@
 package com.roman.sapun.java.socialmedia.util.converter.implementation;
 
+import com.roman.sapun.java.socialmedia.dto.FileDTO;
 import com.roman.sapun.java.socialmedia.dto.image.RequestImageDTO;
+import com.roman.sapun.java.socialmedia.dto.image.ResponseImageDTO;
 import com.roman.sapun.java.socialmedia.entity.ImageEntity;
 import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.util.IdentifierGenerator;
@@ -29,6 +31,20 @@ public class ImageConverterImpl implements ImageConverter {
         return newImages.stream().map(image -> convertImageToEntity(image, post)).collect(Collectors.toCollection(ArrayList::new));
     }
 
+    @Override
+    public FileDTO convertImageToDTO(ImageEntity image) {
+        return new FileDTO(image, imageUtil.decompressImage(image.getImageData()));
+    }
+
+    @Override
+    public List<ResponseImageDTO> convertImagesToResponseImageDTO(List<ImageEntity> images) {
+        return images.stream().parallel()
+                .map(imageEntity -> new ResponseImageDTO(imageEntity.getIdentifier(), new FileDTO
+                        (imageEntity, imageUtil.decompressImage(imageEntity.getImageData()))))
+                .toList();
+    }
+
+
     private ImageEntity convertImageToEntity(RequestImageDTO imageDTO, PostEntity post) {
         var imageEntity = new ImageEntity();
         try {
@@ -42,4 +58,5 @@ public class ImageConverterImpl implements ImageConverter {
         imageEntity.setName(imageDTO.image().fileName());
         return imageEntity;
     }
+
 }
