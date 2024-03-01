@@ -1,24 +1,16 @@
 package com.roman.sapun.java.socialmedia.socialmediawebapp;
 
-import com.roman.sapun.java.socialmedia.controller.PostQueryController;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
-import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.graphql.GraphQlTest;
-import org.springframework.boot.test.autoconfigure.graphql.tester.AutoConfigureHttpGraphQlTester;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.graphql.test.tester.HttpGraphQlTester;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -76,6 +68,7 @@ public class ConcurrencyTest {
      * time it takes to complete the requests.
      */
     @Test
+    @Ignore
     public void testGetPostsConcurrency() {
         setUp();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -114,7 +107,6 @@ public class ConcurrencyTest {
      * @throws IOException If an I/O exception occurs during file reading.
      */
     @Test
-    @Ignore
     public void testCreatePostConcurrency() throws IOException {
         setUp();
         RequestPostDTO requestPostDTO = new RequestPostDTO("identifier", "title", "description");

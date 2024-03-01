@@ -22,10 +22,12 @@ public class ImageEntity {
     @Lob
     @Column(name = "image_data", length = 1000, nullable = false)
     private byte[] imageData;
+
     @ManyToOne
     @JoinColumn(name = "post_id")
     private PostEntity post;
-    @OneToOne
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private UserEntity user;
 }

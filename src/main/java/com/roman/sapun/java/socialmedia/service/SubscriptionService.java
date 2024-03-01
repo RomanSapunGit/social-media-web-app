@@ -24,7 +24,7 @@ public interface SubscriptionService {
      * @return A ValidatorDTO containing information about the following relationship:
      * - {@code valid}: Indicates whether the following relationship exists (true) or not (false).
      */
-    ValidatorDTO findFollowingByUsername(Authentication authentication, String username) throws UserNotFoundException;
+    boolean findFollowingByUsername(Authentication authentication, String username) throws UserNotFoundException;
 
     /**
      * Checks if the current user has any subscriptions (followings).

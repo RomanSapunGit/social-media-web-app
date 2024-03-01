@@ -1,8 +1,13 @@
 package com.roman.sapun.java.socialmedia.service;
 
 import com.roman.sapun.java.socialmedia.dto.page.TagPageDTO;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
+import org.springframework.data.domain.Page;
+import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface TagService {
@@ -12,7 +17,7 @@ public interface TagService {
      * @param page The page number to retrieve.
      * @return map containing 10 tags, overall number of comments, current comment page and overall number of pages.
      */ //TODO rewrite the documentation
-    TagPageDTO getTags(int page, int pageSize);
+    Page<TagEntity> getTags(int page, int pageSize);
 
 
 
@@ -24,7 +29,9 @@ public interface TagService {
      */
     Set<TagEntity> getExistingTagsFromText(String text);
 
-    TagPageDTO getExistingTagsFromText(String text, int pageSize, int page);
+    Page<TagEntity> getExistingTagsFromText(String text, int pageSize, int page);
+
+    TagPageDTO getExistingTagsByText(String text, int pageSize, int page);
 
     /**
      * Extracts non-existing tags from the given text and saves them in the database.
@@ -34,4 +41,5 @@ public interface TagService {
      */
     Set<TagEntity> saveNonExistingTagsFromText(String text);
 
+    Mono<Map<PostEntity, Set<TagEntity>>> getBatchedTags(List<PostEntity> posts);
 }

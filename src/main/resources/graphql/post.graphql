@@ -1,15 +1,13 @@
 query GetPosts {
- getPosts(page: 0, size: 20) {
-  id
+ getPosts(page: 0, size: 20, sortBy: "savedPosts") {
      identifier
      title
      description
   creationTime
   tags{
-    id
     name
   }
-  author{
+  postAuthor{
     image{
       identifier
       name
@@ -21,7 +19,7 @@ query GetPosts {
     email
     notBlocked
   }
-  images{
+  postImages{
     identifier
       name
       type
@@ -31,7 +29,7 @@ query GetPosts {
     title,
     description,
     creationTime
-    author{
+    commentAuthor{
       image{
       identifier
       name

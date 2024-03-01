@@ -17,7 +17,8 @@ public class UserStatisticsEntity {
     private Long id;
     private String consent;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
+    @MapsId
     @JoinColumn(name = "user_id")
     private UserEntity user;
 

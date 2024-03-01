@@ -12,6 +12,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -34,8 +35,7 @@ public class SecurityFilter {
                         .requestMatchers("/api/v1/account/**", "/sse/**", "/api/v1/notifications/slack/**",
                                 "/actuator/metrics", "/actuator", "/actuator/prometheus").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/csrf/token").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().permitAll())
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1))
@@ -44,8 +44,11 @@ public class SecurityFilter {
                 .and()
                 .csrf(Customizer.withDefaults());
         if(testEnvironment) {
-            http.csrf().disable();
+            http.authorizeHttpRequests().requestMatchers("/graphiql/**", "/graphql").permitAll()
+                    .and()
+                    .csrf(AbstractHttpConfigurer::disable);
         }
+        http.authorizeHttpRequests().anyRequest().authenticated();
         return http.build();
     }
 

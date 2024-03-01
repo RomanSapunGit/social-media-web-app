@@ -1,11 +1,12 @@
 package com.roman.sapun.java.socialmedia.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.roman.sapun.java.socialmedia.dto.VoteDTO;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
-import com.roman.sapun.java.socialmedia.dto.page.PostPageDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestUpdatePostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.exception.*;
 import com.roman.sapun.java.socialmedia.service.PostService;
 import com.roman.sapun.java.socialmedia.service.VoteService;
@@ -13,6 +14,7 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
@@ -20,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @Timed
@@ -73,56 +74,6 @@ public class PostController {
                 requestUpdatePostDTO.images(), requestUpdatePostDTO.newImages(), authentication);
     }
 
-    /**
-     * Retrieves a list of posts containing the specified text in their titles and specifying posts by sorting criteria.
-     *
-     * @param title    The text to search for in post titles.
-     * @param page     The page number of the results.
-     * @param pageSize The number of posts to display per page (default is 20).
-     * @param sortBy   The sorting criteria for the results (default is 'creationTime').
-     * @return A map containing posts, total post count, current page, and total pages.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/search/{title}")
-    public PostPageDTO getPostsByTextContaining(@PathVariable String title, @RequestParam int page,
-                                                @RequestParam(defaultValue = "20") int pageSize,
-                                                @RequestParam(defaultValue = "creationTime") String sortBy
-    ) throws InvalidPageSizeException {
-        return postService.findPostsByTextContaining(title, page, pageSize, sortBy);
-    }
-
-    /**
-     * Retrieves posts that are associated with the specified tag.
-     *
-     * @param tag  The tag to search for.
-     * @param page The page number of the results.
-     * @return map that contains 50 comments, overall number of comments, current comment page and overall number of pages.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/tag/{tag}")
-    public PostPageDTO getPostsByTag(@PathVariable String tag, @RequestParam int page,
-                                     @RequestParam(defaultValue = "5") int pageSize,
-                                     @RequestParam(defaultValue = "creationTime") String sortBy
-    ) throws InvalidPageSizeException, TagNotFoundException, ExecutionException, InterruptedException {
-        return postService.getPostsByTag(tag, page, pageSize, sortBy);
-    }
-
-    /**
-     * Retrieves posts with sorting criteria created by a specific user.
-     *
-     * @param username The username of the user.
-     * @param page     The page number of the results.
-     * @param pageSize The number of posts to display per page (default is 5).
-     * @param sortBy   The sorting criteria for the results (default is 'creationTime').
-     * @return A map containing posts created by the specified user on the requested page.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/author/{username}")
-    public PostPageDTO getPostsByUsername(@PathVariable String username, @RequestParam int page,
-                                          @RequestParam(defaultValue = "5") int pageSize,
-                                          @RequestParam(defaultValue = "creationTime") String sortBy) throws InvalidPageSizeException, UserNotFoundException {
-        return postService.getPostsByUsername(username, page, pageSize, sortBy);
-    }
 
     /**
      * Retrieves posts with sorting criteria followed by the authenticated user.
@@ -136,26 +87,12 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     @Timed(value = "posts.subscription", description = "Time taken to execute getPostsByUserFollowing")
     @GetMapping("/follower")
-    public PostPageDTO getPostsBySubscription(Authentication authentication, @RequestParam int page,
-                                              @RequestParam(defaultValue = "15") int pageSize,
-                                              @RequestParam(defaultValue = "creationTime") String sortBy) throws UserNotFoundException, InvalidPageSizeException {
+    public Page<PostEntity> getPostsBySubscription(Authentication authentication, @RequestParam int page,
+                                                   @RequestParam(defaultValue = "15") int pageSize,
+                                                   @RequestParam(defaultValue = "creationTime") String sortBy) throws UserNotFoundException, InvalidPageSizeException {
         return postService.getPostsByUserFollowing(authentication, page, pageSize, sortBy);
     }
 
-    /**
-     * Retrieves a paginated list of all posts with sorting criteria.
-     *
-     * @param page     The page number of the results.
-     * @param pageSize The number of posts to display per page (default is 15).
-     * @param sortBy   The sorting criteria for the results (default is 'creationTime').
-     * @return A map containing a paginated list of all posts for the specified page.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/search")
-    public PostPageDTO getPosts(@RequestParam int page, @RequestParam(defaultValue = "15") int pageSize,
-                                @RequestParam(defaultValue = "creationTime") String sortBy) throws InvalidPageSizeException {
-        return postService.getPosts(page, pageSize, sortBy);
-    }
 
     /**
      * Retrieves a specific post by its identifier.
@@ -184,24 +121,7 @@ public class PostController {
         return postService.deletePostByIdentifier(identifier, authentication);
     }
 
-    /**
-     * Retrieves saved posts for the authenticated user.
-     *
-     * @param authentication  The authentication object representing the current user.
-     * @param page            The page number for pagination.
-     * @param pageSize        The number of posts per page.
-     * @param sortBy          The field by which posts are sorted.
-     * @return A PostPageDTO containing saved posts, the overall number of posts, current page, and overall number of pages.
-     * @throws UserNotFoundException    If the user is not found.
-     * @throws InvalidPageSizeException If the page size is invalid.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/saved")
-    public PostPageDTO getSavedPosts(Authentication authentication, @RequestParam int page,
-                                     @RequestParam(defaultValue = "15") int pageSize,
-                                     @RequestParam(defaultValue = "creationTime") String sortBy) throws UserNotFoundException, InvalidPageSizeException {
-        return postService.getSavedPosts(authentication, page, pageSize, sortBy);
-    }
+
 
     /**
      * Adds a post to the saved list of the authenticated user.
@@ -256,7 +176,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/upvote")
-    public int upvotePost(@RequestBody String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException {
+    public List<VoteDTO> upvotePost(@RequestBody String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException {
         return voteService.addUpvote(identifier, authentication);
     }
 
@@ -269,7 +189,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/downvote")
-    public int downvotePost(@RequestBody @NonNull String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException {
+    public List<VoteDTO> downvotePost(@RequestBody @NonNull String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException {
         return voteService.addDownvote(identifier, authentication);
     }
 
@@ -282,7 +202,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/upvote/{identifier}")
-    public int removeUpvote(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
+    public List<VoteDTO> removeUpvote(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return voteService.removeUpvote(identifier, authentication);
     }
 
@@ -295,7 +215,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/downvote/{identifier}")
-    public int removeDownvote(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
+    public List<VoteDTO> removeDownvote(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return voteService.removeDownvote(identifier, authentication);
     }
 
@@ -308,7 +228,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/upvote/{identifier}")
-    public ValidatorDTO isPostUpvoted(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
+    public ValidatorDTO isPostUpVoted(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return voteService.isUpvoteMade(identifier, authentication);
     }
 
@@ -321,7 +241,7 @@ public class PostController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/downvote/{identifier}")
-    public ValidatorDTO isPostDownvoted(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
+    public ValidatorDTO isPostDownVoted(@PathVariable @NonNull String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException {
         return voteService.isDownvoteMade(identifier, authentication);
     }
 }

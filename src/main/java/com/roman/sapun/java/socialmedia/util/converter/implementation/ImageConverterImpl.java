@@ -48,14 +48,14 @@ public class ImageConverterImpl implements ImageConverter {
     private ImageEntity convertImageToEntity(RequestImageDTO imageDTO, PostEntity post) {
         var imageEntity = new ImageEntity();
         try {
-            imageEntity.setImageData(imageUtil.compressImage(imageDTO.image().fileData()));
+            imageEntity.setImageData(imageUtil.compressImage(imageDTO.image().imageData()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         imageEntity.setIdentifier(identifierGenerator.generateUniqueIdentifier());
         imageEntity.setPost(post);
-        imageEntity.setType(imageDTO.image().fileType());
-        imageEntity.setName(imageDTO.image().fileName());
+        imageEntity.setType(imageDTO.image().type());
+        imageEntity.setName(imageDTO.image().name());
         return imageEntity;
     }
 

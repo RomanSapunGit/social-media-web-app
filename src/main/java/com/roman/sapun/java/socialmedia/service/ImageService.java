@@ -2,12 +2,15 @@ package com.roman.sapun.java.socialmedia.service;
 
 import com.roman.sapun.java.socialmedia.dto.FileDTO;
 import com.roman.sapun.java.socialmedia.dto.image.ResponseImageDTO;
+import com.roman.sapun.java.socialmedia.entity.ImageEntity;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.InvalidImageNumberException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.List;
@@ -55,4 +58,5 @@ public interface ImageService {
 
     Map<String, FileDTO> getImagesByUsers(Set<UserEntity> userEntities) throws UserNotFoundException;
 
+    Mono<Map<PostEntity, List<ImageEntity>>> getBatchedImages(List<PostEntity> posts);
 }

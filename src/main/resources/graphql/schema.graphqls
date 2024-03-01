@@ -1,31 +1,40 @@
 type Query {
-    getPosts(page: Int, size: Int): [Post]
+    getPosts(page: Int, size: Int, sortBy: String): [Post]
     getRoles: [Role]
-    getPostById(id: ID): Post
+    isUpvoteMade(identifier: String): Boolean
+    isDownvoteMade(identifier: String): Boolean
+    isPostExistInSavedList(identifier: String): Boolean
+    findFollowingByUsername(username: String): Boolean
+    getPostById(id: String): Post
+    getComments(postId: String, pageNumber: Int): [Comment]
+    getUsers(page: Int, pageSize: Int): [User]
+    getTags(page: Int, pageSize: Int): [Tag]
+    getTagsByTitleContaining(page: Int, pageSize: Int, title: String): [Tag]
+    getUsersByUsernameContaining(page:Int, pageSize: Int, username: String): [User]
 }
+
+scalar Byte
+
 type Post {
-    id: ID!
     title: String!
     description: String!
     creationTime: String!
     identifier: String!
-    author: User!
-    tags: [Tag]!
-    comments: [Comment]!
-    images: [Image]
+    postAuthor: User
+    tags: [Tag]
+    comments: [Comment]
+    postImages: [Image]
     upvotes: [User]
     downvotes: [User]
     userStatistics: UserStatistics
 }
+
 type User {
-    id: ID!
     name: String
     username: String!
-    email: String!
-    password: String!
+    email: String
     notBlocked: String
     token: String
-    googleToken: String
     tokenCreationDate: String
     roles: [Role]
     following: [User]
@@ -33,39 +42,37 @@ type User {
     savedComments: [Comment]
     followers: [User]
     posts: [Post]
-    comments: [Comment]!
+    comments: [Comment]
     image: Image
     userStatistics: UserStatistics
     notifications: [Notification]
+
 }
+
 type Tag {
-    id: ID!
     name: String!
     posts: [Post]
 }
+
 type Comment {
-    id: ID!
     title: String!
     description: String!
     identifier: String!
     creationTime: String
-    author: User
+    commentAuthor: User
     post: Post
-    userStatistics: UserStatistics
-    users: [User]
 }
+
 type Image {
-    id: ID!
     identifier: String!
     name: String
     type: String
-    imageData: String
+    imageData: Byte
     post: Post
     user: User
 }
 
 type UserStatistics {
-    id: ID!
     consent: String
     user: User
     onlineTimesDuration: [Int]
@@ -73,14 +80,21 @@ type UserStatistics {
     createdComments: [Comment]
     viewedPosts: [Post]
 }
+
 type Notification {
-    id: ID!
     message: String!
     notificationCreationDate: String
     user: User
     post: Post
 }
+
 type Role {
-    id: ID!
     name: String!
+}
+
+type Page {
+    content: [Comment]
+    currentPage: Int
+    total: Int
+    totalPages: Int
 }

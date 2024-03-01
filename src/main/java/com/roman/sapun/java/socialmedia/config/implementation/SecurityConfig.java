@@ -1,4 +1,4 @@
-package com.roman.sapun.java.socialmedia.config;
+package com.roman.sapun.java.socialmedia.config.implementation;
 
 import com.google.api.client.json.gson.GsonFactory;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;

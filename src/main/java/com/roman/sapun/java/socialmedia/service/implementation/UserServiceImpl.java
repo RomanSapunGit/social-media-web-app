@@ -6,7 +6,9 @@ import com.roman.sapun.java.socialmedia.dto.page.UserPageDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ConsentDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
-import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
+import com.roman.sapun.java.socialmedia.entity.CommentEntity;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
+import com.roman.sapun.java.socialmedia.exception.*;
 import com.roman.sapun.java.socialmedia.repository.UserRepository;
 import com.roman.sapun.java.socialmedia.service.SubscriptionService;
 import com.roman.sapun.java.socialmedia.service.UserService;
@@ -14,15 +16,20 @@ import com.roman.sapun.java.socialmedia.util.TextExtractor;
 import com.roman.sapun.java.socialmedia.util.converter.ImageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -42,17 +49,24 @@ public class UserServiceImpl implements UserService, SubscriptionService {
     }
 
     @Override
-    public UserPageDTO getUsersByUsernameContaining(String username, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, sortByValue));
-        var userEntityPage = userRepository.getAllByUsernameContaining(username, pageable);
-        return pageConverter.convertPageToUserPageDTO(userEntityPage);
+    public Page<UserEntity> getUsersByUsernameContaining(String username, int pageSize, int page) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        if (username.startsWith("search")) {
+            username = username.substring(7);
+        }
+        return userRepository.getAllByUsernameContaining(username, pageable);
     }
 
     @Override
-    public UserPageDTO getUsers(int page, int pageSize) throws UserNotFoundException {
+    public UserPageDTO getUsersByUsernameContaining(String username, int page, int pageSize, String sortBy) throws UserNotFoundException {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        return pageConverter.convertPageToUserPageDTO(userRepository.getAllByUsernameContaining(username, pageable));
+    }
+
+    @Override
+    public Page<UserEntity> getUsers(int page, int pageSize) {
         var pageable = PageRequest.of(page, pageSize);
-        var users = userRepository.findAll(pageable);
-        return pageConverter.convertPageToUserPageDTO(users);
+        return userRepository.findAll(pageable);
     }
 
     @Override
@@ -98,7 +112,7 @@ public class UserServiceImpl implements UserService, SubscriptionService {
 
     @Override
     public ConsentDTO sendUserConsent(Authentication authentication, ConsentDTO consent) throws Exception {
-        if(consent.consent() == null) throw new Exception("Consent cannot be null");
+        if (consent.consent() == null) throw new Exception("Consent cannot be null");
         var user = findUserByAuth(authentication);
         user.getUserStatistics().setConsent(consent.consent());
         userRepository.save(user);
@@ -112,16 +126,28 @@ public class UserServiceImpl implements UserService, SubscriptionService {
     }
 
     @Override
-    public ValidatorDTO findFollowingByUsername(Authentication authentication, String username) throws UserNotFoundException {
+    public boolean findFollowingByUsername(Authentication authentication, String username) throws UserNotFoundException {
         var user = findUserByAuth(authentication);
-        return new ValidatorDTO(user.getFollowing().contains(userRepository.findByUsername(username)
-                .orElseThrow(UserNotFoundException::new)));
+        return user.getFollowing().contains(userRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new));
     }
 
     @Override
     public ValidatorDTO hasSubscriptions(Authentication authentication) throws UserNotFoundException {
         var user = findUserByAuth(authentication);
         return new ValidatorDTO(!user.getFollowing().isEmpty());
+    }
+
+    @Override
+    public Mono<Map<PostEntity, UserEntity>> getBatchedAuthorsForPosts(List<PostEntity> posts) {
+        System.out.println("batched authors for posts");
+        return Mono.just(posts.stream().collect(Collectors.toMap(post -> post, PostEntity::getAuthor)));
+    }
+
+    @Override
+    public Mono<Map<CommentEntity, UserEntity>> getBatchedAuthorsForComments(List<CommentEntity> commentEntities) {
+        System.out.println("batched authors for comments");
+        return Mono.just(commentEntities.stream().collect(Collectors.toMap(post -> post, CommentEntity::getAuthor)));
     }
 
     @Override
@@ -141,7 +167,7 @@ public class UserServiceImpl implements UserService, SubscriptionService {
 
     @Override
     public UserEntity findUserByAuth(Authentication authentication) throws UserNotFoundException {
-        if ( authentication.getPrincipal() instanceof UserDetails userDetails) {
+        if (authentication.getPrincipal() instanceof UserDetails userDetails) {
             return userRepository.findByUsername(userDetails.getUsername()).orElseThrow(UserNotFoundException::new);
         }
         throw new AuthenticationCredentialsNotFoundException("User not found");

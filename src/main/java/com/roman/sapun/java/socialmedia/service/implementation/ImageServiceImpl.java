@@ -3,6 +3,7 @@ package com.roman.sapun.java.socialmedia.service.implementation;
 import com.roman.sapun.java.socialmedia.dto.FileDTO;
 import com.roman.sapun.java.socialmedia.dto.image.ResponseImageDTO;
 import com.roman.sapun.java.socialmedia.entity.ImageEntity;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.InvalidImageNumberException;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
@@ -20,12 +21,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -72,23 +71,6 @@ public class ImageServiceImpl implements ImageService {
                 .collect(Collectors.toList()));
     }
 
-    private ResponseImageDTO uploadImageForPost(MultipartFile image, String postId, Authentication authentication) {
-        try {
-            var post = postRepository.findByIdentifier(postId).orElseThrow(PostNotFoundException::new);
-            var user = userService.findUserByAuth(authentication);
-            if (post.getAuthor() != user) {
-                throw new PostNotFoundException();
-            }
-            var imageEntity = new ImageEntity();
-            imageEntity.setPost(post);
-            return uploadImage(image, imageEntity);
-        } catch (IOException | PostNotFoundException e) {
-            throw new RuntimeException(USER_NOT_FOUND_EXCEPTION_RESPONSE + " for post" + e.getMessage());
-        } catch (UserNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public FileDTO getImageByUsername(String username) throws UserNotFoundException {
         var user = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
@@ -99,7 +81,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public List<ResponseImageDTO> getImagesByPost(String postId) throws PostNotFoundException {
         var post = postRepository.getPostEntityByIdentifier(postId).orElseThrow(PostNotFoundException::new);
-        return imageConverter.convertImagesToResponseImageDTO(post.getImages());
+        return imageConverter.convertImagesToResponseImageDTO(post.getPostImages());
     }
 
     @Override
@@ -119,6 +101,19 @@ public class ImageServiceImpl implements ImageService {
         return userImages;
     }
 
+    @Override
+    public Mono<Map<PostEntity, List<ImageEntity>>> getBatchedImages(List<PostEntity> posts) {
+        System.out.println("get images is being executed");
+
+        Map<Long, List<ImageEntity>> imagesByPostId = imageRepository.findByPostIn(posts)
+                .stream()
+                .collect(Collectors.groupingBy(image -> image.getPost().getId()));
+
+        Map<PostEntity, List<ImageEntity>> result = posts.stream()
+                .collect(Collectors.toMap(post -> post, post -> imagesByPostId.getOrDefault(post.getId(), Collections.emptyList())));
+        return Mono.just(result);
+    }
+
     private ResponseImageDTO uploadImage(MultipartFile image, ImageEntity imageEntity) throws IOException {
         var imageData = imageUtil.compressImage(image.getBytes());
         imageEntity.setImageData(imageData);
@@ -128,5 +123,22 @@ public class ImageServiceImpl implements ImageService {
         var savedImage = imageRepository.save(imageEntity);
         return new ResponseImageDTO(imageEntity.getIdentifier(),
                 new FileDTO(savedImage, imageUtil.decompressImage(savedImage.getImageData())));
+    }
+
+    private ResponseImageDTO uploadImageForPost(MultipartFile image, String postId, Authentication authentication) {
+        try {
+            var post = postRepository.findByIdentifier(postId).orElseThrow(PostNotFoundException::new);
+            var user = userService.findUserByAuth(authentication);
+            if (post.getAuthor() != user) {
+                throw new PostNotFoundException();
+            }
+            var imageEntity = new ImageEntity();
+            imageEntity.setPost(post);
+            return uploadImage(image, imageEntity);
+        } catch (IOException | PostNotFoundException e) {
+            throw new RuntimeException(USER_NOT_FOUND_EXCEPTION_RESPONSE + " for post" + e.getMessage());
+        } catch (UserNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.roman.sapun.java.socialmedia.util.converter.implementation;
 
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
-import com.roman.sapun.java.socialmedia.service.ImageService;
 import com.roman.sapun.java.socialmedia.util.converter.ImageConverter;
 import com.roman.sapun.java.socialmedia.util.converter.PostConverter;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
@@ -9,23 +8,27 @@ import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.TagEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.util.IdentifierGenerator;
+import com.roman.sapun.java.socialmedia.util.converter.UserConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class PostConverterImpl implements PostConverter {
 
     private final IdentifierGenerator identifierGenerator;
     private final ImageConverter imageConverter;
+    private final UserConverter userConverter;
 
     @Autowired
-    public PostConverterImpl(IdentifierGenerator identifierGenerator, ImageConverter imageConverter) {
+    public PostConverterImpl(IdentifierGenerator identifierGenerator, ImageConverter imageConverter, UserConverter userConverter) {
         this.identifierGenerator = identifierGenerator;
         this.imageConverter = imageConverter;
+        this.userConverter = userConverter;
     }
 
     @Override
@@ -44,9 +47,9 @@ public class PostConverterImpl implements PostConverter {
     @Override
     public ResponsePostDTO convertToResponsePostDTO(PostEntity post) {
             return new ResponsePostDTO(post,
-                    imageConverter.convertImagesToResponseImageDTO(post.getImages()),
+                    imageConverter.convertImagesToResponseImageDTO(post.getPostImages()),
                     imageConverter.convertImageToDTO(post.getAuthor().getImage()),
-                    post.getUpvotes().size(),
-                    post.getDownvotes().size());
+                    post.getUpvotes().stream().map(userConverter::convertToUserDTO).collect(Collectors.toList()),
+                    post.getDownvotes().stream().map(userConverter::convertToUserDTO).collect(Collectors.toList()));
     }
 }

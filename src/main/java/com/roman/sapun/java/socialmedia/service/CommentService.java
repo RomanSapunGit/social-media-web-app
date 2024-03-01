@@ -4,12 +4,19 @@ import com.roman.sapun.java.socialmedia.dto.comment.CommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.page.CommentPageDTO;
+import com.roman.sapun.java.socialmedia.entity.CommentEntity;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.InvalidPageSizeException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserStatisticsNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
 
 
 public interface CommentService {
@@ -38,7 +45,7 @@ public interface CommentService {
      * @param pageNumber page that we want to return.
      * @return map that includes 50 comments, overall number of comments, current comment page and overall number of pages.
      */
-    CommentPageDTO getCommentsByPostIdentifier(String identifier, int pageNumber) throws CommentNotFoundException;
+    Page<CommentEntity> getCommentsByPostIdentifier(String identifier, int pageNumber) throws CommentNotFoundException;
 
     /**
      * <p>Updates comment by identifier.</p>
@@ -58,4 +65,7 @@ public interface CommentService {
     ResponseCommentDTO removeCommentFromSavedList(String identifier, Authentication authentication) throws  UserNotFoundException, CommentNotFoundException;
 
     ResponseCommentDTO addCommentToSavedList(String identifier, Authentication authentication) throws UserNotFoundException, CommentNotFoundException;
+
+    Mono<Map<PostEntity, List<CommentEntity>>> getBatchedComments(List<PostEntity> posts);
+
 }

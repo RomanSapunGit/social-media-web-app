@@ -62,19 +62,6 @@ public class CommentController {
         return commentService.deleteComment(id, authentication);
     }
 
-    /**
-     * Retrieves comments for a post identified by its identifier and caches the results for 30 minutes.
-     *
-     * @param postId     The identifier of the post.
-     * @param pageNumber The page number for pagination.
-     * @return A map that includes 50 comments, overall number of comments, current comment page, and overall number of pages.
-     * @throws CommentNotFoundException If the comments for the specified post are not found.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/{postId}")
-    public CommentPageDTO getCommentsByPostIdentifier(@PathVariable String postId, @RequestParam int pageNumber) throws CommentNotFoundException {
-        return commentService.getCommentsByPostIdentifier(postId, pageNumber);
-    }
 
     /**
      * Updates a comment by its identifier.

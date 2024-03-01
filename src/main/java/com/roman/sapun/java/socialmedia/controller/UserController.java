@@ -64,20 +64,7 @@ public class UserController {
         return userService.updateUser(requestUserDTO, authentication);
     }
 
-    /**
-     * Retrieves a paginated list of users sorted by specific criteria.
-     *
-     * @param page     The page number for pagination.
-     * @param pageSize The number of users to display per page (default is 5).
-     * @return A list containing users, overall number of users, current user page, and overall number of pages.
-     * @throws UserNotFoundException If no users are found.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping()
-    @Cacheable(value = "userCache", key = "#page + #page + '-' + #pageSize", unless = "#result == null")
-    public UserPageDTO getUsers(@RequestParam int page, @RequestParam(defaultValue = "5") int pageSize) throws UserNotFoundException {
-        return userService.getUsers(page, pageSize);
-    }
+
 
     /**
      * Adds a user to the following list of the currently authenticated user.
@@ -134,19 +121,7 @@ public class UserController {
         return subscriptionService.hasSubscriptions(authentication);
     }
 
-    /**
-     * Retrieves information about a user being followed by the currently authenticated user.
-     *
-     * @param authentication The authentication object representing the currently logged-in user.
-     * @param username       The username of the user being followed.
-     * @return The ValidatorDTO indicating whether the user is being followed or not.
-     * @throws UserNotFoundException If the specified user is not found.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/follower/{username}")
-    public ValidatorDTO findFollowingByUsername(Authentication authentication, @PathVariable String username) throws UserNotFoundException {
-        return subscriptionService.findFollowingByUsername(authentication, username);
-    }
+
 
     /**
      * Removes a user from the following list of the currently authenticated user.

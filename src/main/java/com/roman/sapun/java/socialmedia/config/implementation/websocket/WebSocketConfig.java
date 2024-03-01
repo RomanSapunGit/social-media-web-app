@@ -1,4 +1,4 @@
-package com.roman.sapun.java.socialmedia.config.websocket;
+package com.roman.sapun.java.socialmedia.config.implementation.websocket;
 
 import com.roman.sapun.java.socialmedia.config.ValueConfig;
 import org.springframework.context.annotation.Configuration;

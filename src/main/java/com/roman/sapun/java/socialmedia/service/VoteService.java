@@ -1,10 +1,13 @@
 package com.roman.sapun.java.socialmedia.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.roman.sapun.java.socialmedia.dto.VoteDTO;
 import com.roman.sapun.java.socialmedia.dto.credentials.ValidatorDTO;
 import com.roman.sapun.java.socialmedia.exception.PostNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
+
+import java.util.List;
 
 public interface VoteService {
     /**
@@ -15,7 +18,7 @@ public interface VoteService {
      * @return A set of user DTOs indicating users who upvoted the post.
      * @throws JsonProcessingException If there is an issue processing the JSON data.
      */
-        int addUpvote(String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException;
+        List<VoteDTO> addUpvote(String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException;
 
         /**
          * Remove an upvote from a post identified by its identifier.
@@ -24,7 +27,7 @@ public interface VoteService {
          * @param authentication The authentication object of the user removing the upvote.
          * @return A set of user DTOs indicating users who upvoted the post after the removal.
          */
-        int removeUpvote(String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException;
+        List<VoteDTO> removeUpvote(String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException;
 
         /**
          * Add a downvote to a post identified by its identifier.
@@ -34,7 +37,7 @@ public interface VoteService {
          * @return A set of user DTOs indicating users who downvoted the post.
          * @throws JsonProcessingException If there is an issue processing the JSON data.
          */
-        int addDownvote(String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException;
+        List<VoteDTO> addDownvote(String identifier, Authentication authentication) throws JsonProcessingException, UserNotFoundException, PostNotFoundException;
 
         /**
          * Remove a downvote from a post identified by its identifier.
@@ -43,7 +46,7 @@ public interface VoteService {
          * @param authentication The authentication object of the user removing the downvote.
          * @return A set of user DTOs indicating users who downvoted the post after the removal.
          */
-        int removeDownvote(String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException;
+        List<VoteDTO> removeDownvote(String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException;
 
         /**
          * Check if an upvote is made by the authenticated user for a post identified by its identifier.

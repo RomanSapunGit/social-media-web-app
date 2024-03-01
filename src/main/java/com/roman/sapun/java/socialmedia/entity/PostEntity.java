@@ -44,7 +44,7 @@ public class PostEntity {
     private List<CommentEntity> comments;
 
     @OneToMany(fetch = FetchType.LAZY,  mappedBy = "post", cascade = CascadeType.ALL,  orphanRemoval = true)
-    private List<ImageEntity> images;
+    private List<ImageEntity> postImages;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "post_upvotes",

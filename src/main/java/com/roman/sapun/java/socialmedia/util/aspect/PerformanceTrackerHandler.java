@@ -1,4 +1,4 @@
-package com.roman.sapun.java.socialmedia.aspect;
+package com.roman.sapun.java.socialmedia.util.aspect;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;

@@ -6,6 +6,7 @@ import com.roman.sapun.java.socialmedia.dto.comment.RequestCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.comment.ResponseCommentDTO;
 import com.roman.sapun.java.socialmedia.dto.page.CommentPageDTO;
 import com.roman.sapun.java.socialmedia.entity.CommentEntity;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.exception.CommentNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
 import com.roman.sapun.java.socialmedia.exception.UserStatisticsNotFoundException;
@@ -26,9 +27,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -66,18 +71,16 @@ public class CommentServiceImpl implements CommentService {
         commentEntity.setUserStatistics(commentOwner.getUserStatistics());
         commentRepository.save(commentEntity);
         var consent = commentOwner.getUserStatistics().getConsent() == null ? "false" : commentOwner.getUserStatistics().getConsent();
-        if(consent.equals("true")) {
+        if (consent.equals("true")) {
             userStatisticsService.addCreatedCommentToStatistic(commentOwner, commentEntity, request);
         }
         return new CommentDTO(commentEntity, imageConverter.convertImageToDTO(commentEntity.getAuthor().getImage()));
     }
 
     @Override
-    public CommentPageDTO getCommentsByPostIdentifier(String identifier, int pageNumber) throws CommentNotFoundException {
-        var postEntity = postRepository.findByIdentifier(identifier).orElseThrow(CommentNotFoundException::new);
-        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize() - 30);
-        var commentPage = commentRepository.findCommentEntitiesByPost(postEntity, pageable);
-        return pageConverter.convertPageToCommentPageDTO(commentPage);
+    public Page<CommentEntity> getCommentsByPostIdentifier(String identifier, int pageNumber) {
+        var pageable = PageRequest.of(pageNumber, valueConfig.getPageSize());
+        return commentRepository.findCommentEntitiesByPostIdentifier(identifier, pageable);
     }
 
     @Override
@@ -143,4 +146,17 @@ public class CommentServiceImpl implements CommentService {
         userRepository.save(user);
         return new ResponseCommentDTO(commentEntity, imageConverter.convertImageToDTO(commentEntity.getAuthor().getImage()));
     }
+
+    @Override
+    public Mono<Map<PostEntity, List<CommentEntity>>> getBatchedComments(List<PostEntity> posts) {
+        Map<Long, List<CommentEntity>> commentsByPostId = commentRepository.findByPostIn(posts)
+                .stream()
+                .collect(Collectors.groupingBy(comment -> comment.getPost().getId()));
+
+        Map<PostEntity, List<CommentEntity>> result = posts.stream()
+                .collect(Collectors.toMap(post -> post, post -> commentsByPostId.getOrDefault(post.getId(), Collections.emptyList())));
+
+        return Mono.just(result);
+    }
+
 }

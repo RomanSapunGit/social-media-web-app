@@ -1,15 +1,20 @@
 package com.roman.sapun.java.socialmedia.service;
 
 import com.roman.sapun.java.socialmedia.dto.image.RequestImageDTO;
-import com.roman.sapun.java.socialmedia.dto.page.PostPageDTO;
 import com.roman.sapun.java.socialmedia.dto.post.RequestPostDTO;
 import com.roman.sapun.java.socialmedia.dto.post.ResponsePostDTO;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
+import com.roman.sapun.java.socialmedia.entity.UserEntity;
 import com.roman.sapun.java.socialmedia.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public interface PostService {
@@ -53,7 +58,7 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    PostPageDTO getPosts(int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
+    Page<PostEntity> getPosts(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException, TagNotFoundException;
 
     /**
      * Retrieves a paginated list of posts filtered by a specific tag.
@@ -64,7 +69,7 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    PostPageDTO getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException, ExecutionException, InterruptedException;
+    Page<PostEntity> getPostsByTag(String tagName, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, TagNotFoundException, ExecutionException, InterruptedException;
 
     /**
      * Retrieves a paginated list of posts created by a specific user.
@@ -75,9 +80,8 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    PostPageDTO getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException;
+    Page<PostEntity> getPostsByUsername(String username, int page, int pageSize, String sortByValue) throws InvalidPageSizeException, UserNotFoundException;
 
-    PostPageDTO getSavedPosts(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException;
 
     ResponsePostDTO removePostFromSavedList(String identifier, Authentication authentication) throws PostNotFoundException, UserNotFoundException;
 
@@ -95,7 +99,7 @@ public interface PostService {
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      * @throws IllegalArgumentException If the user is not found.
      */
-    PostPageDTO getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException;
+    Page<PostEntity> getPostsByUserFollowing(Authentication authentication, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException, InvalidPageSizeException;
 
     /**
      * Retrieves a paginated list of posts that contain the specified text in their title.
@@ -106,7 +110,7 @@ public interface PostService {
      * @param sortByValue The field by which to sort the posts.
      * @return A map containing 50 posts, overall number of comments, current comment page, and overall number of pages.
      */
-    PostPageDTO findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
+    Page<PostEntity> findPostsByTextContaining(String title, int pageNumber, int pageSize, String sortByValue) throws InvalidPageSizeException;
 
     /**
      * Retrieves a post by its identifier.
@@ -117,4 +121,11 @@ public interface PostService {
     ResponsePostDTO getPostById(String identifier, HttpServletRequest request, Authentication authentication) throws PostNotFoundException, UserNotFoundException, UserStatisticsNotFoundException;
 
     ResponsePostDTO deletePostByIdentifier(String identifier, Authentication authentication) throws UserNotFoundException, PostNotFoundException;
+
+    Mono<Map<PostEntity, Set<UserEntity>>> getBatchedUpvotes(List<PostEntity> posts) throws UpvotesNotFoundException;
+
+    Mono<Map<PostEntity, Set<UserEntity>>> getBatchedDownvotes(List<PostEntity> posts) throws DownvotesNotFoundException;
+
+
+    PostEntity getPostById(String identifier);
 }

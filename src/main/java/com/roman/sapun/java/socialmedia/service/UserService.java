@@ -4,22 +4,30 @@ import com.roman.sapun.java.socialmedia.dto.page.UserPageDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ConsentDTO;
 import com.roman.sapun.java.socialmedia.dto.user.RequestUserDTO;
 import com.roman.sapun.java.socialmedia.dto.user.ResponseUserDTO;
+import com.roman.sapun.java.socialmedia.entity.CommentEntity;
+import com.roman.sapun.java.socialmedia.entity.PostEntity;
 import com.roman.sapun.java.socialmedia.entity.UserEntity;
-import com.roman.sapun.java.socialmedia.exception.UserNotFoundException;
+import com.roman.sapun.java.socialmedia.exception.*;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     /**
      * Retrieves a paginated list of users whose usernames contain the specified text.
      *
      * @param username    The text to search for within usernames.
-     * @param pageNumber  The page number for pagination.
+     * @param page  The page number for pagination.
      * @param pageSize    The number of users to display per page.
-     * @param sortByValue The criteria for sorting the user results (e.g., by username).
      * @return A map containing a paginated list of users matching the search criteria, along with
      * information about the overall number of users, the current page, and the total number of pages.
      */
-    UserPageDTO getUsersByUsernameContaining(String username, int pageNumber, int pageSize, String sortByValue) throws UserNotFoundException;
+    Page<UserEntity> getUsersByUsernameContaining(String username, int pageSize, int page);
+
+    UserPageDTO getUsersByUsernameContaining(String username, int page, int pageSize, String sortBy) throws UserNotFoundException;
 
     /**
      * Retrieves a paginated list of all users.
@@ -28,7 +36,7 @@ public interface UserService {
      * @param pageSize The number of users to display per page.
      * @return A list containing users on the specified page, typically up to the specified page size.
      */
-    UserPageDTO getUsers(int page, int pageSize) throws UserNotFoundException;
+    Page<UserEntity> getUsers(int page, int pageSize);
 
     /**
      * Updates the details of the current user.
@@ -59,6 +67,9 @@ public interface UserService {
     ConsentDTO sendUserConsent(Authentication authentication, ConsentDTO consent) throws Exception;
 
     ConsentDTO getConsent(Authentication authentication) throws UserNotFoundException;
+
+    Mono<Map<PostEntity, UserEntity>> getBatchedAuthorsForPosts(List<PostEntity> posts) throws UserNotFoundException, PostNotFoundException;
+    Mono<Map<CommentEntity, UserEntity>> getBatchedAuthorsForComments(List<CommentEntity> commentEntities) throws CommentNotFoundException;
 
     ResponseUserDTO getCurrentUser(Authentication authentication) throws UserNotFoundException;
 
